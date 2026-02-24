@@ -9,19 +9,28 @@ When the user sends a message **without a slash command**, default to `/ralph`. 
 | Signal | Action |
 |--------|--------|
 | "go", "run it", "full workflow", "bmad" | Run `/bmad-run` |
+| "where am I", "what's next", "status", "help", "dashboard" | Run `/bmad-help` |
 | Asks about principles, standards, governance | If `.claude/output/principles.md` exists: **read and display it**. If not: run `/principles` to create it. |
 | Questions requirements ("unclear", "what about", "edge case") | If `problem.yaml` exists: run `/clarify`. If not: run `/bmad-break`. |
 | "Check specs", "ready to code?", "anything missing" | If all 3 artifacts exist: run `/analyze`. If no CRITICAL issues, then run `/checklist`. If artifacts missing: say which phases to run. |
+| "debate", "discuss", "opinions on", "argue" | Run `/party` |
+| "quick fix", "small feature", "just do", "fast track" | Run `/quick-spec` or `/quick-dev` depending on whether the user wants a spec or direct implementation |
+| "brainstorm", "ideas for", "what if", "ideate" | Run `/brainstorm` |
+| "split this doc", "shard", "break up this file" | Run `/shard` |
+| "UX", "wireframe", "user flow", "screens", "user experience" | Run `/ux-spec` |
+| "create agent", "new command", "new skill", "new rule" | Run `/create-component` |
 | Asks for code review, test gen, security check | Run `/review`, `/test-gen`, or `/security-check`. |
 
 **When the user uses a slash command** (`/bmad-break`, `/ralph`, etc.): follow that command exactly. The default-to-Ralph rule only applies when there is NO slash command.
 
 ## Workflow
 
-- Full workflow: `/bmad-run` (Principles → Break → Clarify → Model → Analyze → Checklist → GSD Prep → Act → Deliver)
+- Full workflow: `/bmad-run` (Brainstorm → Principles → Break → Clarify → UX Spec → Model → Analyze → Checklist → GSD Prep → Act → Deliver)
 - Individual phases: `/bmad-break`, `/bmad-model`, `/bmad-act`, `/bmad-deliver`
-- Spec & quality: `/principles`, `/clarify`, `/analyze`, `/checklist`
-- Implementation: `/ralph`, `/ralph-loop`, `/gsd-prep`
+- Spec & quality: `/principles`, `/clarify`, `/analyze`, `/checklist`, `/ux-spec`
+- Implementation: `/ralph`, `/ralph-loop`, `/gsd-prep`, `/quick-spec`, `/quick-dev`
+- Ideation: `/brainstorm`, `/party`
+- Utilities: `/shard`, `/create-component`, `/bmad-help`
 
 ## Command Reference
 
@@ -33,18 +42,38 @@ When the user sends a message **without a slash command**, default to `/ralph`. 
 | `/bmad-break` | Define problem, features, rich user stories | Project brief or prompt |
 | `/clarify` | Structured ambiguity scan | `problem.yaml` OR a project description as argument |
 | `/ralph` | Full implementation — backlog to code | Backlog file, `backlog.yaml`, OR a text description |
+| `/brainstorm` | Creative ideation with structured techniques | Topic or challenge |
+| `/party` | Multi-agent debate on a topic | Topic to debate |
+| `/quick-spec` | Lightweight tech spec — fast track to tasks | Feature description |
+| `/quick-dev` | Quick implementation from spec or description | Spec file path OR feature description |
+| `/shard` | Split large documents into indexed sections | File path |
+| `/create-component` | Create a new agent, command, skill, or rule | `<type> <name> [description]` |
+| `/bmad-help` | Project state dashboard and next steps | Optional natural language question |
 
 ### Pipeline commands (require prior BMAD artifacts)
 
 | Command | What it does | Requires |
 |---------|-------------|----------|
 | `/bmad-model` | Architecture + backlog design | `problem.yaml` |
+| `/ux-spec` | UX design — flows, wireframes, interactions | `problem.yaml` OR feature description |
 | `/analyze` | Cross-artifact consistency check (read-only) | `problem.yaml` + `architecture.yaml` + `backlog.yaml` |
 | `/checklist` | Pre-implementation quality gate | `problem.yaml` + `architecture.yaml` + `backlog.yaml` |
 | `/gsd-prep` | Codebase mapping + context packs for teammates | `backlog.yaml` + `architecture.yaml` |
 | `/bmad-act` | Implement from backlog (delegates to Ralph) | `backlog.yaml` + `architecture.yaml` |
 | `/bmad-deliver` | Prepare release | Implemented code |
 | `/ralph-loop` | Resume interrupted Ralph session | `.claude/ralph-prd.json` |
+
+### Shortcuts
+
+| Shortcut | Expands to |
+|----------|-----------|
+| `/r` | `/ralph` |
+| `/p` | `/principles` |
+| `/c` | `/clarify` |
+| `/g` | `/gsd-prep` |
+| `/h` | `/bmad-help` |
+| `/qs` | `/quick-spec` |
+| `/qd` | `/quick-dev` |
 
 ## Code Principles
 

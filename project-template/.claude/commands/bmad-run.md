@@ -7,6 +7,16 @@ Orchestrate the complete **BMAD v6 workflow**. Execute each phase in sequence, c
 
 ## Workflow
 
+### Phase -1: Brainstorm -- Creative Ideation (optional)
+
+**Gate**: Ask the user: "Brainstorm ideas first, or skip to problem definition?"
+
+If the user wants to brainstorm:
+- Follow the instructions in `/brainstorm`
+- Use the brainstorm output to inform Phase 1 (Break)
+
+If the user says "skip", proceed directly to Phase 0.
+
 ### Phase 0: Principles -- Project Governance (optional)
 
 Follow the instructions in `/principles`:
@@ -35,7 +45,19 @@ Follow the instructions in `/clarify`:
 - Update `problem.yaml` with clarifications (inline + audit trail)
 - Report summary
 
-**Gate**: Do not proceed to Phase 2 until clarification is complete. If significant gaps remain, warn the user.
+**Gate**: Do not proceed to Phase 1.75 until clarification is complete. If significant gaps remain, warn the user.
+
+### Phase 1.75: UX Spec -- UX Design (optional)
+
+Check if the project involves significant UI work:
+- Scan `problem.yaml` for UI-related stories (keywords: screen, page, form, dashboard, UI, UX, interface, button, navigation, layout, responsive, mobile)
+- If UI stories are detected, ask: "This project has UI-heavy stories. Design a UX spec now, or skip?"
+
+If the user wants a UX spec:
+- Follow the instructions in `/ux-spec`
+- The UX spec feeds into Phase 2 (Model) — the architecture should account for the component hierarchy and interaction patterns
+
+If no UI stories detected or user says "skip", proceed to Phase 2.
 
 ### Phase 2: Model -- Design Architecture & Backlog
 
@@ -131,8 +153,10 @@ Throughout the entire workflow, enforce:
 ## Output Artifacts
 
 At the end of the workflow, the following files will exist in `.claude/output/`:
+- `brainstorm-*.md` -- Brainstorm output (Brainstorm, optional)
 - `principles.md` -- Project principles (Principles, optional)
 - `problem.yaml` -- Problem definition with rich user stories (Break)
+- `ux-spec.md` -- UX specification (UX Spec, optional)
 - `architecture.yaml` -- Architecture design (Model)
 - `backlog.yaml` -- Implementation backlog (Model)
 - `checklist.md` -- Pre-implementation readiness check (Checklist)

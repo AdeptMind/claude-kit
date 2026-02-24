@@ -212,6 +212,8 @@ func runInteractiveInit() error {
 			"ralph", "ralph-loop", "ralph-cancel",
 			"r", "p", "c", "g",
 			"gsd-prep",
+			"bmad-help", "party", "quick-spec", "quick-dev", "shard", "brainstorm", "ux-spec", "create-component",
+			"h", "qs", "qd",
 		} {
 			commandSet[cmd] = true
 		}

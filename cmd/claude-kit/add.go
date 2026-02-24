@@ -305,6 +305,8 @@ func addBmadBundle(tmplDir, targetDir string) error {
 		"ralph", "ralph-loop", "ralph-cancel",
 		"r", "p", "c", "g",
 		"gsd-prep",
+		"bmad-help", "party", "quick-spec", "quick-dev", "shard", "brainstorm", "ux-spec", "create-component",
+		"h", "qs", "qd",
 		"role-product-owner", "role-architect", "role-tech-lead",
 		"review", "test-gen", "security-check", "commit-msg",
 		"code-only", "docs-gen", "pr-review",
