@@ -29,9 +29,19 @@ type Dependency struct {
 	PluginMarketplaceCmd string // for plugin type
 	PluginInstallCmd     string // for plugin type
 	InstallCmd           string // for auto-installable types
+	PostInstallCmd       string // command to run after installation
+	PostInstallMsg       string // message to display after installation
 }
 
 var depRegistry = []Dependency{
+	{
+		Name:           "rtk",
+		Description:    "Token optimizer — compresses command outputs for 60-90% savings",
+		Type:           DepTypeBrew,
+		Source:         "rtk",
+		PostInstallCmd: "rtk init --global --auto-patch",
+		PostInstallMsg: "Run 'rtk gain' to verify installation and track savings.",
+	},
 	{
 		Name:                 "claude-mem",
 		Description:          "Persistent memory compression system for Claude Code",
@@ -114,8 +124,20 @@ func runDepInstall() error {
 		fmt.Println(sectionHeader(fmt.Sprintf("Installing %s", dep.Name)))
 		if err := autoInstallDep(dep); err != nil {
 			fmt.Println(errorStyle.Render(fmt.Sprintf("  Failed to install %s: %v", dep.Name, err)))
-		} else {
-			fmt.Println(fmt.Sprintf("  %s %s", checkMark, accentStyle.Render(dep.Name)))
+			continue
+		}
+		fmt.Println(fmt.Sprintf("  %s %s", checkMark, accentStyle.Render(dep.Name)))
+
+		if dep.PostInstallCmd != "" {
+			fmt.Println(dimStyle.Render(fmt.Sprintf("  Running post-install: %s", dep.PostInstallCmd)))
+			if err := runPostInstall(dep.PostInstallCmd); err != nil {
+				fmt.Println(warnStyle.Render(fmt.Sprintf("  Post-install warning: %v", err)))
+			} else {
+				fmt.Println(fmt.Sprintf("  %s Post-install complete", checkMark))
+			}
+		}
+		if dep.PostInstallMsg != "" {
+			fmt.Println(dimStyle.Render(fmt.Sprintf("  %s", dep.PostInstallMsg)))
 		}
 	}
 
@@ -183,6 +205,14 @@ func autoInstallDep(dep Dependency) error {
 	}
 
 	out, err := exec.Command(cmd, args...).CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("%s: %s", err, strings.TrimSpace(string(out)))
+	}
+	return nil
+}
+
+func runPostInstall(command string) error {
+	out, err := exec.Command("sh", "-c", command).CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("%s: %s", err, strings.TrimSpace(string(out)))
 	}
