@@ -116,11 +116,11 @@ For explicit type prefixes (`ck add <type> <name>`):
 |----------|-----------|
 | **BMAD Workflow** | Principles → Break → Clarify → Model → Analyze → Checklist → GSD Prep → Act → Deliver |
 | **Agents** | Backend, Tech Lead, DevOps, Security, Pentester, FinOps |
-| **Dev Skills** | Code review, test generation, API docs, commit helper, README updater, dependency audit |
+| **Dev Skills** | Code review, test generation, **test-check**, API docs, commit helper, README updater, dependency audit |
 | **Security Skills** | Code audit, infra audit, auth review, secret rotation, pentest simulation, threat modeling |
 | **FinOps Skills** | Cost optimization, tagging audit, waste detection, budget forecasting |
-| **New Skills** | Performance audit, accessibility audit, database review, Terraform review, skill creator |
-| **Rules** | Code style, testing, security, API, frontend, infrastructure, documentation, FinOps |
+| **Other Skills** | Performance audit, accessibility audit, database review, Terraform review, skill creator |
+| **Rules** | Code style (pattern-first, placement discovery), testing (function-test pairing), security, API, frontend, infrastructure (IaC-only), documentation, FinOps |
 
 ### Slash Commands
 
@@ -134,7 +134,7 @@ For explicit type prefixes (`ck add <type> <name>`):
 `/ralph`, `/ralph-loop`, `/ralph-cancel`, `/gsd-prep`
 
 **Dev Skills:**
-`/review`, `/pr-review`, `/test-gen`, `/docs-gen`, `/commit-msg`, `/code-only`
+`/review`, `/pr-review`, `/test-gen`, `/test-check`, `/docs-gen`, `/commit-msg`, `/code-only`
 
 **Security & FinOps:**
 `/security-check`, `/pentest`, `/cost-review`
@@ -241,12 +241,12 @@ claude-cli/
 │   ├── docsindex/          # Docs-index generation + staleness
 │   └── config/             # Path resolution + defaults
 ├── project-template/.claude/  # Template files
-│   ├── CLAUDE.md           # Project memory
-│   ├── settings.json       # Permissions
-│   ├── agents/             # 6 agent role definitions
-│   ├── skills/             # 18+ skill directories
-│   ├── commands/           # 18 slash commands
-│   └── rules/              # 8 project rules
+│   ├── CLAUDE.md           # Project memory + approach-selection guardrails
+│   ├── settings.json       # Permissions + PreToolUse hook (staged-file review)
+│   ├── agents/             # 15 agent role definitions
+│   ├── skills/             # 25+ skill directories (incl. test-check)
+│   ├── commands/           # 53 slash commands
+│   └── rules/              # 9 project rules
 ├── go.mod / go.sum
 ├── Makefile                # build, install, install-templates, clean
 ├── install.sh              # Legacy wrapper → delegates to ck
@@ -264,6 +264,7 @@ claude-cli/
 |-------|-------------|
 | `code-reviewer` | Code review with severity levels (critical/warning/info), auto-fix suggestions |
 | `test-generator` | Test generation with framework detection and coverage gap analysis |
+| `test-check` | Per-function test coverage: finds or creates tests, updates them when contracts change, reports failures honestly — never weakens assertions to hide bugs |
 | `api-documenter` | OpenAPI/Swagger documentation generation |
 | `git-commit-helper` | Conventional commit message generation |
 | `readme-updater` | Keep README in sync with code |
@@ -366,6 +367,47 @@ Common standalone patterns:
 
 ---
 
+## Agent Guardrails
+
+The template ships with a set of behavioral constraints designed to prevent the most common failure modes observed in real multi-session usage.
+
+### Approach Selection (`CLAUDE.md`)
+
+Before implementing anything non-trivial, agents must:
+1. **Scan first** — read how similar features are done in the codebase
+2. **Propose before implementing** — present 2-3 options with tradeoffs and wait for a choice when multiple valid approaches exist
+3. **Prefer existing over new** — reuse established patterns, modules, and dependencies
+4. **Stay targeted** — answer what was asked, don't expand scope unilaterally
+
+### IaC-Only Infrastructure (`rules/infrastructure.md`)
+
+Cloud CLI commands (`gcloud`, `aws`, `az`, `kubectl`) are **read-only** tools:
+- Allowed for investigation: `describe`, `get`, `list`
+- **Banned for mutations**: creating, updating, or deleting cloud resources manually
+- All infrastructure changes must go through Terraform, Helm, or the project's IaC tool
+- Exceptions must be flagged as `TODO` comments in IaC files, never applied silently
+
+### Pattern First + Placement Discovery (`rules/code-style.md`)
+
+Before creating a new file or implementing a feature:
+- **Pattern first**: find an existing feature of the same type and follow its exact conventions
+- **Placement discovery**: locate where similar files live before creating new ones — never invent a directory that doesn't exist in the project
+
+### Honest Test Pairing (`rules/testing.md` + `test-check` skill)
+
+Every non-trivial function must have a corresponding test. When a function changes:
+- Update the test if the **contract** changed intentionally
+- **Never update a test just to make it pass** — a failing test means the function is broken
+- Never weaken assertions (e.g. replacing `assertEqual(x, 42)` with `assertNotNil(x)`) to hide a failure
+
+Use `/test-check` after modifying functions to run this automatically.
+
+### Pre-Commit Visibility (`settings.json`)
+
+A `PreToolUse` hook fires before every `git commit` or `git push`, printing the staged file list. This surfaces scope leaks (files from other stories or tasks) before they enter the commit.
+
+---
+
 ## Inspiration
 
 The BMAD workflow and its components draw from several methodologies:
@@ -382,11 +424,11 @@ Rules are modular project instructions loaded based on file patterns:
 
 | Rule | Globs | What it enforces |
 |------|-------|-----------------|
-| `code-style.md` | `src/**`, `lib/**`, `app/**` | DRY, KISS, SOLID, clean code |
-| `testing.md` | `tests/**`, `**/*.test.*`, `**/*.spec.*` | Test-first, edge cases, independent tests |
+| `code-style.md` | `src/**`, `lib/**`, `app/**` | DRY, KISS, SOLID, pattern-first (scan before implementing), placement discovery (find where similar files live before creating new ones) |
+| `testing.md` | `tests/**`, `**/*.test.*`, `**/*.spec.*` | Test-first, edge cases, independent tests, function-test pairing, no weakening assertions to hide failures |
 | `security.md` | _(all files)_ | No secrets, input validation, least privilege |
 | `api.md` | `src/routes/**`, `src/api/**`, `src/controllers/**` | REST conventions, pagination, error format |
 | `frontend.md` | `src/components/**`, `**/*.tsx`, `**/*.jsx` | Small components, accessibility, state handling |
-| `infrastructure.md` | `infra/**`, `*.tf`, `Dockerfile*`, `k8s/**` | IaC, least-privilege IAM, non-root containers |
+| `infrastructure.md` | `infra/**`, `*.tf`, `Dockerfile*`, `k8s/**` | IaC-only changes (no manual `gcloud`/`aws`/`kubectl` mutations), least-privilege IAM, non-root containers |
 | `documentation.md` | `docs/**`, `**/*.md` | Close to code, examples, keep updated |
 | `finops.md` | `infra/**`, `*.tf`, `k8s/**`, `helm/**` | Tagging, rightsizing, lifecycle, scheduling |
