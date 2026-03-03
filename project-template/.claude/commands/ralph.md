@@ -173,9 +173,14 @@ You own these files — only modify files in this list:
 
 ## Instructions
 
-FIRST: Create an implementation plan describing:
+FIRST: Scan before planning:
+- Find 1-2 existing features in the codebase that are similar to this story (same entity type, same layer, same framework pattern)
+- Note the exact patterns used: **file locations**, naming, error handling, test style
+- Never assume where a file belongs — derive it from where similar files already live
+
+THEN: Create an implementation plan describing:
 - Which files you will create or modify (must be within your ownership)
-- Your implementation approach
+- Your implementation approach — **reference the existing pattern you will follow**, not a generic description
 - How each acceptance criterion will be met
 - Which tests you will write
 

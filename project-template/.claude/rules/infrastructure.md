@@ -5,6 +5,12 @@ globs: ["infra/**", "terraform/**", "*.tf", "Dockerfile*", "docker-compose*", ".
 
 > See `rules/security.md` for credential handling. See `rules/finops.md` for resource tagging.
 
+## IaC-Only Changes
+
+- **Never use cloud CLI commands (`gcloud`, `aws`, `az`, `kubectl`) to make infrastructure changes** — use Terraform, Helm, or the project's IaC tool instead
+- CLI commands are allowed **read-only**: `gcloud ... describe`, `aws ... get`, `kubectl get` for investigation and diagnosis only
+- If a fix requires a manual step, document it as a `TODO` comment in the IaC file and flag it to the user — do not apply it manually
+
 ## Infrastructure as Code
 
 - Use variables and modules to avoid hardcoding values; every environment-specific value should be a variable

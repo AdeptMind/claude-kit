@@ -75,6 +75,14 @@ When the user sends a message **without a slash command**, default to `/ralph`. 
 | `/qs` | `/quick-spec` |
 | `/qd` | `/quick-dev` |
 
+## Approach Selection
+
+For any non-trivial implementation (new feature, infra change, refactor):
+1. **Scan first**: read how similar things are done in the codebase before deciding on an approach
+2. **Propose before implementing**: if there are multiple valid approaches, present 2-3 options with their tradeoffs and wait for the user to choose — do not pick one silently
+3. **Prefer existing over new**: reuse existing patterns, modules, and dependencies before introducing new abstractions or tools
+4. **Targeted over broad**: when the user asks about a specific thing, answer that specific thing — do not expand scope unless explicitly asked
+
 ## Code Principles
 
 All code produced by any agent or skill MUST follow these principles:
@@ -113,6 +121,8 @@ All code produced by any agent or skill MUST follow these principles:
 ## Git Workflow
 
 - Use conventional commits: `feat:`, `fix:`, `chore:`, `docs:`, `refactor:`
+- Before pushing, verify the remote is configured: `git remote -v`
+- Before committing, review staged files: `git diff --cached --name-only` — never include files outside the current story or task scope
 - Run `/commit-msg` to generate commit messages from staged changes
 - Run `/review` before merging PRs
 

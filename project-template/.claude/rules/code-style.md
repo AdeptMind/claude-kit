@@ -15,6 +15,7 @@ globs: ["src/**", "lib/**", "app/**"]
   - Dependency Inversion: depend on abstractions, not concrete implementations
 - **Least invasive**: change only what is necessary for the task; do not refactor surrounding code unless asked
 - **No over-engineering**: do not add features, config options, or abstractions beyond what is requested
+- **Pattern first**: before implementing, scan the codebase for how similar features are done (same entity type, same layer, same framework pattern) and follow that exact pattern — do not invent a new approach when an existing one is established
 
 ## Style
 
@@ -38,3 +39,25 @@ globs: ["src/**", "lib/**", "app/**"]
 
 - Order imports: standard library first, then external packages, then internal modules — separated by blank lines
 - If a file exceeds ~300 lines, consider splitting it; a file should have a single clear purpose
+
+## Placement Discovery
+
+Before creating any new file, discover where it belongs by scanning the existing structure:
+
+1. **Find a similar existing file**: search for a file that does the same kind of thing (another controller, another service, another migration, another test) and note its location
+2. **Infer the convention**: use that location as the authoritative answer — do not assume a structure (e.g. `src/`, `lib/`, `internal/`, `app/`) without verifying it exists
+3. **When in doubt, ask**: if no similar file exists and the structure is ambiguous, ask the user before creating the file
+
+Common patterns vary widely — examples of what to look for:
+
+| What you're adding | Look for an existing… |
+|----|-----|
+| API handler / controller | `routes/`, `handlers/`, `controllers/`, `api/` |
+| Business logic | `services/`, `usecases/`, `domain/`, `core/` |
+| Data access | `repositories/`, `store/`, `db/`, `models/` |
+| Types / interfaces | `types/`, `interfaces/`, `schema/`, `pkg/` |
+| Tests | file next to the source (`_test.go`, `.test.ts`) or in `tests/`, `__tests__/`, `spec/` |
+| Infrastructure | `infra/`, `terraform/`, `deploy/`, `k8s/`, `helm/` |
+| Config | `config/`, `configs/`, `.env.example`, `settings/` |
+
+Never invent a directory that doesn't exist. If the project has no `services/` folder, don't create one just because it feels right.

@@ -4,6 +4,19 @@
     "CONTEXT_COMPACT_THRESHOLD": "75",
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
   },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if echo \"$CLAUDE_TOOL_INPUT\" | grep -qE '^git (commit|push)'; then echo '=== Staged files ===' && git diff --cached --name-only; fi"
+          }
+        ]
+      }
+    ]
+  },
   "permissions": {
     "deny": [
       "Read(.env)",
