@@ -109,6 +109,7 @@ All code produced by any agent or skill MUST follow these principles:
 - Build: `npm run build` (or equivalent)
 - Test: `npm test` (or equivalent)
 - Lint: `npm run lint` (or equivalent)
+- After modifying functions, run `/test-check` to verify test coverage and honesty
 
 ## Code Style
 

@@ -34,3 +34,11 @@ globs: ["tests/**", "test/**", "**/*.test.*", "**/*.spec.*"]
 - All tests must pass before merge; no exceptions
 - Fix flaky tests immediately — do not skip, retry, or `@ignore`; flaky tests erode trust
 - Keep test setup minimal and close to the assertion
+
+## Function-Test Pairing
+
+- Every non-trivial function must have a corresponding test — use `/test-check` after modifying functions to verify coverage
+- When a function's contract changes (signature, return type, behavior), update the test to match the new contract
+- **Never update a test just to make it pass** — if the output changed unexpectedly, the function is broken; fix the function, not the test
+- Never weaken an assertion (e.g., replacing `assertEqual(x, 42)` with `assertNotNil(x)`) to hide a failure
+- If unsure whether a behavior change is intentional, ask before updating the test
