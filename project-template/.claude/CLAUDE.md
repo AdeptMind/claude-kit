@@ -122,6 +122,7 @@ All code produced by any agent or skill MUST follow these principles:
 ## Git Workflow
 
 - Use conventional commits: `feat:`, `fix:`, `chore:`, `docs:`, `refactor:`
+- **All commit messages and PR titles/descriptions must be written in English** — no exceptions regardless of the project's spoken language
 - Before pushing, verify the remote is configured: `git remote -v`
 - Before committing, review staged files: `git diff --cached --name-only` — never include files outside the current story or task scope
 - Run `/commit-msg` to generate commit messages from staged changes
