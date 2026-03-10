@@ -1,5 +1,22 @@
 # Claude Kit (ck)
 
+> **Ship production-quality features, not scaffolding.**
+
+Claude Code is powerful — but out of the box, every project starts from scratch: no agent roles, no workflow, no guardrails. Teams waste time re-inventing prompts, fighting hallucinations, and babysitting agents that drift off-scope.
+
+`claude-kit` solves this. It gives Claude a **structured workflow** (BMAD), a **team of specialists** (backend, devops, security, finops, and more), and **guardrails** that prevent the most common failure modes — before you write a single line of code.
+
+**What you get:**
+- **Agent team** — 20+ role-optimized agents (architect, tech-lead, security, golang, terraform, k8s…) that activate automatically in the right context, each with the right model and skill set
+- **BMAD workflow** — a phased approach (Break → Model → Act → Deliver) with structured gates that take a project from idea to shipped feature with minimal drift
+- **Ralph** — an autonomous team lead that parallelizes implementation across agents, coordinates contracts, and validates each story before moving on
+- **Guardrails** — rules that prevent manual cloud mutations, pattern-first coding, honest test pairing, and pre-commit scope visibility
+- **Smart discovery** — `ck add new "go microservices"` asks Claude to find the right agent from local templates, upstream repos, or the broader ecosystem
+
+One `ck init` turns an empty project into a Claude-powered team with a coherent workflow.
+
+---
+
 A Go CLI for managing Claude Code project templates — interactive TUI setup, component management, stack-aware docs generation, and template synchronization.
 
 Built with [Charm](https://charm.sh): Bubble Tea + huh + lipgloss.

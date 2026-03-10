@@ -1,7 +1,9 @@
 ---
 name: mobile-ios
-description: iOS developer for native Swift/SwiftUI applications
-tools: Read, Write, Edit, Bash, Grep, Glob
+description: Activate for iOS native development with Swift/SwiftUI — screens, navigation, data persistence, XCTest
+model: claude-sonnet-4-6
+version: "1.0.0"
+tools: [Read, Write, Edit, Bash, Grep, Glob]
 skills:
   - code-reviewer
   - test-generator

@@ -16,6 +16,8 @@ type Component struct {
 	Name        string // e.g. "backend", "security/pentest-web"
 	Description string // extracted from YAML frontmatter
 	Path        string // absolute path in template dir
+	Version     string // extracted from frontmatter version: field
+	Source      string // extracted from frontmatter source: field
 }
 
 // Category groups components by type.
@@ -137,6 +139,8 @@ func scanMarkdownDir(dir, typeName string) []Component {
 			Name:        name,
 			Description: desc,
 			Path:        filePath,
+			Version:     ExtractVersion(filePath),
+			Source:      ExtractSource(filePath),
 		})
 	}
 
@@ -176,6 +180,48 @@ func ExtractDescription(path string) string {
 		}
 	}
 
+	return ""
+}
+
+// ExtractVersion reads the YAML frontmatter version from a file.
+func ExtractVersion(path string) string {
+	return extractFrontmatterField(path, "version:")
+}
+
+// ExtractSource reads the YAML frontmatter source from a file.
+func ExtractSource(path string) string {
+	return extractFrontmatterField(path, "source:")
+}
+
+// extractFrontmatterField is a generic helper to extract a frontmatter field.
+func extractFrontmatterField(path, prefix string) string {
+	f, err := os.Open(path)
+	if err != nil {
+		return ""
+	}
+	defer f.Close()
+
+	scanner := bufio.NewScanner(f)
+	inFrontmatter := false
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		if strings.TrimSpace(line) == "---" {
+			if inFrontmatter {
+				break
+			}
+			inFrontmatter = true
+			continue
+		}
+		if inFrontmatter && strings.HasPrefix(line, prefix) {
+			val := strings.TrimPrefix(line, prefix)
+			val = strings.TrimSpace(val)
+			if len(val) >= 2 && ((val[0] == '"' && val[len(val)-1] == '"') || (val[0] == '\'' && val[len(val)-1] == '\'')) {
+				val = val[1 : len(val)-1]
+			}
+			return val
+		}
+	}
 	return ""
 }
 

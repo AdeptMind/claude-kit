@@ -1,7 +1,9 @@
 ---
 name: mobile-react-native
-description: React Native developer for cross-platform mobile apps with JavaScript/TypeScript
-tools: Read, Write, Edit, Bash, Grep, Glob
+description: Activate for React Native cross-platform development — screens, React Navigation, state management, RNTL tests
+model: claude-sonnet-4-6
+version: "1.0.0"
+tools: [Read, Write, Edit, Bash, Grep, Glob]
 skills:
   - code-reviewer
   - test-generator

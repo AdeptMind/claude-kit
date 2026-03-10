@@ -41,22 +41,27 @@ func runSmartAdd(tmplDir, targetDir, query string) error {
 	localCatalog := buildLocalCatalog(tmplDir)
 
 	// Fetch external catalogs with spinner
-	var voltAgentCatalog string
-	var fetchErr error
+	var voltAgentCatalog, eliteAgentsCatalog string
+	var fetchVoltErr, fetchEliteErr error
 	_ = spinner.New().
 		Title("Fetching external catalogs...").
 		Action(func() {
-			voltAgentCatalog, fetchErr = fetchVoltAgent()
+			voltAgentCatalog, fetchVoltErr = fetchVoltAgent()
+			eliteAgentsCatalog, fetchEliteErr = fetchEliteAgents()
 		}).
 		Run()
 
-	if fetchErr != nil {
-		fmt.Println(warnStyle.Render(fmt.Sprintf("  Could not fetch VoltAgent catalog: %v", fetchErr)))
+	if fetchVoltErr != nil {
+		fmt.Println(warnStyle.Render(fmt.Sprintf("  Could not fetch VoltAgent catalog: %v", fetchVoltErr)))
 		voltAgentCatalog = ""
+	}
+	if fetchEliteErr != nil {
+		fmt.Println(warnStyle.Render(fmt.Sprintf("  Could not fetch elite-agents catalog: %v", fetchEliteErr)))
+		eliteAgentsCatalog = ""
 	}
 
 	// Build prompt and run Claude
-	prompt := buildSmartAddPrompt(query, localCatalog, voltAgentCatalog)
+	prompt := buildSmartAddPrompt(query, localCatalog, voltAgentCatalog, eliteAgentsCatalog)
 
 	var recommendations []Recommendation
 	var claudeErr error
@@ -101,6 +106,32 @@ func buildLocalCatalog(tmplDir string) string {
 	return sb.String()
 }
 
+// fetchEliteAgents downloads the README from adrien-barret/agents-claude-code.
+func fetchEliteAgents() (string, error) {
+	url := "https://raw.githubusercontent.com/adrien-barret/agents-claude-code/main/README.md"
+	client := &http.Client{Timeout: 15 * time.Second}
+	resp, err := client.Get(url)
+	if err != nil {
+		return "", fmt.Errorf("GET %s: %w", url, err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("GET %s: status %d", url, resp.StatusCode)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("reading response: %w", err)
+	}
+
+	content := string(body)
+	if len(content) > 20000 {
+		content = content[:20000] + "\n... (truncated)"
+	}
+	return content, nil
+}
+
 // fetchVoltAgent downloads the VoltAgent awesome-agent-skills README.
 func fetchVoltAgent() (string, error) {
 	url := "https://raw.githubusercontent.com/VoltAgent/awesome-agent-skills/main/README.md"
@@ -129,7 +160,7 @@ func fetchVoltAgent() (string, error) {
 }
 
 // buildSmartAddPrompt creates the prompt sent to Claude for component recommendation.
-func buildSmartAddPrompt(query, localCatalog, voltAgent string) string {
+func buildSmartAddPrompt(query, localCatalog, voltAgent, eliteAgents string) string {
 	var sb strings.Builder
 
 	sb.WriteString(`You are a Claude Code component recommender for the "claude-kit" CLI tool.
@@ -145,10 +176,19 @@ Based on the user's description, recommend components to install from the availa
 `)
 	sb.WriteString(localCatalog)
 
+	if eliteAgents != "" {
+		sb.WriteString(`
+
+## SOURCE 2: ELITE-AGENTS (adrien-barret/agents-claude-code — specialized Claude Code agents)
+Each agent below is available at raw.githubusercontent.com/adrien-barret/agents-claude-code/main/<name>.md
+`)
+		sb.WriteString(eliteAgents)
+	}
+
 	if voltAgent != "" {
 		sb.WriteString(`
 
-## SOURCE 2: VOLTAGENT (external GitHub skills)
+## SOURCE 3: VOLTAGENT (external GitHub skills)
 Each entry below links to a GitHub repository containing Claude Code skills.
 `)
 		sb.WriteString(voltAgent)
@@ -156,7 +196,7 @@ Each entry below links to a GitHub repository containing Claude Code skills.
 
 	sb.WriteString(`
 
-## SOURCE 3: AITMPL.COM
+## SOURCE 4: AITMPL.COM
 Browse https://www.aitmpl.com for additional Claude Code components (skills, agents, commands, settings, hooks, MCPs).
 Recommend components from this source based on your knowledge of what is available there.
 
@@ -165,9 +205,10 @@ Recommend components from this source based on your knowledge of what is availab
 1. Analyze the user's request
 2. Find matching components from ALL sources (local first, then external)
 3. Prefer local components when a good match exists
-4. For VoltAgent entries, include the GitHub repository URL from the README
-5. For aitmpl.com entries, include "https://www.aitmpl.com" as the URL
-6. type must be one of: agents, skills, commands, rules
+4. For elite-agents: set source="elite-agents", url="https://github.com/adrien-barret/agents-claude-code/blob/main/<name>.md"
+5. For VoltAgent entries, include the GitHub repository URL from the README
+6. For aitmpl.com entries, include "https://www.aitmpl.com" as the URL
+7. type must be one of: agents, skills, commands, rules
 
 Respond with ONLY a valid JSON array — no markdown fences, no explanation, no text before or after:
 [
@@ -179,11 +220,11 @@ Respond with ONLY a valid JSON array — no markdown fences, no explanation, no 
     "url": ""
   },
   {
-    "source": "voltagent",
-    "type": "skills",
-    "name": "some-skill",
-    "description": "What it does",
-    "url": "https://github.com/user/repo"
+    "source": "elite-agents",
+    "type": "agents",
+    "name": "golang-guru",
+    "description": "Go expert for microservices and idiomatic Go code",
+    "url": "https://github.com/adrien-barret/agents-claude-code/blob/main/golang-guru.md"
   }
 ]
 
@@ -283,6 +324,12 @@ func presentRecommendations(tmplDir, targetDir string, recs []Recommendation) er
 		switch rec.Source {
 		case "local":
 			installLocalRec(tmplDir, targetDir, rec)
+		case "elite-agents":
+			// Build raw URL if missing or incomplete
+			if !strings.Contains(rec.URL, "raw.githubusercontent.com") {
+				rec.URL = eliteAgentRawURL(rec.Name)
+			}
+			installExternalRec(targetDir, rec)
 		default:
 			installExternalRec(targetDir, rec)
 		}
@@ -297,6 +344,8 @@ func sourceLabel(source string) string {
 	switch source {
 	case "local":
 		return "[local]"
+	case "elite-agents":
+		return "[elite-agents]"
 	case "voltagent":
 		return "[VoltAgent]"
 	case "aitmpl":
@@ -344,6 +393,11 @@ func installExternalRec(targetDir string, rec Recommendation) {
 
 	// Non-GitHub external — show URL for manual install
 	fmt.Println(warnStyle.Render(fmt.Sprintf("  %s/%s: install manually from %s", rec.Type, rec.Name, rec.URL)))
+}
+
+// eliteAgentRawURL builds the raw URL for an agent from adrien-barret/agents-claude-code.
+func eliteAgentRawURL(name string) string {
+	return fmt.Sprintf("https://raw.githubusercontent.com/adrien-barret/agents-claude-code/main/%s.md", name)
 }
 
 // installFromGitHub clones a GitHub repo as a skill directory, or fetches a raw file.

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/charmbracelet/huh/spinner"
@@ -54,6 +55,15 @@ func runSync(cmd *cobra.Command, args []string) error {
 		// Update each installed component from template
 		for _, cat := range installed {
 			for _, comp := range cat.Components {
+				// Check version before copying
+				templatePath := templateComponentPath(tmplDir, cat.Name, comp.Name)
+				if templatePath != "" {
+					tmplVer := catalog.ExtractVersion(templatePath)
+					if tmplVer != "" && comp.Version != "" && semverGT(tmplVer, comp.Version) {
+						fmt.Printf("  ↑ %s/%s update available: %s → %s\n", cat.Name, comp.Name, comp.Version, tmplVer)
+					}
+				}
+
 				err := catalog.CopyComponent(tmplDir, targetDir, cat.Name, comp.Name)
 				if err != nil {
 					// Skip components not in template (user-created)
@@ -109,4 +119,52 @@ func runSync(cmd *cobra.Command, args []string) error {
 	}
 
 	return nil
+}
+
+// templateComponentPath returns the file/dir path of a component in the template directory.
+// Returns "" if not determinable.
+func templateComponentPath(tmplDir, compType, name string) string {
+	switch compType {
+	case "skills":
+		return filepath.Join(tmplDir, "skills", name)
+	case "agents", "commands", "rules":
+		return filepath.Join(tmplDir, compType, name+".md")
+	}
+	return ""
+}
+
+// semverGT returns true if version a is strictly greater than b.
+// Versions must be in the form "X.Y.Z" (semver). Returns false on parse error.
+func semverGT(a, b string) bool {
+	pa := parseSemver(a)
+	pb := parseSemver(b)
+	if pa == nil || pb == nil {
+		return false
+	}
+	for i := 0; i < 3; i++ {
+		if pa[i] > pb[i] {
+			return true
+		}
+		if pa[i] < pb[i] {
+			return false
+		}
+	}
+	return false
+}
+
+// parseSemver parses a "X.Y.Z" version string into [3]int. Returns nil on error.
+func parseSemver(v string) []int {
+	parts := strings.SplitN(v, ".", 3)
+	if len(parts) != 3 {
+		return nil
+	}
+	nums := make([]int, 3)
+	for i, p := range parts {
+		n, err := strconv.Atoi(strings.TrimSpace(p))
+		if err != nil {
+			return nil
+		}
+		nums[i] = n
+	}
+	return nums
 }

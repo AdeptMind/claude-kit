@@ -1,7 +1,9 @@
 ---
 name: mobile-android
-description: Android developer for native Kotlin/Jetpack Compose applications
-tools: Read, Write, Edit, Bash, Grep, Glob
+description: Activate for Android native development with Kotlin/Jetpack Compose — screens, MVVM, Room, Hilt, Compose tests
+model: claude-sonnet-4-6
+version: "1.0.0"
+tools: [Read, Write, Edit, Bash, Grep, Glob]
 skills:
   - code-reviewer
   - test-generator

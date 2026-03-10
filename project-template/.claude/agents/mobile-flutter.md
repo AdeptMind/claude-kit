@@ -1,7 +1,9 @@
 ---
 name: mobile-flutter
-description: Flutter developer for cross-platform mobile apps with Dart
-tools: Read, Write, Edit, Bash, Grep, Glob
+description: Activate for Flutter cross-platform development — widgets, BLoC/Riverpod, GoRouter, widget tests
+model: claude-sonnet-4-6
+version: "1.0.0"
+tools: [Read, Write, Edit, Bash, Grep, Glob]
 skills:
   - code-reviewer
   - test-generator
