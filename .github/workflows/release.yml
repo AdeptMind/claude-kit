@@ -22,10 +22,17 @@ jobs:
         with:
           go-version-file: go.mod
 
+      - uses: tibdex/github-app-token@v2
+        id: app-token
+        continue-on-error: true
+        with:
+          app_id: ${{ secrets.APP_ID }}
+          private_key: ${{ secrets.APP_PRIVATE_KEY }}
+
       - uses: goreleaser/goreleaser-action@v6
         with:
           version: "~> v2"
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          HOMEBREW_TAP_TOKEN: ${{ steps.app-token.outputs.token || secrets.HOMEBREW_TAP_TOKEN }}
