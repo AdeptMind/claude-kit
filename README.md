@@ -28,7 +28,7 @@ Built with [Charm](https://charm.sh): Bubble Tea + huh + lipgloss.
 ### Install via Homebrew
 
 ```bash
-brew tap adrien-barret/tap
+brew tap adrien-barret/claude-kit
 brew install claude-kit
 ```
 
