@@ -1,0 +1,42 @@
+[
+  {
+    "query": "Generate a commit message for my staged changes",
+    "should_trigger": true
+  },
+  {
+    "query": "What should I commit right now?",
+    "should_trigger": true
+  },
+  {
+    "query": "Write a conventional commit message for this diff",
+    "should_trigger": true
+  },
+  {
+    "query": "Help me craft the commit message for the auth refactor",
+    "should_trigger": true
+  },
+  {
+    "query": "Stage and commit these files with a proper message",
+    "should_trigger": true
+  },
+  {
+    "query": "Push my changes to the remote",
+    "should_trigger": false
+  },
+  {
+    "query": "Create a new feature branch for the payment module",
+    "should_trigger": false
+  },
+  {
+    "query": "Merge the PR into main",
+    "should_trigger": false
+  },
+  {
+    "query": "Rebase my branch on top of main",
+    "should_trigger": false
+  },
+  {
+    "query": "Show me the git log for the last week",
+    "should_trigger": false
+  }
+]

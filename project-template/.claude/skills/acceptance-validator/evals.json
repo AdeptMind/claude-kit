@@ -1,0 +1,42 @@
+[
+  {
+    "query": "Validate story S-003 against its acceptance criteria",
+    "should_trigger": true
+  },
+  {
+    "query": "Does the login feature meet the spec?",
+    "should_trigger": true
+  },
+  {
+    "query": "Check if this story is ready to be marked as passed",
+    "should_trigger": true
+  },
+  {
+    "query": "Verify the implementation matches the requirements",
+    "should_trigger": true
+  },
+  {
+    "query": "Run acceptance validation on the checkout flow",
+    "should_trigger": true
+  },
+  {
+    "query": "Write unit tests for the cart service",
+    "should_trigger": false
+  },
+  {
+    "query": "Implement the user profile feature",
+    "should_trigger": false
+  },
+  {
+    "query": "Review this code for bugs",
+    "should_trigger": false
+  },
+  {
+    "query": "Create a new API endpoint for notifications",
+    "should_trigger": false
+  },
+  {
+    "query": "What architecture pattern should we use?",
+    "should_trigger": false
+  }
+]

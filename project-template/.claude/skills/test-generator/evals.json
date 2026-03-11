@@ -1,0 +1,50 @@
+[
+  {
+    "query": "Write tests for the user authentication module",
+    "should_trigger": true
+  },
+  {
+    "query": "Generate unit tests for src/services/payment.ts",
+    "should_trigger": true
+  },
+  {
+    "query": "I need better test coverage for the API handlers",
+    "should_trigger": true
+  },
+  {
+    "query": "Create integration tests for the order workflow",
+    "should_trigger": true
+  },
+  {
+    "query": "What edge cases am I missing in my tests?",
+    "should_trigger": true
+  },
+  {
+    "query": "Add tests for the new validation logic",
+    "should_trigger": true
+  },
+  {
+    "query": "Run the test suite and show me results",
+    "should_trigger": false
+  },
+  {
+    "query": "Fix the failing test in auth.test.ts",
+    "should_trigger": false
+  },
+  {
+    "query": "Deploy to production",
+    "should_trigger": false
+  },
+  {
+    "query": "Review this pull request",
+    "should_trigger": false
+  },
+  {
+    "query": "Implement the password reset feature",
+    "should_trigger": false
+  },
+  {
+    "query": "Why is CI failing on the main branch?",
+    "should_trigger": false
+  }
+]
