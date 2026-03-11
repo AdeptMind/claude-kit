@@ -11,6 +11,15 @@ skills:
   - dependency-auditor
   - performance-mindset
   - technical-debt-radar
+interfaces:
+  produces:
+    - "**/*.ts"
+    - "**/*.tsx"
+    - "unit tests"
+  consumes:
+    - "architecture.yaml"
+    - "API contracts"
+    - "type definitions"
 ---
 
 ## Principle

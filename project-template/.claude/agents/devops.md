@@ -11,6 +11,15 @@ skills:
   - observability-design
   - performance-mindset
   - technical-debt-radar
+interfaces:
+  produces:
+    - "Dockerfile"
+    - "CI/CD pipelines"
+    - "Helm charts"
+    - "terraform modules"
+  consumes:
+    - "architecture.yaml"
+    - "deployment requirements"
 ---
 
 ## Principle

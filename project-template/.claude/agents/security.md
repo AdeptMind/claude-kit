@@ -11,6 +11,15 @@ skills:
   - security/secret-rotation
   - cross-cutting-review
   - technical-debt-radar
+interfaces:
+  produces:
+    - "security reports"
+    - "threat models"
+    - "vulnerability assessments"
+  consumes:
+    - "architecture.yaml"
+    - "source code"
+    - "infrastructure configs"
 ---
 
 ## Principle

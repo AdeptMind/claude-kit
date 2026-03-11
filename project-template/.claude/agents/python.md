@@ -11,6 +11,14 @@ skills:
   - dependency-auditor
   - performance-mindset
   - technical-debt-radar
+interfaces:
+  produces:
+    - "**/*.py"
+    - "requirements.txt"
+    - "unit tests"
+  consumes:
+    - "architecture.yaml"
+    - "API contracts"
 ---
 
 ## Principle
