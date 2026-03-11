@@ -10,6 +10,16 @@ skills:
   - dependency-auditor
   - performance-mindset
   - technical-debt-radar
+interfaces:
+  produces:
+    - "src/**/*.go"
+    - "API endpoints"
+    - "migrations"
+    - "unit tests"
+  consumes:
+    - "architecture.yaml"
+    - "API contracts"
+    - "database schemas"
 ---
 
 ## Principle

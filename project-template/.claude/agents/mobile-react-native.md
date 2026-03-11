@@ -11,6 +11,15 @@ skills:
   - performance-audit
   - performance-mindset
   - technical-debt-radar
+interfaces:
+  produces:
+    - "src/**/*.tsx"
+    - "native modules"
+    - "UI tests"
+  consumes:
+    - "API contracts"
+    - "design specs"
+    - "platform guidelines"
 ---
 
 ## Principle

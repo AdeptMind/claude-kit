@@ -11,6 +11,15 @@ skills:
   - dependency-auditor
   - performance-mindset
   - technical-debt-radar
+interfaces:
+  produces:
+    - "model architectures"
+    - "training configs"
+    - "evaluation metrics"
+  consumes:
+    - "data pipelines"
+    - "compute specs"
+    - "architecture.yaml"
 ---
 
 ## Principle

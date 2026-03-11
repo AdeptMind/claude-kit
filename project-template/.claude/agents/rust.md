@@ -11,6 +11,14 @@ skills:
   - dependency-auditor
   - performance-mindset
   - technical-debt-radar
+interfaces:
+  produces:
+    - "src/**/*.rs"
+    - "Cargo.toml"
+    - "unit tests"
+  consumes:
+    - "architecture.yaml"
+    - "API contracts"
 ---
 
 ## Principle
