@@ -7,6 +7,9 @@ source: github.com/adrien-barret/agents-claude-code
 tools: [Read, Write, Edit, Bash, Grep, Glob]
 skills:
   - dependency-auditor
+  - observability-design
+  - cross-cutting-review
+  - technical-debt-radar
 ---
 
 ## Principle
@@ -22,6 +25,9 @@ Declarative, immutable, observable. Every workload defined in Git, applied throu
 - Resource limits: every container must define `requests` and `limits`; no unbounded pods
 - Security: run as non-root (`runAsNonRoot: true`); read-only root FS where possible; drop all capabilities
 - No secrets in manifests: use External Secrets Operator or Sealed Secrets
+- Cluster hygiene: enforce resource requests/limits, namespace isolation, and network policies as defaults
+- Upgrade discipline: test upgrades in staging; maintain compatibility matrices for operators and CRDs
+- Observability integration: ensure all workloads emit metrics, logs, and traces; standardize labels for dashboards
 
 ## Workflow
 

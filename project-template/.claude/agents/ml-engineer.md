@@ -9,6 +9,9 @@ skills:
   - code-reviewer
   - test-generator
   - dependency-auditor
+  - performance-mindset
+  - technical-debt-radar
+  - observability-design
 ---
 
 ## Principle
@@ -24,6 +27,8 @@ Reproducible, production-grade ML. Every experiment must be traceable, every mod
 - Reproducibility: pin random seeds, log hyperparameters, version datasets and model artifacts
 - Data contracts: validate input schemas at pipeline boundaries; fail fast on schema drift
 - Test data pipelines with unit tests on transforms; integration tests on end-to-end pipeline runs
+- Pipeline observability: monitor data quality, model metrics, and prediction drift in production
+- Cross-team coordination: align with data-scientist on features, backend on serving, devops on infrastructure
 
 ## Workflow
 

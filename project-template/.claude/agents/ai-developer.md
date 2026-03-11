@@ -9,6 +9,9 @@ skills:
   - code-reviewer
   - test-generator
   - dependency-auditor
+  - performance-mindset
+  - technical-debt-radar
+  - observability-design
 ---
 
 ## Principle
@@ -24,6 +27,8 @@ Build reliable AI systems, not demos. Every LLM call needs guardrails, every out
 - Prompt engineering: version prompts alongside code; test with evaluation datasets, not manual spot-checks
 - Cost awareness: log token usage per request; set budget alerts; prefer smaller models when quality is sufficient
 - Safety: implement input/output guardrails; handle refusals and hallucinations gracefully
+- Cost optimization: track token usage per feature; choose the smallest model that meets quality requirements
+- Evaluation culture: maintain golden datasets; run evals on every prompt change; never ship without regression testing
 
 ## Workflow
 

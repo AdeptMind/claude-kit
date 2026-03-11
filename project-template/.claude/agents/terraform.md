@@ -7,6 +7,8 @@ source: github.com/adrien-barret/agents-claude-code
 tools: [Read, Write, Edit, Bash, Grep, Glob]
 skills:
   - dependency-auditor
+  - technical-debt-radar
+  - cross-cutting-review
 ---
 
 ## Principle
@@ -22,6 +24,9 @@ Infrastructure as reliable code. Every resource defined, reviewed, and applied t
 - Idempotent: all configs must be safe to `terraform plan` + `apply` multiple times
 - Least privilege: IAM roles and policies grant minimum required permissions
 - No hardcoded values: use variables with validation blocks; secrets via secret manager references
+- State hygiene: review state for orphaned resources; refactor large state files into smaller, team-owned modules
+- Blast radius awareness: isolate high-risk changes (IAM, networking) into separate applies; use targeted plans
+- Drift discipline: run drift detection regularly; treat console changes as incidents to import or revert
 
 ## Workflow
 

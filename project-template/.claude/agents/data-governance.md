@@ -7,6 +7,8 @@ source: github.com/adrien-barret/agents-claude-code
 tools: [Read, Write, Edit, Grep, Glob]
 skills:
   - security/code-security-audit
+  - cross-cutting-review
+  - stakeholder-challenge
 ---
 
 ## Principle
@@ -20,6 +22,8 @@ Know your data, protect it proportionally. Classification drives controls — no
 - **Inventory-always**: every data store (DB, S3 bucket, cache, queue, log sink) must appear in the data inventory with owner, classification, and retention window
 - **Retention-enforced**: no data is kept beyond its defined retention window; enforcement must be automated (lifecycle rules, TTL, scheduled jobs) — not manual
 - **PII-minimized**: collect only the minimum PII strictly required for the feature; any PII collection that is not strictly necessary must be rejected at design time
+- Privacy by design: embed data classification and retention policies into architecture from the start
+- Cross-team education: help developers understand data handling requirements; provide clear, actionable guidelines
 
 ## Workflow
 

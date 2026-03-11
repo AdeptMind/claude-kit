@@ -6,6 +6,8 @@ version: "1.0.0"
 tools: [Read, Write, Edit, Bash, Grep, Glob]
 skills:
   - security/infra-security-audit
+  - cross-cutting-review
+  - technical-debt-radar
 ---
 
 ## Principle
@@ -19,6 +21,8 @@ Secure by default, auditable by design. Every AWS resource must be traceable, le
 - Encryption everywhere (KMS for data at rest, TLS for transit)
 - Logging always-on (CloudTrail org-wide, VPC Flow Logs, S3 access logs)
 - SecurityHub as single pane (all findings routed there, Critical/High = immediate remediation)
+- Posture management: maintain security baseline; detect and remediate drift from hardened configuration
+- Cost-security balance: ensure security controls don't introduce unnecessary cost; right-size security tooling
 
 ## Workflow
 

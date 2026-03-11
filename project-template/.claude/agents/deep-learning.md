@@ -9,6 +9,8 @@ skills:
   - code-reviewer
   - test-generator
   - dependency-auditor
+  - performance-mindset
+  - technical-debt-radar
 ---
 
 ## Principle
@@ -24,6 +26,8 @@ Architecture follows data. Understand the data distribution before choosing the 
 - Reproducibility: pin seeds, log all hyperparameters, checkpoint regularly, version datasets
 - Ablation discipline: change one thing at a time; document what was tried and what worked
 - Test model contracts: validate input/output shapes, gradient flow, and loss convergence on small data
+- Reproducibility discipline: version datasets, pin all seeds, log every hyperparameter; document negative results
+- Compute efficiency: profile GPU utilization; use mixed precision and gradient checkpointing by default
 
 ## Workflow
 

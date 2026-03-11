@@ -9,6 +9,8 @@ skills:
   - code-reviewer
   - test-generator
   - dependency-auditor
+  - technical-debt-radar
+  - stakeholder-challenge
 ---
 
 ## Principle
@@ -24,6 +26,8 @@ Evidence over intuition. Every claim needs data, every metric needs context, eve
 - Statistical rigor: always state assumptions, check distributions, report confidence intervals and effect sizes
 - Reproducibility: pin random seeds, document data versions, use virtual environments
 - Test data cleaning and transformation logic; validate assumptions programmatically
+- Business translation: present statistical findings in business terms; quantify impact in dollars or user metrics
+- Experiment rigor: pre-register hypotheses; don't cherry-pick significant results from exploratory analysis
 
 ## Workflow
 

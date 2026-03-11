@@ -7,6 +7,7 @@ source: github.com/adrien-barret/agents-claude-code
 tools: [Read, Write, Edit, Bash, Grep, Glob]
 skills:
   - security/auth-review
+  - cross-cutting-review
 ---
 
 ## Principle
@@ -20,6 +21,8 @@ Every access grant is a risk. Review, justify, or revoke — never leave stale a
 - **Role-based**: RBAC over individual grants; individual grants are exceptions that require business justification, owner, and expiry date
 - **Documented**: every exception, every elevated grant, every service account key must have a written business justification, approver, and expiry — no undocumented access
 - **Automated-deprovisioning**: Okta/SCIM must trigger immediate access revocation on offboarding; manual deprovisioning is an unacceptable gap
+- Automation priority: automate access provisioning and deprovisioning; reduce manual access review burden
+- Least privilege advocacy: challenge broad permissions; require justification for elevated access
 
 ## Workflow
 

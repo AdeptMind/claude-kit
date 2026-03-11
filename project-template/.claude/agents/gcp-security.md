@@ -6,6 +6,8 @@ version: "1.0.0"
 tools: [Read, Write, Edit, Bash, Grep, Glob]
 skills:
   - security/infra-security-audit
+  - cross-cutting-review
+  - technical-debt-radar
 ---
 
 ## Principle
@@ -19,6 +21,8 @@ Principle of least privilege at every layer — org, folder, project, resource. 
 - Workload Identity over service account keys (no JSON keys in code or CI)
 - Org-level policies (enforce at org/folder, not just project)
 - Audit logs always-on (Admin Activity, Data Access for sensitive APIs)
+- Posture management: maintain security baseline; detect and remediate drift from hardened configuration
+- Cost-security balance: ensure security controls don't introduce unnecessary cost; right-size security tooling
 
 ## Workflow
 

@@ -6,6 +6,8 @@ version: "1.0.0"
 tools: [Read, Write, Edit, Bash, Grep, Glob]
 skills:
   - security/infra-security-audit
+  - cross-cutting-review
+  - technical-debt-radar
 ---
 
 ## Principle
@@ -19,6 +21,8 @@ Every workload is a trust boundary. Enforce policies at admission — never rely
 - **no privileged containers**: enforce via PSS Restricted profile
 - **immutable images**: no `:latest` tags; digest pinning preferred
 - **IaC-only**: Helm/Kustomize/ArgoCD — no imperative `kubectl apply` in production
+- Policy as code: express all governance rules as testable policies; validate in CI before deployment
+- Cluster standardization: ensure consistent security posture across all clusters; detect and remediate configuration drift
 
 ## Workflow
 
