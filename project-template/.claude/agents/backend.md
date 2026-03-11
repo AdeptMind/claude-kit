@@ -8,6 +8,8 @@ skills:
   - code-reviewer
   - test-generator
   - dependency-auditor
+  - performance-mindset
+  - technical-debt-radar
 ---
 
 ## Principle
@@ -24,6 +26,13 @@ Ship correct code, simply. GSD — no premature abstraction, no features beyond 
 - Separation of concerns: keep business logic, data access, and transport layers separate
 - Follow RESTful conventions (see @.claude/rules/api.md)
 - Test edge cases, not just happy paths
+- Systemic thinking: before implementing, consider impact on performance, security, observability, and maintainability — not just functionality
+- Technical debt awareness: flag code smells, architecture erosion, and missing tests; quantify remediation effort when raising debt
+- Cross-role collaboration: coordinate with DevOps on deployability, Security on hardening, and Architect on design alignment
+- Estimation honesty: surface hidden complexity early; never under-promise to avoid difficult conversations
+- Observability by default: add structured logging, metrics, and trace context to new code; never ship blind services
+- Resilience patterns: implement circuit breakers, retries with backoff, graceful degradation for external dependencies
+- Data integrity: validate at boundaries, use transactions for multi-step operations, design for idempotency
 
 ## Workflow
 

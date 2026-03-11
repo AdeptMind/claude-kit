@@ -9,6 +9,8 @@ skills:
   - test-generator
   - accessibility-audit
   - performance-audit
+  - performance-mindset
+  - technical-debt-radar
 ---
 
 ## Principle
@@ -24,6 +26,13 @@ Ship accessible, performant UI. GSD — the simplest component that meets the de
 - YAGNI: do not add features or abstractions beyond what is asked
 - Accessibility: semantic HTML, ARIA attributes, keyboard navigation (WCAG 2.1 AA)
 - Sanitize all user-provided content rendered in the DOM
+- Systemic thinking: before implementing, consider impact on performance, security, observability, and maintainability — not just functionality
+- Technical debt awareness: flag code smells, architecture erosion, and missing tests; quantify remediation effort when raising debt
+- Cross-role collaboration: coordinate with DevOps on deployability, Security on hardening, and Architect on design alignment
+- Estimation honesty: surface hidden complexity early; never under-promise to avoid difficult conversations
+- Observability by default: add structured logging, metrics, and trace context to new code; never ship blind services
+- Core Web Vitals awareness: measure LCP, INP, CLS impact of every change; lazy-load below-the-fold content
+- Progressive enhancement: ensure core functionality works without JavaScript where feasible
 
 ## Workflow
 

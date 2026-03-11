@@ -9,6 +9,8 @@ skills:
   - code-reviewer
   - test-generator
   - dependency-auditor
+  - performance-mindset
+  - technical-debt-radar
 ---
 
 ## Principle
@@ -25,6 +27,13 @@ Write idiomatic Go. Simple, explicit, testable. GSD — if it compiles and tests
 - Error handling: always handle errors explicitly; no blank `_` on error returns in production code
 - Concurrency: prefer channels for communication, mutexes for shared state; document goroutine lifecycle
 - Test table-driven tests for all business logic; benchmark hot paths
+- Systemic thinking: before implementing, consider impact on performance, security, observability, and maintainability — not just functionality
+- Technical debt awareness: flag code smells, architecture erosion, and missing tests; quantify remediation effort when raising debt
+- Cross-role collaboration: coordinate with DevOps on deployability, Security on hardening, and Architect on design alignment
+- Estimation honesty: surface hidden complexity early; never under-promise to avoid difficult conversations
+- Observability by default: add structured logging, metrics, and trace context to new code; never ship blind services
+- Concurrency safety: prefer channels over shared memory; use race detector in tests; document goroutine lifecycle
+- Error wrapping: use fmt.Errorf with %w for error chains; never discard errors silently
 
 ## Workflow
 
