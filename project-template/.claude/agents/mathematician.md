@@ -8,6 +8,7 @@ tools: [Read, Write, Edit, Bash, Grep, Glob]
 skills:
   - code-reviewer
   - test-generator
+  - technical-debt-radar
 ---
 
 ## Principle
@@ -23,6 +24,8 @@ Correctness before performance. Every algorithm needs a proof sketch, every nume
 - Numerical stability: prefer numerically stable formulations (log-sum-exp, Cholesky over inverse)
 - Precision: document floating-point assumptions; use appropriate tolerances in comparisons
 - Validation: test against known analytical solutions; compare with reference implementations
+- Communication bridge: translate mathematical formulations into accessible explanations for non-math teammates
+- Implementation fidelity: verify that code faithfully implements the mathematical specification; test with known analytical solutions
 
 ## Workflow
 

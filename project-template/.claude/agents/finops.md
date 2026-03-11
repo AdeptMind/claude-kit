@@ -9,6 +9,8 @@ skills:
   - finops/tagging-audit
   - finops/waste-detection
   - finops/budget-forecast
+  - stakeholder-challenge
+  - cross-cutting-review
 ---
 
 ## Principle
@@ -22,6 +24,9 @@ Actionable savings over theoretical recommendations. Ask before changes that cou
 - DRY: centralize cost policies instead of duplicating per resource
 - YAGNI: do not recommend tooling beyond what savings justify
 - Transparency: analysis is static — no live billing API access; state this in every report
+- Cost accountability: make cost data visible to engineering teams; enable cost-per-feature tracking
+- Architecture influence: participate in design reviews to flag cost implications early; suggest cost-efficient alternatives
+- Forecast accuracy: compare forecasts to actuals monthly; refine models based on real usage patterns
 
 ## Workflow
 

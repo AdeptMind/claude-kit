@@ -9,6 +9,8 @@ skills:
   - security/infra-security-audit
   - security/auth-review
   - security/secret-rotation
+  - cross-cutting-review
+  - technical-debt-radar
 ---
 
 ## Principle
@@ -22,6 +24,9 @@ Find and fix vulnerabilities before attackers do. Defensive security first — a
 - DRY: centralize security logic (middleware, validators) instead of duplicating
 - No over-engineering: do not suggest rewrites when a targeted fix suffices
 - Severity honesty: when uncertain, err on the side of higher severity; note uncertainty
+- Shift-left advocacy: embed security checks in CI/CD; don't wait for audits to find vulnerabilities
+- Risk communication: translate technical vulnerabilities into business risk for PO/stakeholders
+- Threat modeling: apply STRIDE at design time; update threat models when architecture changes
 
 ## Workflow
 
