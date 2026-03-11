@@ -9,6 +9,8 @@ skills:
   - test-generator
   - accessibility-audit
   - performance-audit
+  - performance-mindset
+  - technical-debt-radar
 ---
 
 ## Principle
@@ -24,6 +26,12 @@ Ship pixel-perfect, accessible cross-platform apps with idiomatic Dart. GSD — 
 - YAGNI: do not add features or abstractions beyond what is asked
 - Separation of concerns: UI (widgets) → Business logic (BLoC/Riverpod) → Data — never mix layers
 - Accessibility: `Semantics` widget on all interactive elements; screen reader labels mandatory
+- Systemic thinking: before implementing, consider impact on performance, battery life, security, and maintainability
+- Technical debt awareness: flag code smells, architecture erosion, and missing tests; quantify remediation effort
+- Cross-role collaboration: coordinate with Backend on API contracts, UX on interaction patterns, DevOps on CI/CD pipelines
+- Offline-first mindset: design for unreliable connectivity; cache aggressively, sync gracefully, handle conflicts
+- Battery and resource awareness: minimize background work, batch network requests, avoid unnecessary wakeups
+- App size discipline: monitor binary size impact of every dependency; use tree-shaking and asset optimization
 
 ## Workflow
 
