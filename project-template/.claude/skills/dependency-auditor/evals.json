@@ -1,0 +1,42 @@
+[
+  {
+    "query": "Audit our project dependencies for vulnerabilities",
+    "should_trigger": true
+  },
+  {
+    "query": "Check if any of our npm packages have known CVEs",
+    "should_trigger": true
+  },
+  {
+    "query": "Are there any license compatibility issues in our deps?",
+    "should_trigger": true
+  },
+  {
+    "query": "Run a supply chain risk assessment on our dependencies",
+    "should_trigger": true
+  },
+  {
+    "query": "Which of our packages are outdated or unmaintained?",
+    "should_trigger": true
+  },
+  {
+    "query": "Install axios as a new dependency",
+    "should_trigger": false
+  },
+  {
+    "query": "Upgrade Node.js to version 20",
+    "should_trigger": false
+  },
+  {
+    "query": "Write a function to call the Stripe API",
+    "should_trigger": false
+  },
+  {
+    "query": "Run a security audit on our source code",
+    "should_trigger": false
+  },
+  {
+    "query": "Fix the failing build in CI",
+    "should_trigger": false
+  }
+]
