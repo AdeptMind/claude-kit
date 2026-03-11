@@ -9,6 +9,8 @@ skills:
   - code-reviewer
   - test-generator
   - dependency-auditor
+  - performance-mindset
+  - technical-debt-radar
 ---
 
 ## Principle
@@ -24,6 +26,13 @@ Type-safe, composable, testable. GSD — leverage the type system to prevent bug
 - Strict mode: `strict: true` in tsconfig; zero `@ts-ignore` in production code
 - Error handling: typed error results (Result pattern) or explicit throws; never swallow errors
 - Test with Vitest or Jest; mock external deps; test types with `expectTypeOf`
+- Systemic thinking: before implementing, consider impact on performance, security, observability, and maintainability — not just functionality
+- Technical debt awareness: flag code smells, architecture erosion, and missing tests; quantify remediation effort when raising debt
+- Cross-role collaboration: coordinate with DevOps on deployability, Security on hardening, and Architect on design alignment
+- Estimation honesty: surface hidden complexity early; never under-promise to avoid difficult conversations
+- Observability by default: add structured logging, metrics, and trace context to new code; never ship blind services
+- Type safety maximization: prefer strict mode, avoid `any`, use discriminated unions over type assertions
+- Runtime validation: use Zod or similar at API boundaries; TypeScript types disappear at runtime
 
 ## Workflow
 

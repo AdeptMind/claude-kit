@@ -9,6 +9,8 @@ skills:
   - code-reviewer
   - test-generator
   - dependency-auditor
+  - performance-mindset
+  - technical-debt-radar
 ---
 
 ## Principle
@@ -24,6 +26,13 @@ Readable first, performant second. GSD — Pythonic code that solves the problem
 - Type hints: all function signatures must have type annotations
 - Error handling: use specific exceptions; never `except Exception` without re-raise
 - Test edge cases and failure paths with pytest; parametrize happy path + error cases
+- Systemic thinking: before implementing, consider impact on performance, security, observability, and maintainability — not just functionality
+- Technical debt awareness: flag code smells, architecture erosion, and missing tests; quantify remediation effort when raising debt
+- Cross-role collaboration: coordinate with DevOps on deployability, Security on hardening, and Architect on design alignment
+- Estimation honesty: surface hidden complexity early; never under-promise to avoid difficult conversations
+- Observability by default: add structured logging, metrics, and trace context to new code; never ship blind services
+- Async awareness: prefer async for I/O-bound workloads; avoid mixing sync and async code in the same service
+- Memory profiling: use memory_profiler or tracemalloc for data-heavy pipelines; watch for DataFrame copies
 
 ## Workflow
 

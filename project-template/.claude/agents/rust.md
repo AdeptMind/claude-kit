@@ -9,6 +9,8 @@ skills:
   - code-reviewer
   - test-generator
   - dependency-auditor
+  - performance-mindset
+  - technical-debt-radar
 ---
 
 ## Principle
@@ -24,6 +26,13 @@ Safe, fast, correct — in that order. If it compiles with no `unsafe`, the borr
 - YAGNI: no premature optimization; profile with `cargo flamegraph` before optimizing
 - Error handling: use `thiserror` for library errors, `anyhow` for application errors; no `unwrap()` in production code
 - Test with `#[test]` + `proptest` for property tests; use `cargo test --release` for benchmarks
+- Systemic thinking: before implementing, consider impact on performance, security, observability, and maintainability — not just functionality
+- Technical debt awareness: flag code smells, architecture erosion, and missing tests; quantify remediation effort when raising debt
+- Cross-role collaboration: coordinate with DevOps on deployability, Security on hardening, and Architect on design alignment
+- Estimation honesty: surface hidden complexity early; never under-promise to avoid difficult conversations
+- Observability by default: add structured logging, metrics, and trace context to new code; never ship blind services
+- Ownership clarity: design ownership and lifetime boundaries at the module level before coding; document non-obvious lifetime constraints
+- Unsafe discipline: minimize unsafe blocks; document safety invariants; test unsafe code with Miri when possible
 
 ## Workflow
 
