@@ -75,6 +75,37 @@ When the user sends a message **without a slash command**, default to `/ralph`. 
 | `/qs` | `/quick-spec` |
 | `/qd` | `/quick-dev` |
 
+### Quality & Eval commands
+
+| Command | What it does | Input |
+|---------|-------------|-------|
+| `ck skill eval <path>` | Test skill trigger accuracy against eval queries | Skill directory with evals.json |
+| `ck skill optimize <path>` | Iterative eval→improve loop to optimize descriptions | Skill directory with evals.json |
+| `ck skill grade <dir>` | Grade outputs against assertions using LLM grader | Directory with grading.json |
+| `ck skill benchmark <dir>` | Aggregate grading stats, compare with/without skill | Directory with grading results |
+| `ck skill validate <path>` | Validate skill structure and frontmatter | Skill directory |
+| `ck skill report <workspace>` | Generate interactive HTML eval report | Eval workspace directory |
+| `ck skill package <path>` | Package skill as .skill archive | Skill directory |
+| `ck agent validate <path>` | Validate agent frontmatter and skill refs | Agent .md file |
+| `ck agent package <path>` | Package agent as .agent archive | Agent .md file |
+| `ck agents registry` | Generate agent-registry.yaml from all agents | Project .claude/ directory |
+| `ck bmad eval <dir> --phase <p>` | Evaluate BMAD artifacts against phase assertions | Output directory + phase |
+| `ck bmad benchmark <a> <b>` | Compare two BMAD runs | Two output directories |
+| `ck package <path>` | Bundle full template as .claude-kit archive | Template directory |
+| `ck install <file>` | Install .skill, .agent, or .claude-kit archive | Archive file |
+
+## Eval Workflow
+
+Skills and agents can be evaluated and optimized using the `ck` CLI:
+
+1. **Eval**: `ck skill eval <path>` — test if the skill triggers correctly for a set of queries
+2. **Optimize**: `ck skill optimize <path>` — iteratively improve the skill description via eval→improve loop
+3. **Grade**: `ck skill grade <dir>` — evaluate output quality against assertions
+4. **Benchmark**: `ck skill benchmark <dir>` — aggregate stats and compare runs
+5. **Report**: `ck skill report <workspace>` — generate interactive HTML report
+
+Eval sets are defined in `evals.json` files co-located with each skill's `SKILL.md`.
+
 ## Approach Selection
 
 For any non-trivial implementation (new feature, infra change, refactor):

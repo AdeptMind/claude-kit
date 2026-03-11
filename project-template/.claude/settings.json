@@ -2,7 +2,12 @@
   "teammateMode": "auto",
   "env": {
     "CONTEXT_COMPACT_THRESHOLD": "75",
-    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
+    "EVAL_NUM_WORKERS": "10",
+    "EVAL_TIMEOUT": "30",
+    "EVAL_RUNS_PER_QUERY": "3",
+    "EVAL_TRIGGER_THRESHOLD": "0.5",
+    "EVAL_HOLDOUT_RATIO": "0.4"
   },
   "hooks": {
     "PreToolUse": [
