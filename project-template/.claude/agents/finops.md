@@ -11,6 +11,16 @@ skills:
   - finops/budget-forecast
   - stakeholder-challenge
   - cross-cutting-review
+interfaces:
+  produces:
+    - "cost reports"
+    - "optimization recommendations"
+    - "budget forecasts"
+    - "tagging compliance reports"
+  consumes:
+    - "cloud billing data"
+    - "architecture.yaml"
+    - "infrastructure configs"
 ---
 
 ## Principle
