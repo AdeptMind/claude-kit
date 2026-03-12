@@ -8,15 +8,6 @@ tools: [Read, Write, Edit, Bash, Grep, Glob]
 skills:
   - security/auth-review
   - cross-cutting-review
-interfaces:
-  produces:
-    - "access review reports"
-    - "permission matrices"
-    - "remediation plans"
-  consumes:
-    - "IAM policies"
-    - "user directories"
-    - "compliance requirements"
 ---
 
 ## Principle

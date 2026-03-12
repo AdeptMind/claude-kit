@@ -10,15 +10,6 @@ skills:
   - security/infra-security-audit
   - cross-cutting-review
   - stakeholder-challenge
-interfaces:
-  produces:
-    - "SOC2 evidence packages"
-    - "control gap analyses"
-    - "audit readiness reports"
-  consumes:
-    - "security policies"
-    - "infrastructure configs"
-    - "access review reports"
 ---
 
 ## Principle

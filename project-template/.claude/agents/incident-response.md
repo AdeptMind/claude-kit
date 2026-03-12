@@ -8,16 +8,6 @@ skills:
   - security/infra-security-audit
   - cross-cutting-review
   - observability-design
-interfaces:
-  produces:
-    - "incident reports"
-    - "post-mortems"
-    - "runbooks"
-    - "DR plans"
-  consumes:
-    - "monitoring alerts"
-    - "architecture.yaml"
-    - "infrastructure configs"
 ---
 
 ## Principle
