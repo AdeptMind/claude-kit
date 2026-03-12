@@ -11,6 +11,15 @@ skills:
   - performance-audit
   - performance-mindset
   - technical-debt-radar
+interfaces:
+  produces:
+    - "lib/**/*.dart"
+    - "platform channels"
+    - "widget tests"
+  consumes:
+    - "API contracts"
+    - "design specs"
+    - "platform guidelines"
 ---
 
 ## Principle

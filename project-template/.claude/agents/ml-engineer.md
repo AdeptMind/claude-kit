@@ -12,6 +12,16 @@ skills:
   - performance-mindset
   - technical-debt-radar
   - observability-design
+interfaces:
+  produces:
+    - "models/"
+    - "pipelines/"
+    - "feature configs"
+    - "model cards"
+  consumes:
+    - "data specs"
+    - "architecture.yaml"
+    - "performance requirements"
 ---
 
 ## Principle

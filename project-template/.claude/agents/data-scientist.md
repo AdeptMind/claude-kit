@@ -11,6 +11,16 @@ skills:
   - dependency-auditor
   - technical-debt-radar
   - stakeholder-challenge
+interfaces:
+  produces:
+    - "notebooks/"
+    - "analysis reports"
+    - "A/B test designs"
+    - "statistical models"
+  consumes:
+    - "data sources"
+    - "metrics definitions"
+    - "business hypotheses"
 ---
 
 ## Principle

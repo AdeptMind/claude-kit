@@ -10,6 +10,15 @@ skills:
   - value-prioritization
   - market-analysis
   - client-advocacy
+interfaces:
+  produces:
+    - "problem.yaml"
+    - "backlog.yaml"
+    - "user stories"
+    - "acceptance criteria"
+  consumes:
+    - "architecture.yaml"
+    - "stakeholder feedback"
 ---
 
 ## Principle

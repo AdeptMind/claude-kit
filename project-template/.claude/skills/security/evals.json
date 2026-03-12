@@ -1,0 +1,42 @@
+[
+  {
+    "query": "Run a full security audit on the project",
+    "should_trigger": true
+  },
+  {
+    "query": "Check for vulnerabilities in our codebase",
+    "should_trigger": true
+  },
+  {
+    "query": "Do a pentest on the web application",
+    "should_trigger": true
+  },
+  {
+    "query": "Are there any hardcoded secrets or security issues?",
+    "should_trigger": true
+  },
+  {
+    "query": "Assess the security posture of our infrastructure",
+    "should_trigger": true
+  },
+  {
+    "query": "Write a login page with email and password",
+    "should_trigger": false
+  },
+  {
+    "query": "Add OAuth2 authentication to the API",
+    "should_trigger": false
+  },
+  {
+    "query": "Fix the CORS configuration for the frontend",
+    "should_trigger": false
+  },
+  {
+    "query": "Review this pull request",
+    "should_trigger": false
+  },
+  {
+    "query": "Audit our npm dependencies for outdated packages",
+    "should_trigger": false
+  }
+]

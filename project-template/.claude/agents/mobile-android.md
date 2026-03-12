@@ -11,6 +11,15 @@ skills:
   - performance-audit
   - performance-mindset
   - technical-debt-radar
+interfaces:
+  produces:
+    - "app/**/*.kt"
+    - "Compose UI components"
+    - "instrumented tests"
+  consumes:
+    - "API contracts"
+    - "design specs"
+    - "platform guidelines"
 ---
 
 ## Principle

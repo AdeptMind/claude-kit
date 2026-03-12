@@ -12,6 +12,16 @@ skills:
   - performance-mindset
   - technical-debt-radar
   - observability-design
+interfaces:
+  produces:
+    - "prompts/"
+    - "RAG configs"
+    - "LLM integrations"
+    - "evaluation sets"
+  consumes:
+    - "architecture.yaml"
+    - "API contracts"
+    - "knowledge bases"
 ---
 
 ## Principle

@@ -11,6 +11,15 @@ skills:
   - performance-audit
   - performance-mindset
   - technical-debt-radar
+interfaces:
+  produces:
+    - "**/*.swift"
+    - "SwiftUI views"
+    - "XCTest suites"
+  consumes:
+    - "API contracts"
+    - "design specs"
+    - "platform guidelines"
 ---
 
 ## Principle
