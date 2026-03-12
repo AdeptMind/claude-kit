@@ -102,7 +102,39 @@ ck docs                      # Generate stack-aware docs-index.md
 | `ck sync` | Update installed components + refresh docs-index |
 | `ck docs` | Generate docs-index.md via stack detection |
 | `ck docs --refresh` | Force regenerate even if fresh |
+| `ck dep install` | Install recommended dependencies interactively |
+| `ck profile list\|use\|add\|remove` | Manage Claude account profiles |
+| `ck teammate-mode` | View or change teammate display mode |
 | `ck version` | Print version |
+
+### Eval & Quality
+
+| Command | Description |
+|---------|-------------|
+| `ck skill eval <skill-dir>` | Test trigger accuracy against evals.json queries (`--model`, `--workers`, `--runs`, `--threshold`) |
+| `ck skill optimize <skill-dir>` | Eval→improve loop to optimize skill descriptions (`--max-iterations`, `--train-ratio`, `--report`) |
+| `ck skill grade <skill-dir>` | Grade output against grading.json assertions (`--output-file` required, `--model`) |
+| `ck skill benchmark <results-dir>` | Aggregate grading stats, compare with/without skill (`--output`) |
+| `ck skill validate <skill-dir>` | Validate skill structure and frontmatter |
+| `ck skill report <results.json>` | Generate interactive HTML eval report (`-o`, `--previous`, `--open`) |
+
+### Packaging & Distribution
+
+| Command | Description |
+|---------|-------------|
+| `ck skill package <skill-dir>` | Package a skill as .skill archive (`-o`, `--skip-validation`) |
+| `ck agent validate <agent.md>` | Validate agent frontmatter, skill refs, and tools |
+| `ck agent package <agent.md>` | Package an agent as .agent archive (`-o`, `--skip-validation`) |
+| `ck agents registry` | Generate agent-registry.yaml with collaboration maps (`--update`) |
+| `ck package <template-dir>` | Bundle full template as .claude-kit archive (`-o`) |
+| `ck install <archive>` | Install .skill, .agent, or .claude-kit archive (`--force`) |
+
+### BMAD Eval
+
+| Command | Description |
+|---------|-------------|
+| `ck bmad eval [output-dir]` | Evaluate BMAD artifacts against phase assertions (`--phase`, `--model`) |
+| `ck bmad benchmark <run1> <run2>` | Compare two BMAD eval runs |
 
 ### How `add` works
 
@@ -258,12 +290,30 @@ claude-cli/
 │   ├── remove.go           # ck remove — interactive removal + warnings
 │   ├── list.go             # ck list — lipgloss table
 │   ├── sync.go             # ck sync — update + docs refresh
-│   └── docs.go             # ck docs — stack detection + generation
+│   ├── docs.go             # ck docs — stack detection + generation
+│   ├── eval.go             # ck skill eval — trigger accuracy testing
+│   ├── optimize.go         # ck skill optimize — eval→improve loop
+│   ├── grade.go            # ck skill grade — LLM grading
+│   ├── benchmark.go        # ck skill benchmark — stats aggregation
+│   ├── report.go           # ck skill report — HTML report generation
+│   ├── validate.go         # ck skill/agent validate
+│   ├── package.go          # ck skill/agent/template package
+│   ├── install.go          # ck install — archive installation
+│   ├── registry.go         # ck agents registry
+│   └── bmadeval.go         # ck bmad eval/benchmark
 ├── internal/
 │   ├── catalog/            # Template scanning + component operations
 │   ├── stack/              # Stack detection from dependency files
 │   ├── docsindex/          # Docs-index generation + staleness
-│   └── config/             # Path resolution + defaults
+│   ├── config/             # Path resolution + defaults
+│   ├── eval/               # Eval runner, trigger detection, improve loop
+│   ├── claude/             # Claude subprocess wrapper
+│   ├── grading/            # LLM grading engine
+│   ├── improve/            # Description improvement with retry
+│   ├── benchmark/          # Stats aggregation + delta comparison
+│   ├── report/             # HTML report generation
+│   ├── packaging/          # Skill/agent/template packaging + install
+│   └── bmadeval/           # BMAD phase assertions
 ├── project-template/.claude/  # Template files
 │   ├── CLAUDE.md           # Project memory + approach-selection guardrails
 │   ├── settings.json       # Permissions + PreToolUse hook (staged-file review)

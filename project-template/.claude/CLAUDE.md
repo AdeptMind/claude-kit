@@ -77,32 +77,46 @@ When the user sends a message **without a slash command**, default to `/ralph`. 
 
 ### Quality & Eval commands
 
-| Command | What it does | Input |
+| Command | What it does | Flags |
 |---------|-------------|-------|
-| `ck skill eval <path>` | Test skill trigger accuracy against eval queries | Skill directory with evals.json |
-| `ck skill optimize <path>` | Iterative eval→improve loop to optimize descriptions | Skill directory with evals.json |
-| `ck skill grade <dir>` | Grade outputs against assertions using LLM grader | Directory with grading.json |
-| `ck skill benchmark <dir>` | Aggregate grading stats, compare with/without skill | Directory with grading results |
-| `ck skill validate <path>` | Validate skill structure and frontmatter | Skill directory |
-| `ck skill report <workspace>` | Generate interactive HTML eval report | Eval workspace directory |
-| `ck skill package <path>` | Package skill as .skill archive | Skill directory |
-| `ck agent validate <path>` | Validate agent frontmatter and skill refs | Agent .md file |
-| `ck agent package <path>` | Package agent as .agent archive | Agent .md file |
-| `ck agents registry` | Generate agent-registry.yaml from all agents | Project .claude/ directory |
-| `ck bmad eval <dir> --phase <p>` | Evaluate BMAD artifacts against phase assertions | Output directory + phase |
-| `ck bmad benchmark <a> <b>` | Compare two BMAD runs | Two output directories |
-| `ck package <path>` | Bundle full template as .claude-kit archive | Template directory |
-| `ck install <file>` | Install .skill, .agent, or .claude-kit archive | Archive file |
+| `ck skill eval <skill-dir>` | Test skill trigger accuracy against eval queries | `--model`, `--workers` (10), `--runs` (3), `--threshold` (0.5) |
+| `ck skill optimize <skill-dir>` | Iterative eval→improve loop to optimize descriptions | `--model`, `--workers` (10), `--runs` (3), `--threshold` (0.5), `--max-iterations` (10), `--train-ratio` (0.7), `--report` |
+| `ck skill grade <skill-dir>` | Grade skill output against grading.json assertions | `--output-file` (required), `--model` |
+| `ck skill benchmark <results-dir>` | Aggregate grading stats, compare with/without skill | `--output` |
+| `ck skill validate <skill-dir>` | Validate skill structure and frontmatter | — |
+| `ck skill report <results.json>` | Generate interactive HTML eval report | `-o/--output`, `--previous`, `--open` |
+| `ck skill package <skill-dir>` | Package skill as .skill archive | `-o/--output` (.), `--skip-validation` |
+| `ck agent validate <agent.md>` | Validate agent frontmatter and skill refs | — |
+| `ck agent package <agent.md>` | Package agent as .agent archive | `-o/--output` (.), `--skip-validation` |
+| `ck agents registry` | Generate agent-registry.yaml from all agents | `--update` |
+| `ck bmad eval [output-dir]` | Evaluate BMAD artifacts against phase assertions | `--phase` (break\|model\|act), `--model` |
+| `ck bmad benchmark <run1> <run2>` | Compare two BMAD eval runs | — |
+| `ck package <template-dir>` | Bundle full template as .claude-kit archive | `-o/--output` (.) |
+| `ck install <archive>` | Install .skill, .agent, or .claude-kit archive | `--force` |
+
+### Utility commands
+
+| Command | What it does | Flags |
+|---------|-------------|-------|
+| `ck init` | Interactive setup — pick agents, skills, rules | `--plan`, `--global` |
+| `ck add [names...]` | Add agents by name (auto-installs skills + rules) | — |
+| `ck remove [names...]` | Remove installed components | — |
+| `ck list` | Available vs installed components | `--available`, `--installed` |
+| `ck sync` | Update installed components + refresh docs-index | — |
+| `ck docs` | Generate docs-index.md via stack detection | `--refresh` |
+| `ck dep install` | Install recommended dependencies interactively | — |
+| `ck profile list\|use\|add\|remove` | Manage Claude account profiles | — |
+| `ck teammate-mode` | View or change teammate display mode | — |
 
 ## Eval Workflow
 
 Skills and agents can be evaluated and optimized using the `ck` CLI:
 
-1. **Eval**: `ck skill eval <path>` — test if the skill triggers correctly for a set of queries
-2. **Optimize**: `ck skill optimize <path>` — iteratively improve the skill description via eval→improve loop
-3. **Grade**: `ck skill grade <dir>` — evaluate output quality against assertions
-4. **Benchmark**: `ck skill benchmark <dir>` — aggregate stats and compare runs
-5. **Report**: `ck skill report <workspace>` — generate interactive HTML report
+1. **Eval**: `ck skill eval <skill-dir>` — test if the skill triggers correctly for a set of queries
+2. **Optimize**: `ck skill optimize <skill-dir>` — iteratively improve the skill description via eval→improve loop
+3. **Grade**: `ck skill grade <skill-dir> --output-file <file>` — evaluate output quality against assertions
+4. **Benchmark**: `ck skill benchmark <results-dir>` — aggregate stats and compare runs
+5. **Report**: `ck skill report <results.json>` — generate interactive HTML report
 
 Eval sets are defined in `evals.json` files co-located with each skill's `SKILL.md`.
 
