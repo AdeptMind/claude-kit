@@ -9,6 +9,15 @@ skills:
   - security/code-security-audit
   - cross-cutting-review
   - stakeholder-challenge
+interfaces:
+  produces:
+    - "data classification reports"
+    - "retention policies"
+    - "privacy impact assessments"
+  consumes:
+    - "data inventory"
+    - "compliance requirements"
+    - "architecture.yaml"
 ---
 
 ## Principle

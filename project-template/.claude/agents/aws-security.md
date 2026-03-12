@@ -8,6 +8,15 @@ skills:
   - security/infra-security-audit
   - cross-cutting-review
   - technical-debt-radar
+interfaces:
+  produces:
+    - "AWS security findings"
+    - "IAM policy recommendations"
+    - "compliance evidence"
+  consumes:
+    - "AWS infrastructure configs"
+    - "CloudTrail logs"
+    - "architecture.yaml"
 ---
 
 ## Principle
