@@ -1,0 +1,7 @@
+[
+  {"description": "Architecture defines at least 3 components", "type": "presence", "expected": "Components section with 3+ entries"},
+  {"description": "Each component has clear responsibility", "type": "quality", "expected": "Each component has a responsibility field"},
+  {"description": "ADRs document key technical decisions", "type": "presence", "expected": "ADRs section with decision records"},
+  {"description": "Backlog tasks have dependencies", "type": "presence", "expected": "Tasks reference depends_on"},
+  {"description": "Data model entities are defined", "type": "presence", "expected": "Data model section with entities"}
+]

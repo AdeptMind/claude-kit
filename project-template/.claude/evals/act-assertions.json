@@ -1,0 +1,7 @@
+[
+  {"description": "All backlog tasks are addressed", "type": "completeness", "expected": "Each task has corresponding code changes"},
+  {"description": "Tests exist for key functionality", "type": "presence", "expected": "Test files present for main packages"},
+  {"description": "Code follows project conventions", "type": "quality", "expected": "Consistent with existing codebase patterns"},
+  {"description": "No hardcoded secrets or credentials", "type": "correctness", "expected": "No API keys, tokens, or passwords in code"},
+  {"description": "Error handling is comprehensive", "type": "quality", "expected": "Functions return errors, not panics"}
+]
