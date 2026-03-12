@@ -50,6 +50,9 @@ func init() {
 	rootCmd.AddCommand(teammateModeCmd)
 	rootCmd.AddCommand(depCmd)
 	rootCmd.AddCommand(profileCmd)
+	rootCmd.AddCommand(skillCmd)
+	rootCmd.AddCommand(agentCmd)
+	rootCmd.AddCommand(agentsCmd)
 }
 
 func resolveTemplateDir() string {
