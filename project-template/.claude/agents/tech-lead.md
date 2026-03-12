@@ -18,6 +18,15 @@ skills:
   - observability-design
   - technical-debt-radar
   - performance-mindset
+interfaces:
+  produces:
+    - "code reviews"
+    - "technical decisions"
+    - "coding standards"
+  consumes:
+    - "architecture.yaml"
+    - "backlog.yaml"
+    - "source code"
 ---
 
 ## Principle

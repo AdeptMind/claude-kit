@@ -9,6 +9,14 @@ skills:
   - code-reviewer
   - test-generator
   - technical-debt-radar
+interfaces:
+  produces:
+    - "algorithms/"
+    - "proofs"
+    - "optimization models"
+  consumes:
+    - "problem specifications"
+    - "performance constraints"
 ---
 
 ## Principle

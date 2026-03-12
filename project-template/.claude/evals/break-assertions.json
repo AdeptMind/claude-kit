@@ -1,0 +1,7 @@
+[
+  {"description": "Problem statement is specific and not generic", "type": "quality", "expected": "Problem defines a clear scope, not vague aspirations"},
+  {"description": "At least 3 user stories defined", "type": "presence", "expected": "User stories section with numbered items"},
+  {"description": "Each user story has acceptance criteria", "type": "presence", "expected": "Each story has testable acceptance criteria"},
+  {"description": "Dependencies between features are identified", "type": "presence", "expected": "Dependencies or ordering mentioned"},
+  {"description": "Out-of-scope items are explicitly listed", "type": "presence", "expected": "Out of scope section exists"}
+]

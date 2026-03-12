@@ -9,6 +9,15 @@ skills:
   - dependency-auditor
   - technical-debt-radar
   - cross-cutting-review
+interfaces:
+  produces:
+    - "**/*.tf"
+    - "terraform modules"
+    - "tfvars files"
+  consumes:
+    - "architecture.yaml"
+    - "cloud requirements"
+    - "infrastructure configs"
 ---
 
 ## Principle

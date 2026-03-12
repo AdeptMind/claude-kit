@@ -11,6 +11,15 @@ skills:
   - performance-audit
   - performance-mindset
   - technical-debt-radar
+interfaces:
+  produces:
+    - "src/components/**"
+    - "pages/**"
+    - "UI tests"
+  consumes:
+    - "API contracts"
+    - "design specs"
+    - "wireframes"
 ---
 
 ## Principle
