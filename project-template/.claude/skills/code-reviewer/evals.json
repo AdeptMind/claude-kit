@@ -1,0 +1,50 @@
+[
+  {
+    "query": "Review this pull request for issues",
+    "should_trigger": true
+  },
+  {
+    "query": "Can you do a code review on the auth module?",
+    "should_trigger": true
+  },
+  {
+    "query": "Check my changes before I merge",
+    "should_trigger": true
+  },
+  {
+    "query": "Review the diff in src/handlers/user.go",
+    "should_trigger": true
+  },
+  {
+    "query": "Are there any bugs or security issues in this PR?",
+    "should_trigger": true
+  },
+  {
+    "query": "Look over my code and flag anything bad",
+    "should_trigger": true
+  },
+  {
+    "query": "Write a function to parse CSV files",
+    "should_trigger": false
+  },
+  {
+    "query": "Fix the null pointer exception in the login handler",
+    "should_trigger": false
+  },
+  {
+    "query": "Deploy the app to staging",
+    "should_trigger": false
+  },
+  {
+    "query": "Generate unit tests for the payment service",
+    "should_trigger": false
+  },
+  {
+    "query": "Refactor the database connection pool",
+    "should_trigger": false
+  },
+  {
+    "query": "What does the UserService class do?",
+    "should_trigger": false
+  }
+]

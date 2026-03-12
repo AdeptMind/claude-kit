@@ -10,14 +10,21 @@ import (
 	"strings"
 )
 
+// AgentInterfaces holds the produces/consumes interface declarations.
+type AgentInterfaces struct {
+	Produces []string
+	Consumes []string
+}
+
 // Component represents a single template component (agent, skill, command, rule).
 type Component struct {
-	Type        string // "agents", "skills", "commands", "rules"
-	Name        string // e.g. "backend", "security/pentest-web"
-	Description string // extracted from YAML frontmatter
-	Path        string // absolute path in template dir
-	Version     string // extracted from frontmatter version: field
-	Source      string // extracted from frontmatter source: field
+	Type        string          // "agents", "skills", "commands", "rules"
+	Name        string          // e.g. "backend", "security/pentest-web"
+	Description string          // extracted from YAML frontmatter
+	Path        string          // absolute path in template dir
+	Version     string          // extracted from frontmatter version: field
+	Source      string          // extracted from frontmatter source: field
+	Interfaces  AgentInterfaces // extracted from frontmatter interfaces: block (agents only)
 }
 
 // Category groups components by type.
@@ -134,14 +141,18 @@ func scanMarkdownDir(dir, typeName string) []Component {
 		filePath := filepath.Join(dir, entry.Name())
 		desc := ExtractDescription(filePath)
 
-		components = append(components, Component{
+		comp := Component{
 			Type:        typeName,
 			Name:        name,
 			Description: desc,
 			Path:        filePath,
 			Version:     ExtractVersion(filePath),
 			Source:      ExtractSource(filePath),
-		})
+		}
+		if typeName == "agents" {
+			comp.Interfaces = ExtractInterfaces(filePath)
+		}
+		components = append(components, comp)
 	}
 
 	return components
@@ -223,6 +234,93 @@ func extractFrontmatterField(path, prefix string) string {
 		}
 	}
 	return ""
+}
+
+// ExtractInterfaces reads the YAML frontmatter interfaces block from an agent file.
+// It returns AgentInterfaces with Produces and Consumes slices (never nil).
+func ExtractInterfaces(path string) AgentInterfaces {
+	result := AgentInterfaces{
+		Produces: []string{},
+		Consumes: []string{},
+	}
+
+	f, err := os.Open(path)
+	if err != nil {
+		return result
+	}
+	defer f.Close()
+
+	scanner := bufio.NewScanner(f)
+	inFrontmatter := false
+	inInterfaces := false
+	inProduces := false
+	inConsumes := false
+
+	for scanner.Scan() {
+		line := scanner.Text()
+
+		if strings.TrimSpace(line) == "---" {
+			if inFrontmatter {
+				break
+			}
+			inFrontmatter = true
+			continue
+		}
+
+		if !inFrontmatter {
+			continue
+		}
+
+		trimmed := strings.TrimSpace(line)
+
+		// Top-level key (no leading whitespace) exits interfaces block
+		if inInterfaces && len(line) > 0 && line[0] != ' ' && line[0] != '\t' {
+			break
+		}
+
+		if strings.HasPrefix(line, "interfaces:") {
+			inInterfaces = true
+			inProduces = false
+			inConsumes = false
+			continue
+		}
+
+		if !inInterfaces {
+			continue
+		}
+
+		// Nested keys under interfaces
+		if trimmed == "produces:" {
+			inProduces = true
+			inConsumes = false
+			continue
+		}
+		if trimmed == "consumes:" {
+			inProduces = false
+			inConsumes = true
+			continue
+		}
+
+		// Collect list items
+		if strings.HasPrefix(trimmed, "- ") {
+			val := strings.TrimPrefix(trimmed, "- ")
+			val = strings.TrimSpace(val)
+			// Strip surrounding quotes
+			if len(val) >= 2 && ((val[0] == '"' && val[len(val)-1] == '"') || (val[0] == '\'' && val[len(val)-1] == '\'')) {
+				val = val[1 : len(val)-1]
+			}
+			if val == "" {
+				continue
+			}
+			if inProduces {
+				result.Produces = append(result.Produces, val)
+			} else if inConsumes {
+				result.Consumes = append(result.Consumes, val)
+			}
+		}
+	}
+
+	return result
 }
 
 // ExtractSkillDeps reads an agent file's frontmatter and returns its skills list.

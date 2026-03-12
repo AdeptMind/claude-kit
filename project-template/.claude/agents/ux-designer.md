@@ -7,6 +7,16 @@ tools: [Read, Write, Edit, Grep, Glob]
 skills:
   - accessibility-audit
   - stakeholder-challenge
+interfaces:
+  produces:
+    - "user flows"
+    - "wireframes"
+    - "usability reports"
+    - "information architecture"
+  consumes:
+    - "user research"
+    - "problem.yaml"
+    - "business requirements"
 ---
 
 ## Principle

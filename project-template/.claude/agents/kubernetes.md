@@ -10,6 +10,15 @@ skills:
   - observability-design
   - cross-cutting-review
   - technical-debt-radar
+interfaces:
+  produces:
+    - "K8s manifests"
+    - "Helm charts"
+    - "Kustomize overlays"
+  consumes:
+    - "architecture.yaml"
+    - "container images"
+    - "deployment requirements"
 ---
 
 ## Principle

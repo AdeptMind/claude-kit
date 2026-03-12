@@ -8,6 +8,15 @@ skills:
   - accessibility-audit
   - performance-audit
   - stakeholder-challenge
+interfaces:
+  produces:
+    - "design tokens"
+    - "component specs"
+    - "visual guidelines"
+  consumes:
+    - "wireframes"
+    - "brand guidelines"
+    - "accessibility requirements"
 ---
 
 ## Principle

@@ -8,6 +8,15 @@ skills:
   - security/infra-security-audit
   - cross-cutting-review
   - technical-debt-radar
+interfaces:
+  produces:
+    - "GCP security findings"
+    - "IAM binding recommendations"
+    - "compliance evidence"
+  consumes:
+    - "GCP infrastructure configs"
+    - "Cloud Audit Logs"
+    - "architecture.yaml"
 ---
 
 ## Principle

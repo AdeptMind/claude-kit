@@ -14,6 +14,16 @@ skills:
   - cross-cutting-review
   - observability-design
   - technical-debt-radar
+interfaces:
+  produces:
+    - "architecture.yaml"
+    - "ADRs"
+    - "technical specifications"
+    - "component diagrams"
+  consumes:
+    - "problem.yaml"
+    - "backlog.yaml"
+    - "principles.md"
 ---
 
 ## Principle

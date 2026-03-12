@@ -8,6 +8,15 @@ skills:
   - security/infra-security-audit
   - cross-cutting-review
   - technical-debt-radar
+interfaces:
+  produces:
+    - "OPA/Gatekeeper policies"
+    - "RBAC configurations"
+    - "cluster hardening reports"
+  consumes:
+    - "K8s manifests"
+    - "security requirements"
+    - "architecture.yaml"
 ---
 
 ## Principle
