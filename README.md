@@ -15,6 +15,9 @@ Claude Code is powerful — but out of the box, every project starts from scratc
 
 One `ck init` turns an empty project into a Claude-powered team with a coherent workflow.
 
+> *"As soon as the meeting finished I was already installing it in my repo. It really worked to the point of solving some issues I haven't even spotted in my code."*
+> — **Tainã Martinez**
+
 ---
 
 A Go CLI for managing Claude Code project templates — interactive TUI setup, component management, stack-aware docs generation, and template synchronization.
