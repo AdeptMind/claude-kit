@@ -291,7 +291,7 @@ func addBmadBundle(tmplDir, targetDir string) error {
 	ensureBaseFiles(tmplDir, targetDir)
 
 	// Core BMAD agents (methodology roles, always the same)
-	agents := []string{"product-owner", "architect", "tech-lead"}
+	agents := []string{"product-owner", "architect", "tech-lead", "eval-grader", "eval-comparator", "eval-analyzer"}
 
 	fmt.Println(sectionHeader("Core Agents"))
 	for _, name := range agents {
@@ -337,10 +337,58 @@ func addBmadBundle(tmplDir, targetDir string) error {
 		fmt.Println(fmt.Sprintf("  %s %s", checkMark, infoStyle.Render(fmt.Sprintf("Added rule: %s", name))))
 	}
 
+	// Copy evals.json files for skills that have them
+	fmt.Println(sectionHeader("Eval Sets"))
+	copyEvalsForInstalledSkills(tmplDir, targetDir)
+
 	fmt.Println()
 	fmt.Println(successStyle.Render(fmt.Sprintf("  %s BMAD methodology installed!", arrow)))
 	fmt.Println(dimStyle.Render("  Now add your project agents: ck add backend, ck add frontend, etc."))
 	return nil
+}
+
+// copyEvalsForInstalledSkills copies evals.json for each installed skill that has one.
+func copyEvalsForInstalledSkills(tmplDir, targetDir string) {
+	skillsDir := filepath.Join(targetDir, "skills")
+	entries, err := os.ReadDir(skillsDir)
+	if err != nil {
+		return
+	}
+	for _, entry := range entries {
+		if !entry.IsDir() {
+			continue
+		}
+		// Check if template has evals.json for this skill
+		tmplEvals := filepath.Join(tmplDir, "skills", entry.Name(), "evals.json")
+		if _, err := os.Stat(tmplEvals); err != nil {
+			// Also check nested skills
+			subEntries, _ := os.ReadDir(filepath.Join(skillsDir, entry.Name()))
+			for _, sub := range subEntries {
+				if !sub.IsDir() {
+					continue
+				}
+				tmplSubEvals := filepath.Join(tmplDir, "skills", entry.Name(), sub.Name(), "evals.json")
+				if _, err := os.Stat(tmplSubEvals); err != nil {
+					continue
+				}
+				dstEvals := filepath.Join(skillsDir, entry.Name(), sub.Name(), "evals.json")
+				if _, err := os.Stat(dstEvals); err == nil {
+					continue // already exists
+				}
+				data, _ := os.ReadFile(tmplSubEvals)
+				os.WriteFile(dstEvals, data, 0o644)
+				fmt.Println(fmt.Sprintf("  %s %s", checkMark, infoStyle.Render(fmt.Sprintf("Added evals: %s/%s", entry.Name(), sub.Name()))))
+			}
+			continue
+		}
+		dstEvals := filepath.Join(skillsDir, entry.Name(), "evals.json")
+		if _, err := os.Stat(dstEvals); err == nil {
+			continue // already exists
+		}
+		data, _ := os.ReadFile(tmplEvals)
+		os.WriteFile(dstEvals, data, 0o644)
+		fmt.Println(fmt.Sprintf("  %s %s", checkMark, infoStyle.Render(fmt.Sprintf("Added evals: %s", entry.Name()))))
+	}
 }
 
 // guessCommandsForAgent returns commands that should be auto-installed for a given agent.
@@ -365,6 +413,8 @@ func guessCommandsForAgent(name string) []string {
 		return []string{"security-check", roleCmd}
 	case "pentester":
 		return []string{"pentest", roleCmd}
+	case "eval-grader", "eval-comparator", "eval-analyzer":
+		return nil // eval agents are utility agents, no commands
 	case "architect":
 		return []string{"docs-gen", roleCmd}
 	case "product-owner":
@@ -388,6 +438,8 @@ func guessExtraSkillsForAgent(name string) []string {
 		return []string{"finops"} // parent orchestrator
 	case "security":
 		return []string{"security"} // parent orchestrator
+	case "eval-grader", "eval-comparator", "eval-analyzer":
+		return nil
 	case "architect":
 		return []string{"terraform-review"}
 	default:
@@ -417,6 +469,8 @@ func guessRulesForAgent(agentName string) []string {
 		return []string{"security"}
 	case "finops":
 		return []string{"finops", "infrastructure"}
+	case "eval-grader", "eval-comparator", "eval-analyzer":
+		return nil // eval agents don't need rules
 	default:
 		return []string{"code-style", "security"}
 	}
