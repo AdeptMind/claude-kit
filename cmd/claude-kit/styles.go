@@ -2,9 +2,11 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/charmbracelet/huh"
 	"github.com/charmbracelet/lipgloss"
+	"golang.org/x/term"
 )
 
 // Zywoo-inspired color palette — hot pink + gold yellow
@@ -134,4 +136,32 @@ func ckTheme() *huh.Theme {
 	t.Blurred.MultiSelectSelector = lipgloss.NewStyle().Foreground(dim).SetString("  ")
 
 	return t
+}
+
+// termWidth returns the current terminal width, defaulting to 100.
+func termWidth() int {
+	w, _, err := term.GetSize(int(os.Stdout.Fd()))
+	if err != nil || w <= 0 {
+		return 100
+	}
+	return w
+}
+
+// agentLabel builds a "name -- description" label, truncating the description
+// to fit within the terminal width minus the multi-select prefix overhead.
+func agentLabel(name, description string) string {
+	if description == "" {
+		return name
+	}
+	// Account for huh multi-select prefix: "> ✓ " = ~6 chars + 4 padding
+	const overhead = 10
+	maxDesc := termWidth() - len(name) - len(" -- ") - overhead
+	if maxDesc < 20 {
+		maxDesc = 20
+	}
+	desc := description
+	if len(desc) > maxDesc {
+		desc = desc[:maxDesc-3] + "..."
+	}
+	return fmt.Sprintf("%s -- %s", name, desc)
 }
