@@ -110,14 +110,7 @@ func runInteractiveAdd(tmplDir, targetDir string) error {
 		if catalog.IsInstalled(targetDir, "agents", c.Name) {
 			continue
 		}
-		label := c.Name
-		if c.Description != "" {
-			desc := c.Description
-			if len(desc) > 50 {
-				desc = desc[:47] + "..."
-			}
-			label = fmt.Sprintf("%s -- %s", c.Name, desc)
-		}
+		label := agentLabel(c.Name, c.Description)
 		options = append(options, huh.NewOption(label, c.Name))
 	}
 

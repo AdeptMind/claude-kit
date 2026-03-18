@@ -111,14 +111,7 @@ func runInteractiveInit() error {
 		if installedAgents[c.Name] {
 			continue // skip already installed
 		}
-		label := c.Name
-		if c.Description != "" {
-			desc := c.Description
-			if len(desc) > 50 {
-				desc = desc[:47] + "..."
-			}
-			label = fmt.Sprintf("%s -- %s", c.Name, desc)
-		}
+		label := agentLabel(c.Name, c.Description)
 		options = append(options, huh.NewOption(label, c.Name))
 		if useBmad && bmadAgents[c.Name] {
 			preselected = append(preselected, c.Name)
