@@ -1,0 +1,45 @@
+profile: strict
+
+filesystem:
+  deny:
+    - ".env"
+    - ".env.*"
+    - "secrets/**"
+    - "**/*.pem"
+    - "**/*.key"
+    - "**/*.p12"
+    - "credentials.*"
+    - "node_modules/**"
+    - ".git/objects/**"
+    - "dist/**"
+    - "build/**"
+    - "out/**"
+  allow:
+    - "src/**"
+    - ".claude/**"
+
+network:
+  mode: block_all
+  allowlist: []
+
+hooks:
+  pre_tool_use:
+    - matcher: "Bash"
+      command: "if echo \"$CLAUDE_TOOL_INPUT\" | grep -qE '^git (commit|push)'; then echo '=== Staged files ===' && git diff --cached --name-only; fi"
+    - matcher: "Bash"
+      command: "if echo \"$CLAUDE_TOOL_INPUT\" | grep -qE '(curl|wget|fetch|nc |ncat)'; then echo 'BLOCKED: network access denied in strict mode' && exit 1; fi"
+  post_tool_use: []
+
+sandbox:
+  enabled: true
+  runtime: auto
+  writable_mounts:
+    - ".claude/output"
+  env_passthrough: []
+  image_base: "node:22-slim"
+
+audit:
+  enabled: true
+  path: ".claude/audit.jsonl"
+  max_size: "50MB"
+  include_tools: []
