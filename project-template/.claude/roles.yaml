@@ -1,0 +1,169 @@
+# roles.yaml — Working methods per role
+# Each role defines HOW the BMAD workflow behaves, not permissions.
+# Switch roles with: ck user <role>
+
+roles:
+  dev:
+    description: "Solo developer — fast cycles, zero friction, all roles collapsed into one"
+    workflow:
+      inter_round_gate: false
+      client_challenge: false
+      readiness_check: none
+      done_check: technical
+    reporting:
+      language: technical
+      proof: tests
+    analysis:
+      traceability: shallow
+      challenge_so_that: false
+
+  po:
+    description: "Product owner — validation gates, product-language reports, client challenge loops"
+    workflow:
+      inter_round_gate: true
+      client_challenge: true
+      readiness_check: full
+      done_check: functional
+    reporting:
+      language: product
+      proof: visual
+    analysis:
+      traceability: deep
+      challenge_so_that: true
+
+  architect:
+    description: "Software architect — system design, ADRs, component breakdown"
+    workflow:
+      inter_round_gate: false
+      client_challenge: false
+      readiness_check: light
+      done_check: technical
+    reporting:
+      language: technical
+      proof: tests
+    analysis:
+      traceability: shallow
+      challenge_so_that: false
+
+  tech-lead:
+    description: "Tech lead — code quality, architecture challenge, cross-cutting reviews"
+    workflow:
+      inter_round_gate: false
+      client_challenge: false
+      readiness_check: light
+      done_check: technical
+    reporting:
+      language: technical
+      proof: tests
+    analysis:
+      traceability: shallow
+      challenge_so_that: false
+
+  qa:
+    description: "QA engineer — user journey verification, e2e testing, visual proof"
+    workflow:
+      inter_round_gate: true
+      client_challenge: false
+      readiness_check: full
+      done_check: e2e
+    reporting:
+      language: product
+      proof: visual
+    analysis:
+      traceability: deep
+      challenge_so_that: false
+
+  devops:
+    description: "DevOps engineer — CI/CD, infrastructure, deploy readiness"
+    workflow:
+      inter_round_gate: false
+      client_challenge: false
+      readiness_check: light
+      done_check: technical
+    reporting:
+      language: technical
+      proof: tests
+    analysis:
+      traceability: shallow
+      challenge_so_that: false
+
+  finops:
+    description: "FinOps — cost optimization, resource tagging, budget validation"
+    workflow:
+      inter_round_gate: false
+      client_challenge: false
+      readiness_check: none
+      done_check: technical
+    reporting:
+      language: product
+      proof: tests
+    analysis:
+      traceability: shallow
+      challenge_so_that: false
+
+  security:
+    description: "Security engineer — threat modeling, pentest, OWASP, vulnerability scanning"
+    workflow:
+      inter_round_gate: false
+      client_challenge: false
+      readiness_check: light
+      done_check: technical
+    reporting:
+      language: technical
+      proof: tests
+    analysis:
+      traceability: shallow
+      challenge_so_that: false
+
+  sre:
+    description: "Site reliability engineer — observability, scaling, failover, operability"
+    workflow:
+      inter_round_gate: false
+      client_challenge: false
+      readiness_check: light
+      done_check: technical
+    reporting:
+      language: technical
+      proof: tests
+    analysis:
+      traceability: shallow
+      challenge_so_that: false
+
+  all:
+    description: "Full role orchestration — each BMAD phase activates the right roles automatically"
+    workflow:
+      inter_round_gate: true
+      client_challenge: true
+      readiness_check: full
+      done_check: combined
+    reporting:
+      language: product
+      proof: combined
+    analysis:
+      traceability: deep
+      challenge_so_that: true
+    phases:
+      break:
+        - po
+      model:
+        - architect
+        - tech-lead
+        - sre
+      analyze:
+        - po
+        - tech-lead
+        - sre
+        - devops
+        - security
+      act:
+        - dev
+        - devops
+        - finops
+        - security
+        - sre
+      deliver:
+        - qa
+        - po
+        - devops
+        - finops
+        - security
