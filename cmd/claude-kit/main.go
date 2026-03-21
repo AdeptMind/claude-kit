@@ -54,6 +54,9 @@ func init() {
 	rootCmd.AddCommand(agentCmd)
 	rootCmd.AddCommand(agentsCmd)
 	rootCmd.AddCommand(userCmd)
+	rootCmd.AddCommand(policyCmd)
+	rootCmd.AddCommand(auditCmd)
+	rootCmd.AddCommand(sandboxCmd)
 }
 
 func resolveTemplateDir() string {

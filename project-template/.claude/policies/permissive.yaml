@@ -1,0 +1,34 @@
+profile: permissive
+
+filesystem:
+  deny:
+    - ".env"
+    - ".env.*"
+    - "**/*.pem"
+    - "**/*.key"
+  allow:
+    - "src/**"
+    - "docs/**"
+    - "tests/**"
+    - ".claude/**"
+
+network:
+  mode: unrestricted
+  allowlist: []
+
+hooks:
+  pre_tool_use: []
+  post_tool_use: []
+
+sandbox:
+  enabled: false
+  runtime: auto
+  writable_mounts: []
+  env_passthrough: []
+  image_base: "node:22-slim"
+
+audit:
+  enabled: false
+  path: ".claude/audit.jsonl"
+  max_size: "10MB"
+  include_tools: []
