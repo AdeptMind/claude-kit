@@ -101,6 +101,32 @@ Break each feature into independently testable user stories:
 
 If `.claude/output/principles.md` exists, cross-reference stories against the principles: ensure testing standards, security requirements, and UX principles are reflected in the acceptance scenarios.
 
+## Stage 3b: User Journey (po/all-roles only)
+
+> **Role gate**: check the `CK_USER_ROLE` environment variable. If it is `dev` or unset, **skip this stage entirely** and proceed to Stage 4.
+
+For each distinct persona identified in the user stories, map out end-to-end user journeys that connect multiple stories into coherent flows. Create `.claude/output/user-journey.yaml` with this structure:
+
+```yaml
+journeys:
+  - name: "<journey name>"
+    persona: "<persona from user stories>"
+    story_refs: [<US-NNN>, <US-NNN>]
+    steps:
+      - action: "<what the user does>"
+        expected: "<what the user sees or experiences>"
+        screen: "<screen or page identifier>"
+```
+
+### Guidelines
+
+- Each journey represents a **complete user goal** (e.g., "Sign up and make first purchase"), not a single interaction
+- `story_refs` links the journey to the user story IDs defined in `problem.yaml` — every referenced ID must exist
+- Steps describe the **user's perspective**: what they DO (`action`) and what they EXPECT to see (`expected`)
+- `screen` is a short identifier for the page or view (e.g., `login-page`, `dashboard`, `checkout-form`) — these will be used as references by `/ux-spec`
+- Order steps chronologically within each journey
+- A single user story may appear in multiple journeys; a journey must reference at least one story
+
 ## Stage 4: Validate
 
 Present a summary of the problem definition to the user and ask for confirmation before saving. Highlight:
