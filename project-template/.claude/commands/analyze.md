@@ -66,6 +66,46 @@ Find cases where the same concept uses different names across artifacts:
 - "order" vs "purchase" vs "transaction" for the same flow
 - Component names that don't match between architecture and backlog
 
+## Role-Aware Analysis (po/all-roles only)
+
+> **Gate**: check `CK_USER_ROLE`. If the value is `dev` or unset, skip this entire section — the analysis stops at category 7 above and proceeds directly to Severity Levels.
+
+When `CK_USER_ROLE` is `po` or `all`, run the four additional analysis categories below. Findings use the same severity levels and output format as the core categories.
+
+### 8. Traceability
+Invoke the `traceability-check` skill and include its matrix output in the report. The matrix maps every requirement in `problem.yaml` to its architecture component(s) and backlog task(s). Flag:
+- Requirements with no architecture mapping (orphan requirements)
+- Requirements with no backlog task (unplanned work)
+- Backlog tasks with no requirement origin (orphan tasks)
+- Architecture components not referenced by any requirement (dead components)
+
+### 9. Business Value Quality
+Review each user story's `so_that` clause in `problem.yaml`. Flag:
+- Missing `so_that` — no business justification provided
+- Weak justifications that restate the action instead of the value (e.g., "so that I can click the button" instead of "so that I can track my spending")
+- Generic justifications that could apply to any feature (e.g., "so that the system works better")
+- Duplicate business value across unrelated stories (copy-paste smell)
+
+### 10. SRE Operability
+Review `architecture.yaml` for production-readiness gaps. Flag:
+- **Observability**: missing or incomplete logging, monitoring, or tracing strategy
+- **Scaling**: no scaling strategy defined, or scaling strategy that doesn't match expected load from `problem.yaml`
+- **Failover**: no failover or disaster recovery plan for stateful components
+- **Circuit breakers**: external integrations without circuit breaker or retry/backoff strategy
+- **Health checks**: services without defined health check endpoints
+
+Critical SRE findings (e.g., no observability strategy, no failover for stateful data) use CRITICAL severity and block progression — same gate behavior as existing critical findings.
+
+### 11. Security Threat Surface
+Review `architecture.yaml` for security gaps. Flag:
+- **Authentication**: endpoints or services without auth coverage; missing auth strategy
+- **Input validation**: user-facing interfaces without input validation strategy
+- **OWASP concerns**: architecture patterns susceptible to OWASP Top 10 (injection, broken access control, security misconfiguration, etc.)
+- **Secrets exposure**: hardcoded credentials, missing secrets management strategy, or secrets passed in environment without encryption
+- **Attack vectors**: publicly exposed services without rate limiting, WAF, or DDoS protection
+
+Critical Security findings (e.g., no auth on public endpoints, no secrets management) use CRITICAL severity and block progression — same gate behavior as existing critical findings.
+
 ## Severity Levels
 
 - **CRITICAL** — Will cause implementation failure or major rework. Blocks `/bmad-run` progression.

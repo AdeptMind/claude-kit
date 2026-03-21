@@ -112,3 +112,106 @@ Present the release checklist to the user:
 Ask the user to confirm the release is ready.
 
 If $ARGUMENTS is provided, use it as additional context: $ARGUMENTS
+
+## Role-Aware Delivery Validation (po/all-roles only)
+
+Check `CK_USER_ROLE`. If it is `dev` or unset, **skip this entire section** — the command behaves exactly as above.
+
+If `CK_USER_ROLE` is `po` or `all-roles`, execute the following multi-role validation before presenting the final checklist. Each role produces a **sign-off block** that is appended to `.claude/output/act-report.md` under a `## Delivery Sign-offs` section.
+
+### QA — User Journey Verification
+
+1. Read `.claude/output/user-journey.yaml` (if it exists).
+2. For each journey step, execute a manual walkthrough or automated check against the running application.
+3. Capture evidence (command output, screenshots, or log excerpts) for each step.
+4. Report **pass/fail per step** with evidence summary.
+
+Sign-off format:
+
+```
+### QA Sign-off
+- **Status**: PASS | FAIL
+- **Journey steps**: X/Y passed
+- **Evidence**: <summary of captured evidence per step>
+- **Blocking issues**: <list or "None">
+```
+
+### PO — Business Value Confirmation
+
+1. Read `.claude/output/problem.yaml` — extract each feature's `so_that` clause.
+2. For each feature, confirm the business value is delivered with concrete evidence (demo output, test results, or user-facing behavior).
+3. Flag any feature whose `so_that` is not demonstrably met.
+
+Sign-off format:
+
+```
+### PO Sign-off
+- **Status**: APPROVED | REJECTED
+- **Features validated**: X/Y
+- **Evidence per feature**:
+  - <feature>: <evidence of business value delivered>
+- **Gaps**: <list or "None">
+```
+
+### DevOps — Deploy Readiness
+
+1. Verify CI/CD pipeline is green and produces deployable artifacts.
+2. Confirm staging environment has been tested (or can be tested).
+3. Verify a rollback plan is documented (in runbook or release notes).
+4. Check that environment-specific configs and secrets are externalized.
+
+Sign-off format:
+
+```
+### DevOps Sign-off
+- **Status**: READY | NOT READY
+- **CI/CD pipeline**: GREEN | RED — <link or summary>
+- **Staging tested**: YES | NO
+- **Rollback plan**: DOCUMENTED | MISSING
+- **Config externalized**: YES | NO — <details>
+```
+
+### FinOps — Cost Report
+
+1. Read `.claude/output/architecture.yaml` for estimated resource costs (if present).
+2. Compare estimated costs against actual or projected resource usage.
+3. Report budget compliance status.
+
+Sign-off format:
+
+```
+### FinOps Sign-off
+- **Status**: COMPLIANT | OVER BUDGET | NO ESTIMATE
+- **Estimated cost**: <from architecture or "not specified">
+- **Actual/projected cost**: <computed or "not measurable yet">
+- **Variance**: <percentage or "N/A">
+- **Recommendations**: <list or "None">
+```
+
+### Security — Final Vulnerability Report
+
+1. Scan dependencies for known vulnerabilities (`npm audit`, `pip-audit`, or equivalent).
+2. Review code for hardcoded secrets, SQL injection, and XSS vectors.
+3. Check OWASP Top 10 compliance for web-facing components.
+4. Verify TLS, security headers, and least-privilege IAM (if applicable).
+
+Sign-off format:
+
+```
+### Security Sign-off
+- **Status**: PASS | FAIL
+- **Dependency vulnerabilities**: <count critical/high/medium/low>
+- **Code audit findings**: <list or "None">
+- **OWASP compliance**: <summary>
+- **Blocking issues**: <list or "None">
+```
+
+### Collecting Sign-offs
+
+After all five roles have produced their sign-off blocks:
+
+1. Append a `## Delivery Sign-offs` section to `.claude/output/act-report.md` containing all five blocks.
+2. Add a summary verdict at the top of the section:
+   - **RELEASE APPROVED** — all roles passed/approved/ready/compliant
+   - **RELEASE BLOCKED** — one or more roles reported blocking issues (list them)
+3. Present the summary to the user and ask for final confirmation before proceeding.
