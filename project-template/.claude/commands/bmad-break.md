@@ -136,4 +136,36 @@ Present a summary of the problem definition to the user and ask for confirmation
 
 Once confirmed, save to `.claude/output/problem.yaml` and report completion.
 
+## Stage 4b: Business Value Challenge (po/all-roles only)
+
+> **Role gate**: check the `CK_USER_ROLE` environment variable. If it is `dev` or unset, **skip this stage entirely** and proceed to reporting completion.
+
+After saving `problem.yaml`, scan every user story's `so_that` field and challenge weak business value statements. A `so_that` is weak if it matches any of these patterns:
+
+- **Generic phrasing**: "so that it works", "so that it's better", "so that the system can...", "so that things are improved", "so that we have it"
+- **No specific user outcome**: the value is described in system terms rather than end-user terms (e.g., "so that data is stored" instead of "so that users can retrieve their order history within 2 seconds")
+- **Missing WHY**: the statement restates the `i_want` instead of explaining the business reason behind it
+
+For each weak `so_that` detected:
+
+1. Ask the user: **"<US-ID> so_that "<current value>" — What specific outcome does this deliver for the end user?"**
+2. Wait for the user's response
+3. Update the story's `so_that` in `problem.yaml` with the revised value
+4. Record the exchange in `.claude/output/challenge-log.md` (create with a `# Challenge Log` header if the file does not exist; append if it does):
+
+```markdown
+### Challenge — break — <role> — <ISO-8601 timestamp>
+**Question:** <US-ID> so_that "<original value>" — What specific outcome does this deliver for the end user?
+**Response:** <user's answer>
+**Outcome:** revised — updated to "<new so_that value>"
+```
+
+If the user defends the original `so_that` with a convincing justification, record the outcome as `kept` instead of `revised`:
+
+```markdown
+**Outcome:** kept — "<original value>" (user justification: "<reason>")
+```
+
+Process all weak stories before proceeding. If no weak `so_that` values are found, skip this stage silently.
+
 If $ARGUMENTS is provided, use it as the project brief: $ARGUMENTS
