@@ -11,6 +11,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/AdeptMind/infra-tool/claude-cli/internal/catalog"
+	"github.com/AdeptMind/infra-tool/claude-cli/internal/policy"
 )
 
 var initCmd = &cobra.Command{
@@ -179,6 +180,25 @@ func runInteractiveInit() error {
 		}
 	}
 
+	// Step 2d: Security policy profile
+	policyProfile := "none"
+	policyForm := huh.NewForm(
+		huh.NewGroup(
+			huh.NewSelect[string]().
+				Title("Security policy profile").
+				Options(
+					huh.NewOption("none -- skip policy (no restrictions)", "none"),
+					huh.NewOption("permissive -- minimal restrictions, open network, no sandbox", "permissive"),
+					huh.NewOption("moderate -- git hook guard, audit logging, broader file deny list", "moderate"),
+					huh.NewOption("strict -- network blocked, sandbox enabled, full audit", "strict"),
+				).
+				Value(&policyProfile),
+		),
+	).WithTheme(ckTheme())
+	if err := policyForm.Run(); err != nil {
+		return err
+	}
+
 	// Step 3: Auto-compute all defaults from selected agents
 	selectedSet := make(map[string]bool)
 	for _, name := range selectedAgents {
@@ -281,6 +301,13 @@ func runInteractiveInit() error {
 			dimStyle.Render(worktreesLabel),
 		))
 	}
+	if policyProfile != "none" {
+		fmt.Println(fmt.Sprintf("    %s %s: %s",
+			bullet,
+			accentStyle.Render("security policy"),
+			dimStyle.Render(policyProfile),
+		))
+	}
 
 	fmt.Println()
 
@@ -365,9 +392,60 @@ func runInteractiveInit() error {
 		}
 	}
 
+	// Apply security policy profile
+	if policyProfile != "none" {
+		if err := applyPolicyProfile(tmplDir, targetDir, policyProfile); err != nil {
+			fmt.Fprintln(os.Stderr, errorStyle.Render(fmt.Sprintf("  policy: %v", err)))
+		}
+	}
+
 	fmt.Println()
 	fmt.Println(successStyle.Render(fmt.Sprintf("  %s Setup complete!", arrow)))
 	fmt.Println(dimStyle.Render("  Run 'ck add' for more agents, 'ck remove' to remove components."))
+
+	return nil
+}
+
+// applyPolicyProfile copies the selected profile as policy.yaml and applies it to settings.json.
+func applyPolicyProfile(tmplDir, targetDir, profile string) error {
+	profilePath := filepath.Join(tmplDir, "policies", profile+".yaml")
+	content, err := os.ReadFile(profilePath)
+	if err != nil {
+		return fmt.Errorf("reading profile %s: %w", profile, err)
+	}
+
+	// Write policy.yaml
+	policyPath := filepath.Join(targetDir, "policy.yaml")
+	if err := os.WriteFile(policyPath, content, 0o644); err != nil {
+		return fmt.Errorf("writing policy.yaml: %w", err)
+	}
+	fmt.Println(sectionHeader("Policy"))
+	fmt.Println(fmt.Sprintf("  %s %s %s",
+		checkMark,
+		accentStyle.Render("policy.yaml"),
+		dimStyle.Render(fmt.Sprintf("(%s profile)", profile)),
+	))
+
+	// Parse, resolve, and apply to settings.json
+	spec, err := policy.ParseBytes(content)
+	if err != nil {
+		return fmt.Errorf("parsing policy: %w", err)
+	}
+
+	profilesDir := filepath.Join(tmplDir, "policies")
+	resolved, err := policy.Resolve(spec, profilesDir)
+	if err != nil {
+		return fmt.Errorf("resolving policy: %w", err)
+	}
+
+	settingsPath := filepath.Join(targetDir, "settings.json")
+	if err := policy.ApplySettings(settingsPath, resolved); err != nil {
+		return fmt.Errorf("applying policy to settings.json: %w", err)
+	}
+	fmt.Println(fmt.Sprintf("  %s %s",
+		checkMark,
+		infoStyle.Render("settings.json updated with policy"),
+	))
 
 	return nil
 }
