@@ -145,6 +145,13 @@ Before spawning any teammate for this round:
 
 Spawn one teammate per story in the round. **Require plan approval** — teammates must plan before implementing.
 
+**Role-Aware Readiness Gate (po/all-roles only)**
+If `CK_USER_ROLE` is not `"dev"` and not empty, run the **readiness-check** skill on the story before spawning the teammate:
+- Pass the story's id, title, acceptance criteria, and architecture context to the readiness-check skill
+- If the readiness-check returns **NOT READY**: fix the identified issues (missing acceptance criteria, unclear scope, unresolved dependencies) before spawning the teammate
+- If the readiness-check returns **READY**: proceed with the teammate spawn
+- In `dev` mode (or when `CK_USER_ROLE` is unset): skip this gate entirely — spawn the teammate immediately
+
 Each teammate's spawn prompt:
 
 ```
@@ -297,9 +304,32 @@ This helps the teammate understand what was already tried and avoid repeating fa
 
 This creates a persistent feedback trail. If a session is interrupted mid-fix, `/ralph-loop` can pick up the feedback file and re-spawn the teammate with full context of what failed and what was already attempted.
 
+**Role-Aware Done Check (po/all-roles only)**
+If `CK_USER_ROLE` is not `"dev"` and not empty, run the **done-check** skill after the acceptance-validator passes:
+- The done-check adds business value verification (PO mode) and user journey testing (QA mode) on top of the standard acceptance validation
+- Run it on the completed story's code and test results
+- If the done-check returns issues: treat them as validation failures — write feedback and send the teammate back to fix
+- If the done-check passes: proceed to mark the story as passed
+- In `dev` mode (or when `CK_USER_ROLE` is unset): skip this check — the standard acceptance-validator is sufficient
+
 **After ALL stories in the round are validated**:
 - Run the full test suite one final time
 - Check cross-story integration (do the pieces fit together?)
+
+**Role-Aware Round Review (po/all-roles only)**
+If `CK_USER_ROLE` is not `"dev"` and not empty:
+1. Generate `.claude/output/round-N-review.md` (where N is the current round number) with:
+   - **Product-language summary**: describe what was built in user terms ("Users can now create an account and receive a welcome email"), NOT technical terms ("Added POST /users endpoint with JWT middleware"). Write from the user's perspective.
+   - **Visual evidence**:
+     - For UI projects: use `mcp__claude-in-chrome__take_screenshot` to capture the implemented screens/flows
+     - For non-UI projects (CLI, API, library): capture relevant CLI output, API responses, or test results as text-based evidence
+     - If browser MCP is unavailable: note "Browser MCP not available — visual evidence skipped" and provide text-based evidence only (test output, curl responses, etc.)
+   - **Stories completed this round**: list each story with its id, title, and PASS/FAIL status
+2. Present the round review summary to the user in the conversation
+3. **Wait for user confirmation** — do NOT proceed to the next round until the user explicitly confirms (e.g., "go", "next", "approved"). If the user requests changes, address them before proceeding.
+
+In `dev` mode (or when `CK_USER_ROLE` is unset): skip the round review entirely — proceed directly to the next round after integration checks pass.
+
 - Only then proceed to the next round
 
 ---

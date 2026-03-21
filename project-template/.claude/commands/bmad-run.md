@@ -5,6 +5,38 @@ description: Run the full BMAD v6 workflow (Principles → Break → Clarify →
 
 Orchestrate the complete **BMAD v6 workflow**. Execute each phase in sequence, carrying context forward between phases.
 
+## Role-Aware Orchestration
+
+Read `CK_USER_ROLE` from the environment (defaults to `"dev"` if unset).
+
+### Mode: dev (or unset)
+
+Skip all role behavior. Run every phase exactly as described below — no role announcements, no handoff challenges, no challenge log entries. This is the default behavior.
+
+### Mode: all (multi-role orchestration)
+
+Before entering each phase:
+
+1. **Announce active roles** — read the phase mapping below and print which roles are activating:
+   - Break: `po` (+ client-advocacy challenge after the phase)
+   - Model: `architect`, `tech-lead`, `sre`
+   - Analyze: `po`, `tech-lead`, `sre`, `devops`, `security`
+   - Act: `dev`, `devops`, `finops`, `security`, `sre` (qa prepares e2e test plan)
+   - Deliver: `qa`, `po`, `devops`, `finops`, `security`
+2. **Handoff summary** — at each phase transition, present a summary of what the previous phase produced (key artifacts, decisions, open issues).
+3. **Log to challenge-log.md** — append a transition entry to `.claude/output/challenge-log.md` using this format:
+   ```markdown
+   ### Transition — <previous_phase> → <next_phase> — <ISO-8601 timestamp>
+   **Roles activating:** <comma-separated roles>
+   **Previous phase produced:** <artifact summary>
+   **Handoff notes:** <key decisions, flagged issues, resolutions>
+   ```
+4. **Apply role working methods** — for each active role, read its `working_methods` from `.claude/roles.yaml` and enforce them during the phase. The individual phase commands (`/bmad-break`, `/bmad-model`, `/ralph`, `/analyze`) already have their own role-aware sections — bmad-run only sets context and manages transitions between them.
+
+### Mode: single role (po, qa, architect, etc.)
+
+Apply that role's `working_methods` from `.claude/roles.yaml` throughout every phase. No handoff challenges or challenge log — the single role perspective is maintained consistently across the entire workflow.
+
 ## Workflow
 
 ### Phase -1: Brainstorm -- Creative Ideation (optional)
