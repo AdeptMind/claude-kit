@@ -106,10 +106,10 @@ func applyPolicyToRaw(raw map[string]interface{}, spec *PolicySpec) map[string]i
 			}
 		}
 		if len(spec.Filesystem.Deny) > 0 {
-			perms["deny"] = spec.Filesystem.Deny
+			perms["deny"] = wrapPermissions(spec.Filesystem.Deny, "Read")
 		}
 		if len(spec.Filesystem.Allow) > 0 {
-			perms["allow"] = spec.Filesystem.Allow
+			perms["allow"] = wrapPermissions(spec.Filesystem.Allow, "Read")
 		}
 		result["permissions"] = perms
 	}
@@ -131,6 +131,20 @@ func applyPolicyToRaw(raw map[string]interface{}, spec *PolicySpec) map[string]i
 	}
 
 	return result
+}
+
+// wrapPermissions wraps glob patterns with the Tool(pattern) format expected by
+// Claude Code settings.json. Patterns already wrapped (containing "(") are kept as-is.
+func wrapPermissions(patterns []string, defaultTool string) []string {
+	wrapped := make([]string, len(patterns))
+	for i, p := range patterns {
+		if strings.Contains(p, "(") {
+			wrapped[i] = p // already wrapped, e.g. "Read(.env)"
+		} else {
+			wrapped[i] = defaultTool + "(" + p + ")"
+		}
+	}
+	return wrapped
 }
 
 func convertHooks(defs []HookDef) []map[string]interface{} {

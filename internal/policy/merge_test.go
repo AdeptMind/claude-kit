@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 )
 
@@ -135,12 +134,23 @@ func TestMergeSettings_ReplacesPermissions(t *testing.T) {
 
 	found := false
 	for _, d := range deny {
-		if strings.Contains(d.(string), ".env") {
+		if d.(string) == "Read(.env)" {
 			found = true
 		}
 	}
 	if !found {
-		t.Error("new deny pattern not found")
+		t.Errorf("expected Read(.env) in deny, got %v", deny)
+	}
+
+	allow := perms["allow"].([]interface{})
+	foundAllow := false
+	for _, a := range allow {
+		if a.(string) == "Read(src/**)" {
+			foundAllow = true
+		}
+	}
+	if !foundAllow {
+		t.Errorf("expected Read(src/**) in allow, got %v", allow)
 	}
 }
 
