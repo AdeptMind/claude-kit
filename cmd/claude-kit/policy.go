@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/AdeptMind/infra-tool/claude-cli/internal/policy"
 	"github.com/charmbracelet/huh"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/spf13/cobra"
@@ -24,9 +25,27 @@ var policyInitCmd = &cobra.Command{
 	},
 }
 
+var policyApplyCmd = &cobra.Command{
+	Use:   "apply",
+	Short: "Apply policy.yaml to settings.json (shows diff, asks confirmation)",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		return runPolicyApply()
+	},
+}
+
+var policyShowCmd = &cobra.Command{
+	Use:   "show",
+	Short: "Show resolved policy as YAML",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		return runPolicyShow()
+	},
+}
+
 func init() {
 	policyInitCmd.Flags().Bool("force", false, "Overwrite existing policy.yaml")
 	policyCmd.AddCommand(policyInitCmd)
+	policyCmd.AddCommand(policyApplyCmd)
+	policyCmd.AddCommand(policyShowCmd)
 }
 
 func runPolicyInit(force bool) error {
@@ -128,5 +147,104 @@ func runPolicyInit(force bool) error {
 	fmt.Println()
 	fmt.Println(successStyle.Render(fmt.Sprintf("  %s Policy initialized!", arrow)))
 
+	return nil
+}
+
+func loadResolvedPolicy() (*policy.PolicySpec, string, error) {
+	targetDir := resolveTarget()
+	policyPath := filepath.Join(targetDir, "policy.yaml")
+
+	if _, err := os.Stat(policyPath); os.IsNotExist(err) {
+		return nil, "", fmt.Errorf("policy.yaml not found at %s — run 'ck policy init' first", policyPath)
+	}
+
+	spec, err := policy.ParseFile(policyPath)
+	if err != nil {
+		return nil, "", err
+	}
+
+	profilesDir := filepath.Join(resolveTemplateDir(), "policies")
+	resolved, err := policy.Resolve(spec, profilesDir)
+	if err != nil {
+		return nil, "", err
+	}
+
+	return resolved, targetDir, nil
+}
+
+func runPolicyApply() error {
+	resolved, targetDir, err := loadResolvedPolicy()
+	if err != nil {
+		return err
+	}
+
+	settingsPath := filepath.Join(targetDir, "settings.json")
+
+	diff, err := policy.MergeSettings(settingsPath, resolved)
+	if err != nil {
+		return err
+	}
+
+	if diff == "" {
+		fmt.Println()
+		fmt.Println(successStyle.Render(fmt.Sprintf("  %s settings.json is already up to date", checkMark)))
+		return nil
+	}
+
+	fmt.Println()
+	fmt.Println(subtitleStyle.Render("  Policy Apply — Diff"))
+	fmt.Println()
+
+	diffBox := lipgloss.NewStyle().
+		Border(lipgloss.RoundedBorder()).
+		BorderForeground(rose).
+		Padding(0, 2).
+		MarginLeft(2)
+	fmt.Println(diffBox.Render(diff))
+	fmt.Println()
+
+	var confirm bool
+	confirmForm := huh.NewForm(
+		huh.NewGroup(
+			huh.NewConfirm().
+				Title("Apply these changes to settings.json?").
+				Value(&confirm),
+		),
+	).WithTheme(ckTheme())
+
+	if err := confirmForm.Run(); err != nil {
+		return err
+	}
+	if !confirm {
+		fmt.Println("Aborted.")
+		return nil
+	}
+
+	if err := policy.ApplySettings(settingsPath, resolved); err != nil {
+		return err
+	}
+
+	fmt.Println(fmt.Sprintf("  %s %s",
+		checkMark,
+		accentStyle.Render("settings.json updated"),
+	))
+	fmt.Println()
+	fmt.Println(successStyle.Render(fmt.Sprintf("  %s Policy applied!", arrow)))
+
+	return nil
+}
+
+func runPolicyShow() error {
+	resolved, _, err := loadResolvedPolicy()
+	if err != nil {
+		return err
+	}
+
+	yamlBytes, err := policy.SortedYAML(resolved)
+	if err != nil {
+		return fmt.Errorf("marshalling resolved policy: %w", err)
+	}
+
+	fmt.Print(string(yamlBytes))
 	return nil
 }

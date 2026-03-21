@@ -4,147 +4,237 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"path/filepath"
+	"sort"
 	"strings"
-
-	"github.com/AdeptMind/infra-tool/claude-cli/internal/audit"
 )
 
-// MergeSettings reads settings.json, generates policy permissions/hooks,
-// returns the merged JSON and a human-readable diff string.
-func MergeSettings(settingsPath string, resolved *PolicySpec) ([]byte, string, error) {
-	existing := make(map[string]interface{})
-
-	data, err := os.ReadFile(settingsPath)
-	if err != nil && !os.IsNotExist(err) {
-		return nil, "", fmt.Errorf("policy: reading settings: %w", err)
-	}
-	if len(data) > 0 {
-		if err := json.Unmarshal(data, &existing); err != nil {
-			return nil, "", fmt.Errorf("policy: parsing settings: %w", err)
-		}
-	}
-
-	beforeJSON, _ := json.MarshalIndent(existing, "", "  ")
-
-	applyPermissions(existing, resolved)
-	applyHooks(existing, resolved)
-
-	afterJSON, err := json.MarshalIndent(existing, "", "  ")
-	if err != nil {
-		return nil, "", fmt.Errorf("policy: marshaling merged settings: %w", err)
-	}
-	afterJSON = append(afterJSON, '\n')
-
-	diff := computeDiff(string(beforeJSON), string(afterJSON))
-
-	return afterJSON, diff, nil
+// Settings represents a Claude Code settings.json file.
+type Settings struct {
+	Permissions *PermissionsBlock      `json:"permissions,omitempty"`
+	Hooks       *HooksBlock            `json:"hooks,omitempty"`
+	Rest        map[string]interface{} `json:"-"`
 }
 
-// ApplySettings writes the merged settings to disk.
-func ApplySettings(settingsPath string, resolved *PolicySpec) (string, error) {
-	merged, diff, err := MergeSettings(settingsPath, resolved)
+// PermissionsBlock is the permissions section of settings.json.
+type PermissionsBlock struct {
+	Deny  []string `json:"deny,omitempty"`
+	Allow []string `json:"allow,omitempty"`
+}
+
+// HooksBlock is the hooks section of settings.json.
+type HooksBlock struct {
+	PreToolUse  []HookEntry `json:"PreToolUse,omitempty"`
+	PostToolUse []HookEntry `json:"PostToolUse,omitempty"`
+}
+
+// HookEntry is a single hook matcher+hooks entry in settings.json.
+type HookEntry struct {
+	Matcher string        `json:"matcher"`
+	Hooks   []HookCommand `json:"hooks"`
+}
+
+// HookCommand is a hook command definition.
+type HookCommand struct {
+	Type    string `json:"type"`
+	Command string `json:"command"`
+}
+
+// MergeSettings reads the existing settings.json, computes what the policy
+// would change, and returns a human-readable diff string. It does NOT write.
+func MergeSettings(settingsPath string, spec *PolicySpec) (string, error) {
+	current, err := readSettingsRaw(settingsPath)
 	if err != nil {
 		return "", err
 	}
 
-	if err := os.MkdirAll(filepath.Dir(settingsPath), 0o755); err != nil {
-		return "", fmt.Errorf("policy: creating settings dir: %w", err)
+	proposed := applyPolicyToRaw(current, spec)
+
+	currentJSON, _ := json.MarshalIndent(current, "", "  ")
+	proposedJSON, _ := json.MarshalIndent(proposed, "", "  ")
+
+	if string(currentJSON) == string(proposedJSON) {
+		return "", nil
 	}
 
-	if err := os.WriteFile(settingsPath, merged, 0o644); err != nil {
-		return "", fmt.Errorf("policy: writing settings: %w", err)
-	}
-
-	return diff, nil
+	return buildDiff(string(currentJSON), string(proposedJSON)), nil
 }
 
-func applyPermissions(settings map[string]interface{}, resolved *PolicySpec) {
-	if resolved.Filesystem == nil {
-		return
+// ApplySettings reads settings.json, applies the policy, and writes back.
+func ApplySettings(settingsPath string, spec *PolicySpec) error {
+	current, err := readSettingsRaw(settingsPath)
+	if err != nil {
+		return err
 	}
 
-	perms, ok := settings["permissions"].(map[string]interface{})
-	if !ok {
-		perms = make(map[string]interface{})
-		settings["permissions"] = perms
+	merged := applyPolicyToRaw(current, spec)
+
+	data, err := json.MarshalIndent(merged, "", "  ")
+	if err != nil {
+		return fmt.Errorf("policy: marshalling settings: %w", err)
 	}
 
-	if len(resolved.Filesystem.Deny) > 0 {
-		perms["deny"] = toClaudePermPatterns(resolved.Filesystem.Deny)
-	}
-	if len(resolved.Filesystem.Allow) > 0 {
-		perms["allow"] = toClaudePermPatterns(resolved.Filesystem.Allow)
-	}
+	return os.WriteFile(settingsPath, append(data, '\n'), 0o644)
 }
 
-func applyHooks(settings map[string]interface{}, resolved *PolicySpec) {
-	if resolved.Audit == nil || !resolved.Audit.Enabled {
-		return
+func readSettingsRaw(path string) (map[string]interface{}, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return make(map[string]interface{}), nil
+		}
+		return nil, fmt.Errorf("policy: reading settings: %w", err)
 	}
 
-	hooks, ok := settings["hooks"].(map[string]interface{})
-	if !ok {
-		hooks = make(map[string]interface{})
-		settings["hooks"] = hooks
+	var raw map[string]interface{}
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return nil, fmt.Errorf("policy: parsing settings: %w", err)
 	}
-
-	auditPath := resolved.Audit.Path
-	if auditPath == "" {
-		auditPath = ".claude/audit.jsonl"
-	}
-
-	hookEntry := audit.GenerateHookEntry(auditPath)
-	hooks["PostToolUse"] = []interface{}{
-		map[string]interface{}{
-			"matcher": ".*",
-			"hooks":   []interface{}{hookEntry},
-		},
-	}
+	return raw, nil
 }
 
-// toClaudePermPatterns converts policy glob patterns into Claude settings
-// permission patterns (Read/Bash prefixed).
-func toClaudePermPatterns(patterns []string) []interface{} {
-	result := make([]interface{}, 0, len(patterns))
-	for _, p := range patterns {
-		result = append(result, "Read("+p+")")
-		result = append(result, "Bash(cat "+p+")")
+func applyPolicyToRaw(raw map[string]interface{}, spec *PolicySpec) map[string]interface{} {
+	result := make(map[string]interface{})
+	for k, v := range raw {
+		result[k] = v
 	}
+
+	if spec.Filesystem != nil {
+		perms := make(map[string]interface{})
+		if existing, ok := result["permissions"].(map[string]interface{}); ok {
+			for k, v := range existing {
+				perms[k] = v
+			}
+		}
+		if len(spec.Filesystem.Deny) > 0 {
+			perms["deny"] = spec.Filesystem.Deny
+		}
+		if len(spec.Filesystem.Allow) > 0 {
+			perms["allow"] = spec.Filesystem.Allow
+		}
+		result["permissions"] = perms
+	}
+
+	if spec.Hooks != nil {
+		hooks := make(map[string]interface{})
+		if existing, ok := result["hooks"].(map[string]interface{}); ok {
+			for k, v := range existing {
+				hooks[k] = v
+			}
+		}
+		if len(spec.Hooks.PreToolUse) > 0 {
+			hooks["PreToolUse"] = convertHooks(spec.Hooks.PreToolUse)
+		}
+		if len(spec.Hooks.PostToolUse) > 0 {
+			hooks["PostToolUse"] = convertHooks(spec.Hooks.PostToolUse)
+		}
+		result["hooks"] = hooks
+	}
+
 	return result
 }
 
-func computeDiff(before, after string) string {
+func convertHooks(defs []HookDef) []map[string]interface{} {
+	entries := make([]map[string]interface{}, len(defs))
+	for i, d := range defs {
+		entries[i] = map[string]interface{}{
+			"matcher": d.Matcher,
+			"hooks": []map[string]interface{}{
+				{"type": "command", "command": d.Command},
+			},
+		}
+	}
+	return entries
+}
+
+func buildDiff(before, after string) string {
 	beforeLines := strings.Split(before, "\n")
 	afterLines := strings.Split(after, "\n")
 
 	var sb strings.Builder
+	sb.WriteString("--- settings.json (current)\n")
+	sb.WriteString("+++ settings.json (after policy apply)\n")
 
-	// Removals: lines in before but not in after
-	afterCounts := make(map[string]int, len(afterLines))
-	for _, l := range afterLines {
-		afterCounts[l]++
-	}
-	for _, l := range beforeLines {
-		if afterCounts[l] > 0 {
-			afterCounts[l]--
-			continue
-		}
-		sb.WriteString("- " + l + "\n")
+	maxLen := len(beforeLines)
+	if len(afterLines) > maxLen {
+		maxLen = len(afterLines)
 	}
 
-	// Additions: lines in after but not in before
-	beforeCounts := make(map[string]int, len(beforeLines))
+	bSet := make(map[string]int)
+	aSet := make(map[string]int)
 	for _, l := range beforeLines {
-		beforeCounts[l]++
+		bSet[l]++
 	}
 	for _, l := range afterLines {
-		if beforeCounts[l] > 0 {
-			beforeCounts[l]--
-			continue
+		aSet[l]++
+	}
+
+	bUsed := make(map[string]int)
+	aUsed := make(map[string]int)
+
+	// Show removed lines
+	for _, l := range beforeLines {
+		bUsed[l]++
+		if bUsed[l] > aSet[l] {
+			sb.WriteString(fmt.Sprintf("- %s\n", l))
 		}
-		sb.WriteString("+ " + l + "\n")
+	}
+	// Show added lines
+	for _, l := range afterLines {
+		aUsed[l]++
+		if aUsed[l] > bSet[l] {
+			sb.WriteString(fmt.Sprintf("+ %s\n", l))
+		}
 	}
 
 	return sb.String()
+}
+
+// SortedYAML returns the PolicySpec as deterministically-ordered YAML.
+func SortedYAML(spec *PolicySpec) ([]byte, error) {
+	// Marshal to JSON first (deterministic field order from struct tags),
+	// then convert to a sorted map for YAML output.
+	jsonData, err := json.Marshal(spec)
+	if err != nil {
+		return nil, err
+	}
+	var m map[string]interface{}
+	if err := json.Unmarshal(jsonData, &m); err != nil {
+		return nil, err
+	}
+	return marshalSortedYAML(m, 0), nil
+}
+
+func marshalSortedYAML(m map[string]interface{}, indent int) []byte {
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	prefix := strings.Repeat("  ", indent)
+	var sb strings.Builder
+	for _, k := range keys {
+		v := m[k]
+		switch val := v.(type) {
+		case map[string]interface{}:
+			sb.WriteString(fmt.Sprintf("%s%s:\n", prefix, k))
+			sb.Write(marshalSortedYAML(val, indent+1))
+		case []interface{}:
+			sb.WriteString(fmt.Sprintf("%s%s:\n", prefix, k))
+			for _, item := range val {
+				if sub, ok := item.(map[string]interface{}); ok {
+					sb.WriteString(fmt.Sprintf("%s  -\n", prefix))
+					subYAML := marshalSortedYAML(sub, indent+2)
+					sb.Write(subYAML)
+				} else {
+					sb.WriteString(fmt.Sprintf("%s  - %v\n", prefix, item))
+				}
+			}
+		case bool:
+			sb.WriteString(fmt.Sprintf("%s%s: %t\n", prefix, k, val))
+		default:
+			sb.WriteString(fmt.Sprintf("%s%s: %v\n", prefix, k, val))
+		}
+	}
+	return []byte(sb.String())
 }
