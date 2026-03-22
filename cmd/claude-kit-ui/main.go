@@ -36,6 +36,9 @@ func main() {
 			workflowService.startup(ctx)
 			terminalService.startup(ctx)
 		},
+		OnShutdown: func(ctx context.Context) {
+			terminalService.StopAll()
+		},
 		Bind: []interface{}{
 			app,
 			projectService,

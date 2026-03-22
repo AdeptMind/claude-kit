@@ -12,18 +12,28 @@
     let running = $state(false)
     let projectPath = $state('')
     let projectName = $state('')
+    let sessionCount = $state(0)
+    let sessionInterval = null
 
     currentProject.subscribe(async (p) => {
         const newPath = p?.path || ''
-        const oldPath = projectPath
         projectPath = newPath
         projectName = p?.name || ''
 
-        // If project changed while running, restart in new directory
-        if (running && newPath && newPath !== oldPath) {
-            if (term) term.writeln(`\r\n\x1b[33m— Switching to project: ${p.name} —\x1b[0m`)
-            await stopSession()
-            setTimeout(() => startSession(), 500)
+        if (!newPath || !term) return
+
+        // Clear display for switch
+        term.clear()
+
+        try {
+            const { SwitchTo, IsRunning } = await import('../../wailsjs/go/main/TerminalService.js')
+            const [hasSession] = await SwitchTo(newPath)
+            running = await IsRunning()
+            if (hasSession) {
+                term.writeln(`\x1b[90m— Resumed session: ${p.name} —\x1b[0m`)
+            }
+        } catch {
+            running = false
         }
     })
 
@@ -91,6 +101,15 @@
         })
         resizeObserver.observe(terminalEl)
 
+        // Refresh session count periodically
+        sessionInterval = setInterval(async () => {
+            try {
+                const { ListSessions } = await import('../../wailsjs/go/main/TerminalService.js')
+                const sessions = await ListSessions()
+                sessionCount = sessions?.length || 0
+            } catch {}
+        }, 2000)
+
         return () => {
             resizeObserver.disconnect()
         }
@@ -99,6 +118,7 @@
     onDestroy(() => {
         EventsOff('terminal:output')
         EventsOff('terminal:exit')
+        if (sessionInterval) clearInterval(sessionInterval)
         if (term) term.dispose()
     })
 
@@ -142,6 +162,9 @@
                 </span>
             {:else}
                 <span class="text-xs text-ck-dim">Not connected</span>
+            {/if}
+            {#if sessionCount > 1}
+                <span class="text-xs text-ck-dim">{sessionCount} sessions</span>
             {/if}
         </div>
         <div class="flex items-center gap-2">
