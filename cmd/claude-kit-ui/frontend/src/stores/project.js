@@ -16,6 +16,23 @@ export function setProject(project) {
   })
 }
 
+export function removeProject(path) {
+  recentProjects.update(list => {
+    const updated = list.filter(p => p.path !== path)
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(updated)) } catch {}
+    return updated
+  })
+  // If we removed the current project, switch to the first remaining or null
+  currentProject.update(current => {
+    if (current?.path === path) {
+      let first = null
+      recentProjects.subscribe(list => { first = list[0] || null })()
+      return first
+    }
+    return current
+  })
+}
+
 export function loadRecents() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)

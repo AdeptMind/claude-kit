@@ -4,6 +4,7 @@
   let stories = $state([])
   let stats = $state({ done: 0, inProgress: 0, todo: 0, total: 0 })
   let loading = $state(true)
+  let selectedStoryId = $state(null)
 
   let statusFilter = $state('all')
   let priorityFilter = $state('all')
@@ -32,10 +33,20 @@
   let inProgressStories = $derived(filtered().filter(s => s.status === 'in-progress'))
   let doneStories = $derived(filtered().filter(s => s.status === 'done'))
 
+  // Selected story — reactive so it updates if stories change (status change)
+  let selectedStory = $derived(selectedStoryId ? stories.find(s => s.id === selectedStoryId) : null)
+
   const priorityColors = { 1: 'bg-ck-rose/20 text-ck-rose border-ck-rose/30', 2: 'bg-ck-dim/20 text-ck-dim border-ck-dim/30' }
+  const statusColors = { todo: 'bg-gray-500', 'in-progress': 'bg-ck-gold', done: 'bg-ck-green' }
   const statusLabels = { todo: 'Todo', 'in-progress': 'In Progress', done: 'Done' }
 
-  $effect(() => { loadStories() })
+  // Auto-refresh stories every 5s to catch status changes
+  let refreshInterval
+  $effect(() => {
+    loadStories()
+    refreshInterval = setInterval(loadStories, 5000)
+    return () => clearInterval(refreshInterval)
+  })
 
   async function loadStories() {
     try {
@@ -45,20 +56,28 @@
       stats = st || stats
     } catch {
       stories = [
-        { id: 'CK-001', title: 'Setup Wails project structure', status: 'done', priority: 1, round: 1, component: 'infra', type: 'setup', acceptanceCriteria: [], dependsOn: [] },
-        { id: 'CK-002', title: 'Implement sidebar navigation', status: 'done', priority: 1, round: 1, component: 'ui', type: 'feature', acceptanceCriteria: [], dependsOn: ['CK-001'] },
-        { id: 'CK-003', title: 'Dashboard page with phase progress', status: 'done', priority: 1, round: 1, component: 'ui', type: 'feature', acceptanceCriteria: [], dependsOn: ['CK-002'] },
-        { id: 'CK-004', title: 'File manager with YAML viewer', status: 'in-progress', priority: 1, round: 2, component: 'ui', type: 'feature', acceptanceCriteria: [], dependsOn: ['CK-002'] },
-        { id: 'CK-005', title: 'Workflow launcher integration', status: 'in-progress', priority: 1, round: 2, component: 'backend', type: 'integration', acceptanceCriteria: [], dependsOn: ['CK-003'] },
-        { id: 'CK-006', title: 'Story board view', status: 'in-progress', priority: 1, round: 2, component: 'ui', type: 'feature', acceptanceCriteria: [], dependsOn: ['CK-002'] },
-        { id: 'CK-007', title: 'Role-based sidebar switching', status: 'todo', priority: 2, round: 3, component: 'ui', type: 'feature', acceptanceCriteria: [], dependsOn: ['CK-004'] },
-        { id: 'CK-008', title: 'Profile editor with account management', status: 'todo', priority: 2, round: 3, component: 'ui', type: 'feature', acceptanceCriteria: [], dependsOn: ['CK-002'] },
-        { id: 'CK-009', title: 'Settings persistence to disk', status: 'todo', priority: 2, round: 3, component: 'backend', type: 'config', acceptanceCriteria: [], dependsOn: ['CK-001'] },
-        { id: 'CK-010', title: 'macOS notarization pipeline', status: 'todo', priority: 2, round: 4, component: 'infra', type: 'infra', acceptanceCriteria: [], dependsOn: ['CK-009'] },
+        { id: 'CK-001', title: 'Setup Wails project structure', status: 'done', priority: 1, round: 1, component: 'infra', type: 'setup', acceptanceCriteria: ['Wails init with Svelte', 'TailwindCSS configured', 'Build produces .app'], dependsOn: [] },
+        { id: 'CK-002', title: 'Implement sidebar navigation', status: 'done', priority: 1, round: 1, component: 'ui', type: 'feature', acceptanceCriteria: ['5 nav icons', 'Active state highlighted', 'Responsive collapse'], dependsOn: ['CK-001'] },
+        { id: 'CK-003', title: 'Dashboard page with phase progress', status: 'done', priority: 1, round: 1, component: 'ui', type: 'feature', acceptanceCriteria: ['Project name + role', 'Phase progress bar', 'Recent files list'], dependsOn: ['CK-002'] },
+        { id: 'CK-004', title: 'File manager with preview', status: 'in-progress', priority: 1, round: 2, component: 'ui', type: 'feature', acceptanceCriteria: ['Tree view', 'File preview', 'Drag and drop'], dependsOn: ['CK-002'] },
+        { id: 'CK-005', title: 'Workflow launcher integration', status: 'in-progress', priority: 1, round: 2, component: 'backend', type: 'integration', acceptanceCriteria: ['Phase diagram', 'Artifact monitor', 'Open in Cowork'], dependsOn: ['CK-003'] },
+        { id: 'CK-006', title: 'Story board view', status: 'in-progress', priority: 1, round: 2, component: 'ui', type: 'feature', acceptanceCriteria: ['3-column board', 'Filters', 'Story detail modal'], dependsOn: ['CK-002'] },
+        { id: 'CK-007', title: 'Role-based sidebar switching', status: 'todo', priority: 2, round: 3, component: 'ui', type: 'feature', acceptanceCriteria: ['Management sidebar', 'Dev sidebar', 'Immediate switch'], dependsOn: ['CK-004'] },
+        { id: 'CK-008', title: 'Profile editor with Cowork integration', status: 'todo', priority: 2, round: 3, component: 'ui', type: 'feature', acceptanceCriteria: ['Agent selector', 'Form fields', 'Live preview', 'Save to Cowork'], dependsOn: ['CK-002'] },
+        { id: 'CK-009', title: 'Settings persistence to disk', status: 'todo', priority: 2, round: 3, component: 'backend', type: 'config', acceptanceCriteria: ['Save to ~/.claude-kit/state.json', 'Load on startup'], dependsOn: ['CK-001'] },
+        { id: 'CK-010', title: 'macOS app signing and notarization', status: 'todo', priority: 2, round: 4, component: 'infra', type: 'infra', acceptanceCriteria: ['Apple Developer cert', 'Notarize with xcrun', 'No Gatekeeper warning'], dependsOn: ['CK-009'] },
       ]
       stats = { done: 3, inProgress: 3, todo: 4, total: 10 }
     }
     loading = false
+  }
+
+  function openStory(story) {
+    selectedStoryId = story.id
+  }
+
+  function closeStory() {
+    selectedStoryId = null
   }
 </script>
 
@@ -121,7 +140,11 @@
           </div>
           <div class="space-y-2">
             {#each items as story}
-              <div class="bg-ck-dark rounded-lg p-4 border border-gray-800 hover:border-gray-700 transition-colors">
+              <button
+                onclick={() => openStory(story)}
+                class="w-full text-left bg-ck-dark rounded-lg p-4 border transition-colors cursor-pointer
+                  {selectedStoryId === story.id ? 'border-ck-rose ring-1 ring-ck-rose/30' : 'border-gray-800 hover:border-gray-600'}"
+              >
                 <div class="flex items-start justify-between gap-2 mb-2">
                   <span class="text-xs font-mono px-2 py-0.5 rounded bg-ck-gold/20 text-ck-gold border border-ck-gold/30">
                     {story.id}
@@ -139,7 +162,7 @@
                     <span class="text-xs text-ck-dim">R{story.round}</span>
                   {/if}
                 </div>
-              </div>
+              </button>
             {/each}
             {#if items.length === 0}
               <div class="text-center py-8 text-ck-dim text-xs">No stories</div>
@@ -153,4 +176,111 @@
       {@render column('Done', doneStories, 'bg-green-500')}
     </div>
   </div>
+
+  <!-- Story detail modal -->
+  {#if selectedStory}
+    <!-- Backdrop -->
+    <button
+      class="fixed inset-0 bg-black/50 z-40 cursor-default"
+      onclick={closeStory}
+      aria-label="Close"
+    ></button>
+
+    <div class="fixed inset-x-0 top-[15%] mx-auto w-[600px] max-h-[70vh] bg-ck-dark border border-gray-700 rounded-xl shadow-2xl z-50 flex flex-col overflow-hidden">
+      <!-- Header -->
+      <div class="flex items-start justify-between px-6 py-4 border-b border-gray-800">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-3 mb-2">
+            <span class="text-sm font-mono px-2.5 py-1 rounded bg-ck-gold/20 text-ck-gold border border-ck-gold/30">
+              {selectedStory.id}
+            </span>
+            <span class="text-xs px-2.5 py-1 rounded border {priorityColors[selectedStory.priority] || priorityColors[2]}">
+              P{selectedStory.priority}
+            </span>
+            <span class="text-xs px-2.5 py-1 rounded flex items-center gap-1.5 {
+              selectedStory.status === 'done' ? 'bg-green-500/20 text-green-400 border border-green-500/30' :
+              selectedStory.status === 'in-progress' ? 'bg-ck-gold/20 text-ck-gold border border-ck-gold/30' :
+              'bg-gray-500/20 text-gray-400 border border-gray-500/30'
+            }">
+              <span class="w-1.5 h-1.5 rounded-full {statusColors[selectedStory.status] || 'bg-gray-500'}"></span>
+              {statusLabels[selectedStory.status] || selectedStory.status}
+            </span>
+          </div>
+          <h2 class="text-lg font-semibold text-white">{selectedStory.title}</h2>
+        </div>
+        <button
+          onclick={closeStory}
+          class="text-ck-dim hover:text-white transition-colors text-xl ml-4 shrink-0"
+        >✕</button>
+      </div>
+
+      <!-- Body -->
+      <div class="flex-1 overflow-y-auto px-6 py-4 space-y-5">
+        <!-- Metadata -->
+        <div class="flex flex-wrap gap-3">
+          {#if selectedStory.component}
+            <div class="text-xs">
+              <span class="text-ck-dim">Component:</span>
+              <span class="ml-1 text-white px-2 py-0.5 rounded bg-white/5">{selectedStory.component}</span>
+            </div>
+          {/if}
+          {#if selectedStory.type}
+            <div class="text-xs">
+              <span class="text-ck-dim">Type:</span>
+              <span class="ml-1 text-white px-2 py-0.5 rounded bg-white/5">{selectedStory.type}</span>
+            </div>
+          {/if}
+          {#if selectedStory.round}
+            <div class="text-xs">
+              <span class="text-ck-dim">Round:</span>
+              <span class="ml-1 text-white px-2 py-0.5 rounded bg-white/5">{selectedStory.round}</span>
+            </div>
+          {/if}
+        </div>
+
+        <!-- Acceptance Criteria -->
+        {#if selectedStory.acceptanceCriteria?.length > 0}
+          <div>
+            <h3 class="text-xs font-semibold text-ck-dim uppercase tracking-wider mb-2">Acceptance Criteria</h3>
+            <ul class="space-y-1.5">
+              {#each selectedStory.acceptanceCriteria as ac}
+                <li class="flex items-start gap-2 text-sm text-gray-300">
+                  <span class="shrink-0 mt-0.5 {selectedStory.status === 'done' ? 'text-ck-green' : 'text-ck-dim'}">
+                    {selectedStory.status === 'done' ? '✓' : '○'}
+                  </span>
+                  {ac}
+                </li>
+              {/each}
+            </ul>
+          </div>
+        {/if}
+
+        <!-- Dependencies -->
+        {#if selectedStory.dependsOn?.length > 0}
+          <div>
+            <h3 class="text-xs font-semibold text-ck-dim uppercase tracking-wider mb-2">Dependencies</h3>
+            <div class="flex flex-wrap gap-2">
+              {#each selectedStory.dependsOn as dep}
+                {@const depStory = stories.find(s => s.id === dep)}
+                <button
+                  onclick={() => { selectedStoryId = dep }}
+                  class="text-xs font-mono px-2 py-1 rounded border transition-colors cursor-pointer
+                    {depStory?.status === 'done' ? 'bg-green-500/10 text-green-400 border-green-500/30 hover:bg-green-500/20' :
+                     depStory?.status === 'in-progress' ? 'bg-ck-gold/10 text-ck-gold border-ck-gold/30 hover:bg-ck-gold/20' :
+                     'bg-white/5 text-ck-dim border-gray-700 hover:bg-white/10'}"
+                >
+                  {dep}
+                  {#if depStory}
+                    <span class="ml-1 opacity-60">
+                      {depStory.status === 'done' ? '✓' : depStory.status === 'in-progress' ? '◐' : '○'}
+                    </span>
+                  {/if}
+                </button>
+              {/each}
+            </div>
+          </div>
+        {/if}
+      </div>
+    </div>
+  {/if}
 {/if}

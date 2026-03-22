@@ -1,5 +1,5 @@
 <script>
-  import { currentProject, recentProjects, setProject, loadRecents } from '../stores/project.js'
+  import { currentProject, recentProjects, setProject, removeProject, loadRecents } from '../stores/project.js'
 
   let project = $state(null)
   let recents = $state([])
@@ -81,14 +81,28 @@
           {#if recents.length > 0}
             <div class="max-h-60 overflow-y-auto">
               {#each recents as p}
-                <button
-                  onclick={() => selectProject(p)}
-                  class="w-full text-left px-3 py-2 hover:bg-white/5 transition-colors
+                <div
+                  class="group flex items-center hover:bg-white/5 transition-colors
                     {project?.path === p.path ? 'bg-ck-rose/10 border-l-2 border-ck-rose' : 'border-l-2 border-transparent'}"
                 >
-                  <div class="text-sm text-white font-medium truncate">{p.name}</div>
-                  <div class="text-xs text-ck-dim truncate">{p.path}</div>
-                </button>
+                  <button
+                    onclick={() => selectProject(p)}
+                    class="flex-1 text-left px-3 py-2 min-w-0"
+                    title={p.path}
+                  >
+                    <div class="text-sm text-white font-medium truncate">{p.name}</div>
+                    <div class="text-xs text-ck-dim truncate">{p.path}</div>
+                  </button>
+                  <button
+                    onclick={(e) => { e.stopPropagation(); removeProject(p.path) }}
+                    class="shrink-0 w-6 h-6 mr-2 flex items-center justify-center rounded-full
+                      text-red-400/0 group-hover:text-red-400/50 hover:!text-red-400 hover:bg-red-400/10
+                      transition-all text-xs font-bold"
+                    title="Remove from list"
+                  >
+                    −
+                  </button>
+                </div>
               {/each}
             </div>
           {:else}
