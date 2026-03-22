@@ -1,16 +1,21 @@
 <script>
   import PhaseProgress from '../components/PhaseProgress.svelte'
   import QuickActions from '../components/QuickActions.svelte'
+  import MarkdownEditor from '../components/MarkdownEditor.svelte'
+  import ReadPreview from '../components/ReadPreview.svelte'
   import { navigateTo } from '../stores/navigation.js'
 
   let project = $state(null)
   let role = $state(null)
   let workflowStatus = $state(null)
   let loading = $state(true)
-  let selectedFile = $state(null)
-  let fileContent = $state('')
-  let editMode = $state(false)
-  let saving = $state(false)
+
+  // Modal state
+  let readFile = $state(null)
+  let readContent = $state('')
+  let editFile = $state(null)
+  let editContent = $state('')
+  let deleteTarget = $state(null)
 
   const phases = [
     { label: 'Break', status: 'done' },
@@ -37,7 +42,6 @@
     go: '🔵',
   }
 
-  // Files that are editable (not yet consumed by a BMAD phase)
   const editableFiles = new Set(['principles.md', 'user-journey.md', 'problem.md'])
 
   const quickActions = [
@@ -60,6 +64,14 @@
       handler: () => navigateTo('files'),
     },
   ]
+
+  const placeholders = {
+    'problem.md': '# Problem Definition\n\n## Project\n- **Name:** my-project\n- **Version:** 1.0\n- **Phase:** break\n\n## Problem Statement\nYour project description here\n\n## Target Users\n- User type 1\n\n## Pain Points\n- Pain point 1',
+    'architecture.md': '# Architecture\n\n## Project\n- **Name:** my-project\n- **Version:** 1.0\n- **Phase:** model\n\n## Components\n\n### api-server\n- **Type:** service\n- **Responsibility:** Handle HTTP requests',
+    'backlog.md': '# Backlog\n\n## Project\n- **Name:** my-project\n- **Version:** 1.0\n- **Phase:** model\n\n## Tasks\n\n### T-001 — Setup project\n- **Priority:** P1',
+    'principles.md': '# Project Principles\n\n## Code Quality\n- DRY, KISS, SOLID\n- Pattern-first coding\n\n## Testing\n- TDD enforced\n- 80% coverage target',
+    'user-journey.md': '# User Journeys\n\n## User login\n- **Persona:** end user\n- **Story refs:** US-001\n\n### Steps\n1. **Action:** Navigate to /login — **Expected:** Login form displayed',
+  }
 
   $effect(() => {
     loadProject()
@@ -91,45 +103,58 @@
     loading = false
   }
 
-  async function openFile(file) {
-    selectedFile = file
-    editMode = false
+  async function loadFileContent(file) {
     let loaded = false
     try {
-      const { ReadPreview } = await import('../../wailsjs/go/main/FileService.js')
-      const result = await ReadPreview(file.path)
+      const { ReadPreview: ReadPreviewFn } = await import('../../wailsjs/go/main/FileService.js')
+      const result = await ReadPreviewFn(file.path)
       if (result && result.trim() && !result.includes('not yet implemented')) {
-        fileContent = result
-        loaded = true
+        return result
       }
     } catch {}
-    if (!loaded) {
-      // Placeholder content for demo
-      const placeholders = {
-        'problem.md': '# Problem Definition\n\n## Project\n- **Name:** my-project\n- **Version:** 1.0\n- **Phase:** break\n\n## Problem Statement\nYour project description here\n\n## Target Users\n- User type 1\n\n## Pain Points\n- Pain point 1',
-        'architecture.md': '# Architecture\n\n## Project\n- **Name:** my-project\n- **Version:** 1.0\n- **Phase:** model\n\n## Components\n\n### api-server\n- **Type:** service\n- **Responsibility:** Handle HTTP requests',
-        'backlog.md': '# Backlog\n\n## Project\n- **Name:** my-project\n- **Version:** 1.0\n- **Phase:** model\n\n## Tasks\n\n### T-001 — Setup project\n- **Priority:** P1',
-        'principles.md': '# Project Principles\n\n## Code Quality\n- DRY, KISS, SOLID\n- Pattern-first coding\n\n## Testing\n- TDD enforced\n- 80% coverage target',
-        'user-journey.md': '# User Journeys\n\n## User login\n- **Persona:** end user\n- **Story refs:** US-001\n\n### Steps\n1. **Action:** Navigate to /login — **Expected:** Login form displayed',
-      }
-      fileContent = placeholders[file.name] || `# ${file.name}\n\nFile content will appear here when connected to a project.`
-    }
+    return placeholders[file.name] || `# ${file.name}\n\nFile content will appear here when connected to a project.`
   }
 
-  async function saveFile() {
-    saving = true
+  async function openRead(file) {
+    readContent = await loadFileContent(file)
+    readFile = file
+  }
+
+  async function openEdit(file) {
+    editContent = await loadFileContent(file)
+    editFile = file
+  }
+
+  async function handleSave(newContent) {
     try {
       // Will use FileService.Write when available
-      await new Promise(resolve => setTimeout(resolve, 500))
+      await new Promise(resolve => setTimeout(resolve, 300))
     } catch {}
-    saving = false
-    editMode = false
+    editFile = null
+    editContent = ''
   }
 
-  function closeFile() {
-    selectedFile = null
-    fileContent = ''
-    editMode = false
+  function handleCancelEdit() {
+    editFile = null
+    editContent = ''
+  }
+
+  function closeRead() {
+    readFile = null
+    readContent = ''
+  }
+
+  function confirmDelete(file) {
+    deleteTarget = file
+  }
+
+  async function executeDelete() {
+    if (!deleteTarget) return
+    try {
+      // Will use FileService.Delete when available
+      await new Promise(resolve => setTimeout(resolve, 300))
+    } catch {}
+    deleteTarget = null
   }
 
   function handleNewProject() {}
@@ -163,113 +188,103 @@
     </div>
   </div>
 {:else}
-  <div class="flex h-full gap-0">
-    <!-- Main dashboard content -->
-    <div class="flex-1 space-y-8 overflow-y-auto {selectedFile ? 'pr-4' : ''}">
-      <!-- Header -->
-      <div class="flex items-center gap-4">
-        <h1 class="text-2xl font-bold text-white">{project.name}</h1>
-        {#if role}
-          <span class="px-3 py-1 rounded-full text-xs font-semibold bg-ck-gold/20 text-ck-gold border border-ck-gold/30">
-            {role.name}
-          </span>
-        {/if}
-      </div>
-
-      <!-- Phase Progress -->
-      <section>
-        <h2 class="text-sm font-semibold text-ck-dim uppercase tracking-wider mb-4">BMAD Progress</h2>
-        <div class="bg-ck-dark rounded-xl p-6 border border-gray-800">
-          <PhaseProgress {phases} />
-        </div>
-      </section>
-
-      <!-- Recent Files -->
-      <section>
-        <h2 class="text-sm font-semibold text-ck-dim uppercase tracking-wider mb-4">Recent Files</h2>
-        <div class="bg-ck-dark rounded-xl border border-gray-800 divide-y divide-gray-800">
-          {#each recentFiles as file}
-            <button
-              onclick={() => openFile(file)}
-              class="w-full flex items-center justify-between px-5 py-3 hover:bg-white/5 transition-colors cursor-pointer
-                {selectedFile?.name === file.name ? 'bg-ck-rose/10 border-l-2 border-l-ck-rose' : ''}"
-            >
-              <div class="flex items-center gap-3">
-                <span class="text-base">{fileIcons[file.type] || '📄'}</span>
-                <span class="text-sm text-white">{file.name}</span>
-                {#if editableFiles.has(file.name)}
-                  <span class="text-[10px] px-1.5 py-0.5 rounded bg-ck-gold/10 text-ck-gold border border-ck-gold/20">editable</span>
-                {/if}
-              </div>
-              <span class="text-xs text-ck-dim">{file.modified}</span>
-            </button>
-          {/each}
-        </div>
-      </section>
-
-      <!-- Quick Actions -->
-      <section>
-        <h2 class="text-sm font-semibold text-ck-dim uppercase tracking-wider mb-4">Quick Actions</h2>
-        <QuickActions actions={quickActions} />
-      </section>
+  <div class="space-y-8">
+    <!-- Header -->
+    <div class="flex items-center gap-4">
+      <h1 class="text-2xl font-bold text-white">{project.name}</h1>
+      {#if role}
+        <span class="px-3 py-1 rounded-full text-xs font-semibold bg-ck-gold/20 text-ck-gold border border-ck-gold/30">
+          {role.name}
+        </span>
+      {/if}
     </div>
 
-    <!-- File viewer/editor panel (slides in from right) -->
-    {#if selectedFile}
-      <div class="w-[45%] min-w-[400px] flex flex-col bg-ck-dark border-l border-gray-800 rounded-l-xl ml-4">
-        <!-- Panel header -->
-        <div class="flex items-center justify-between px-4 py-3 border-b border-gray-800">
-          <div class="flex items-center gap-2">
-            <span>{fileIcons[selectedFile.type] || '📄'}</span>
-            <span class="text-sm font-medium text-white">{selectedFile.name}</span>
-          </div>
-          <div class="flex items-center gap-2">
-            {#if editableFiles.has(selectedFile.name)}
-              {#if editMode}
+    <!-- Phase Progress -->
+    <section>
+      <h2 class="text-sm font-semibold text-ck-dim uppercase tracking-wider mb-4">BMAD Progress</h2>
+      <div class="bg-ck-dark rounded-xl p-6 border border-gray-800">
+        <PhaseProgress {phases} />
+      </div>
+    </section>
+
+    <!-- Recent Files -->
+    <section>
+      <h2 class="text-sm font-semibold text-ck-dim uppercase tracking-wider mb-4">Recent Files</h2>
+      <div class="bg-ck-dark rounded-xl border border-gray-800 divide-y divide-gray-800">
+        {#each recentFiles as file}
+          <div class="flex items-center justify-between px-5 py-3 hover:bg-white/5 transition-colors">
+            <div class="flex items-center gap-3">
+              <span class="text-base">{fileIcons[file.type] || '📄'}</span>
+              <span class="text-sm text-white">{file.name}</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="text-xs text-ck-dim mr-2">{file.modified}</span>
+              <button
+                onclick={() => openRead(file)}
+                class="px-2.5 py-1 text-xs rounded border border-gray-700 text-ck-dim hover:text-white hover:border-gray-500 transition-colors"
+              >
+                Read
+              </button>
+              {#if editableFiles.has(file.name)}
                 <button
-                  onclick={saveFile}
-                  disabled={saving}
-                  class="px-3 py-1 text-xs rounded bg-ck-green/20 text-ck-green border border-ck-green/30 hover:bg-ck-green/30 transition-colors disabled:opacity-50"
-                >
-                  {saving ? 'Saving...' : 'Save'}
-                </button>
-                <button
-                  onclick={() => editMode = false}
-                  class="px-3 py-1 text-xs rounded bg-ck-dark text-ck-dim border border-gray-700 hover:text-white transition-colors"
-                >
-                  Cancel
-                </button>
-              {:else}
-                <button
-                  onclick={() => editMode = true}
-                  class="px-3 py-1 text-xs rounded bg-ck-gold/20 text-ck-gold border border-ck-gold/30 hover:bg-ck-gold/30 transition-colors"
+                  onclick={() => openEdit(file)}
+                  class="px-2.5 py-1 text-xs rounded border border-ck-gold/30 text-ck-gold hover:text-ck-pink hover:border-ck-pink/30 transition-colors"
                 >
                   Edit
                 </button>
               {/if}
-            {/if}
-            <button
-              onclick={closeFile}
-              class="px-2 py-1 text-ck-dim hover:text-white transition-colors text-lg"
-            >
-              ✕
-            </button>
+              <button
+                onclick={() => confirmDelete(file)}
+                class="px-2 py-1 text-xs rounded border border-red-400/20 text-red-400/50 hover:text-red-400 hover:border-red-400/40 transition-colors"
+              >
+                ✕
+              </button>
+            </div>
           </div>
-        </div>
+        {/each}
+      </div>
+    </section>
 
-        <!-- File content -->
-        <div class="flex-1 overflow-y-auto p-4">
-          {#if editMode}
-            <textarea
-              bind:value={fileContent}
-              class="w-full h-full bg-ck-bg border border-gray-700 rounded-lg p-4 text-sm font-mono text-gray-300 resize-none focus:border-ck-pink focus:outline-none"
-              spellcheck="false"
-            ></textarea>
-          {:else}
-            <pre class="text-sm font-mono text-gray-300 whitespace-pre-wrap leading-relaxed">{fileContent}</pre>
-          {/if}
+    <!-- Quick Actions -->
+    <section>
+      <h2 class="text-sm font-semibold text-ck-dim uppercase tracking-wider mb-4">Quick Actions</h2>
+      <QuickActions actions={quickActions} />
+    </section>
+  </div>
+
+  <!-- Read Preview Modal -->
+  {#if readFile}
+    <ReadPreview content={readContent} filename={readFile.name} onClose={closeRead} />
+  {/if}
+
+  <!-- Markdown Editor Modal -->
+  {#if editFile}
+    <MarkdownEditor content={editContent} filename={editFile.name} onSave={handleSave} onCancel={handleCancelEdit} />
+  {/if}
+
+  <!-- Delete Confirmation Modal -->
+  {#if deleteTarget}
+    <div class="fixed inset-0 z-50 bg-black/60 flex items-center justify-center">
+      <div class="bg-ck-dark rounded-xl border border-gray-700 p-6 max-w-sm shadow-2xl">
+        <h3 class="text-white font-semibold mb-2">Delete file?</h3>
+        <p class="text-sm text-ck-dim mb-5">
+          Are you sure you want to delete <span class="text-white font-medium">{deleteTarget.name}</span>? This action cannot be undone.
+        </p>
+        <div class="flex justify-end gap-3">
+          <button
+            onclick={() => deleteTarget = null}
+            class="px-4 py-1.5 text-xs rounded-lg bg-ck-dark text-ck-dim border border-gray-700 hover:text-white transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onclick={executeDelete}
+            class="px-4 py-1.5 text-xs rounded-lg bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30 transition-colors"
+          >
+            Delete
+          </button>
         </div>
       </div>
-    {/if}
-  </div>
+    </div>
+  {/if}
 {/if}
