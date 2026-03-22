@@ -430,7 +430,7 @@ Both enhance Claude Code with structured workflows. Here's how they differ:
 | | **Claude Kit** | **Superpowers** |
 |---|---|---|
 | **Scope** | Full project lifecycle — idea to delivery | Code-focused — spec to implementation |
-| **Workflow** | 10-phase BMAD (Break → Model → Analyze → Act → Deliver) with quality gates between each | 7-phase (Brainstorm → Spec → Plan → TDD → Subagent → Review → Finalize) |
+| **Workflow** | 11-phase BMAD (Brainstorm → Principles → Break → Clarify → UX Spec → Model → Analyze → Checklist → GSD Prep → Act → Deliver) with quality gates between each | 7-phase (Brainstorm → Spec → Plan → TDD → Subagent → Review → Finalize) |
 | **Agents** | 40+ specialized agents (backend, security, finops, PO, BA, PM, HR, QA...) | Fresh subagents per task (no persistent roles) |
 | **Roles** | Role-based working methods — `ck user po/qa/dev/all` adapts the entire workflow | Single workflow, same for everyone |
 | **Non-dev users** | PO, PM, HR, QA get their own agents, profiles, and desktop app | Developer-only |
