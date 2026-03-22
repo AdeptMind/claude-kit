@@ -1,5 +1,6 @@
 <script>
   import { currentProject } from '../stores/project.js'
+  import MarkdownEditor from '../components/MarkdownEditor.svelte'
 
   let stories = $state([])
   let stats = $state({ done: 0, inProgress: 0, todo: 0, total: 0 })
@@ -76,8 +77,51 @@
     selectedStoryId = story.id
   }
 
+  let editingStory = $state(false)
+  let editContent = $state('')
+
+  async function editStory() {
+    try {
+      const { GetStoryMarkdown } = await import('../../wailsjs/go/main/StoryService.js')
+      editContent = await GetStoryMarkdown(projectPath, selectedStory.id)
+    } catch {
+      editContent = storyToMarkdown(selectedStory)
+    }
+    editingStory = true
+  }
+
+  async function saveStoryEdit(content) {
+    try {
+      const { SaveStoryMarkdown } = await import('../../wailsjs/go/main/StoryService.js')
+      await SaveStoryMarkdown(projectPath, selectedStory.id, content)
+    } catch {}
+    editingStory = false
+    loadStories()
+  }
+
+  function storyToMarkdown(s) {
+    let md = `# ${s.id}: ${s.title}\n\n`
+    md += `**Priority:** P${s.priority}\n`
+    if (s.round) md += `**Round:** ${s.round}\n`
+    if (s.component) md += `**Component:** ${s.component}\n`
+    md += `**Status:** ${s.status}\n\n`
+    if (s.acceptanceCriteria?.length) {
+      md += `## Acceptance Criteria\n`
+      s.acceptanceCriteria.forEach(ac => md += `- ${ac}\n`)
+      md += '\n'
+    }
+    if (s.dependsOn?.length) {
+      md += `## Dependencies\n`
+      s.dependsOn.forEach(d => md += `- ${d}\n`)
+      md += '\n'
+    }
+    md += `## Notes\n_Add your notes here..._\n`
+    return md
+  }
+
   function closeStory() {
     selectedStoryId = null
+    editingStory = false
   }
 </script>
 
@@ -208,10 +252,15 @@
           </div>
           <h2 class="text-lg font-semibold text-white">{selectedStory.title}</h2>
         </div>
-        <button
-          onclick={closeStory}
-          class="text-ck-dim hover:text-white transition-colors text-xl ml-4 shrink-0"
-        >✕</button>
+        <div class="flex items-center gap-2 ml-4 shrink-0">
+          <button onclick={editStory} class="px-3 py-1 text-xs rounded bg-ck-gold/20 text-ck-gold border border-ck-gold/30 hover:bg-ck-gold/30 transition-colors">
+            Edit
+          </button>
+          <button
+            onclick={closeStory}
+            class="text-ck-dim hover:text-white transition-colors text-xl"
+          >✕</button>
+        </div>
       </div>
 
       <!-- Body -->
@@ -236,6 +285,22 @@
               <span class="ml-1 text-white px-2 py-0.5 rounded bg-white/5">{selectedStory.round}</span>
             </div>
           {/if}
+        </div>
+
+        <!-- Ralph Status -->
+        <div>
+          <h3 class="text-xs font-semibold text-ck-dim uppercase tracking-wider mb-2">Ralph Status</h3>
+          <div class="flex items-center gap-2 text-sm">
+            <span class="w-2 h-2 rounded-full {statusColors[selectedStory.status]}"></span>
+            <span class="text-gray-300">{statusLabels[selectedStory.status]}</span>
+            {#if selectedStory.status === 'done'}
+              <span class="text-ck-green text-xs">— validated by Ralph</span>
+            {:else if selectedStory.status === 'in-progress'}
+              <span class="text-ck-gold text-xs">— dependencies met, eligible for implementation</span>
+            {:else}
+              <span class="text-ck-dim text-xs">— waiting for dependencies</span>
+            {/if}
+          </div>
         </div>
 
         <!-- Acceptance Criteria -->
@@ -282,5 +347,14 @@
         {/if}
       </div>
     </div>
+
+    {#if editingStory}
+      <MarkdownEditor
+        content={editContent}
+        filename="{selectedStory.id}.md"
+        onSave={saveStoryEdit}
+        onCancel={() => editingStory = false}
+      />
+    {/if}
   {/if}
 {/if}

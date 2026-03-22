@@ -2,8 +2,10 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"gopkg.in/yaml.v3"
 )
@@ -222,6 +224,133 @@ func (s *StoryService) loadFromBacklog(projectPath string) ([]Story, error) {
 		})
 	}
 	return stories, nil
+}
+
+// GetStoryMarkdown returns a story formatted as markdown for editing
+func (s *StoryService) GetStoryMarkdown(projectPath string, storyID string) (string, error) {
+	if projectPath == "" {
+		projectPath = s.findProjectPath()
+	}
+	stories, err := s.List(projectPath)
+	if err != nil {
+		return "", err
+	}
+
+	var story *Story
+	for i := range stories {
+		if stories[i].ID == storyID {
+			story = &stories[i]
+			break
+		}
+	}
+	if story == nil {
+		return "", fmt.Errorf("story %s not found", storyID)
+	}
+
+	var b strings.Builder
+	fmt.Fprintf(&b, "# %s: %s\n\n", story.ID, story.Title)
+	fmt.Fprintf(&b, "**Priority:** P%d\n", story.Priority)
+	if story.Round > 0 {
+		fmt.Fprintf(&b, "**Round:** %d\n", story.Round)
+	}
+	if story.Component != "" {
+		fmt.Fprintf(&b, "**Component:** %s\n", story.Component)
+	}
+	fmt.Fprintf(&b, "**Status:** %s\n\n", story.Status)
+
+	if len(story.AcceptanceCriteria) > 0 {
+		b.WriteString("## Acceptance Criteria\n")
+		for _, ac := range story.AcceptanceCriteria {
+			fmt.Fprintf(&b, "- %s\n", ac)
+		}
+		b.WriteString("\n")
+	}
+
+	if len(story.DependsOn) > 0 {
+		b.WriteString("## Dependencies\n")
+		for _, d := range story.DependsOn {
+			fmt.Fprintf(&b, "- %s\n", d)
+		}
+		b.WriteString("\n")
+	}
+
+	b.WriteString("## Notes\n_Add your notes here..._\n")
+	return b.String(), nil
+}
+
+// SaveStoryMarkdown parses edited markdown and updates ralph-prd.json
+func (s *StoryService) SaveStoryMarkdown(projectPath string, storyID string, markdown string) error {
+	if projectPath == "" {
+		projectPath = s.findProjectPath()
+	}
+
+	prdPath := filepath.Join(projectPath, ".claude", "ralph-prd.json")
+	data, err := os.ReadFile(prdPath)
+	if err != nil {
+		return fmt.Errorf("cannot read ralph-prd.json: %w", err)
+	}
+
+	var prd ralphPRD
+	if err := json.Unmarshal(data, &prd); err != nil {
+		return fmt.Errorf("cannot parse ralph-prd.json: %w", err)
+	}
+
+	// Parse title from "# ID: title"
+	var newTitle string
+	var newAC []string
+	lines := strings.Split(markdown, "\n")
+	inAC := false
+
+	for _, line := range lines {
+		trimmed := strings.TrimSpace(line)
+
+		if strings.HasPrefix(trimmed, "# ") {
+			// Parse "# ID: title"
+			after := strings.TrimPrefix(trimmed, "# ")
+			if idx := strings.Index(after, ": "); idx >= 0 {
+				newTitle = strings.TrimSpace(after[idx+2:])
+			}
+			inAC = false
+			continue
+		}
+
+		if trimmed == "## Acceptance Criteria" {
+			inAC = true
+			continue
+		}
+		if strings.HasPrefix(trimmed, "## ") {
+			inAC = false
+			continue
+		}
+
+		if inAC && strings.HasPrefix(trimmed, "- ") {
+			newAC = append(newAC, strings.TrimPrefix(trimmed, "- "))
+		}
+	}
+
+	// Update matching story — don't touch passes
+	found := false
+	for i := range prd.UserStories {
+		if prd.UserStories[i].ID == storyID {
+			if newTitle != "" {
+				prd.UserStories[i].Title = newTitle
+			}
+			if len(newAC) > 0 {
+				prd.UserStories[i].AcceptanceCriteria = newAC
+			}
+			found = true
+			break
+		}
+	}
+	if !found {
+		return fmt.Errorf("story %s not found in ralph-prd.json", storyID)
+	}
+
+	out, err := json.MarshalIndent(prd, "", "  ")
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(prdPath, out, 0644)
 }
 
 func allDepsDone(deps []string, doneSet map[string]bool) bool {
