@@ -1,80 +1,150 @@
 <script>
   let { content = '', filename = '', onSave = () => {}, onCancel = () => {} } = $props()
 
-  let text = $state('')
-  let textarea = $state(null)
+  let htmlContent = $state('')
+  let editor = $state(null)
+  let isBold = $state(false)
+  let isItalic = $state(false)
 
-  $effect(() => { text = content })
-
-  function renderMarkdown(raw) {
-    if (!raw) return '<p class="text-ck-dim italic">Start typing to see preview...</p>'
-    return raw
-      .replace(/^### (.+)$/gm, '<h3 class="text-base font-semibold text-ck-gold mt-3 mb-1">$1</h3>')
-      .replace(/^## (.+)$/gm, '<h2 class="text-lg font-bold text-ck-pink mt-4 mb-1">$1</h2>')
-      .replace(/^# (.+)$/gm, '<h1 class="text-xl font-bold text-ck-pink mt-4 mb-2">$1</h1>')
-      .replace(/`([^`]+)`/g, '<code class="px-1 py-0.5 rounded bg-ck-bg text-ck-gold text-xs">$1</code>')
-      .replace(/\*\*(.+?)\*\*/g, '<strong class="text-white font-bold">$1</strong>')
-      .replace(/\*(.+?)\*/g, '<em class="italic text-gray-200">$1</em>')
-      .replace(/^(\d+)\. (.+)$/gm, '<li class="ml-6 list-decimal text-gray-300">$2</li>')
-      .replace(/^- (.+)$/gm, '<li class="ml-4 list-disc text-gray-300">$1</li>')
-      .replace(/^---$/gm, '<hr class="border-gray-700 my-3"/>')
-      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a class="text-ck-pink underline" href="$2">$1</a>')
-      .replace(/\n{2,}/g, '<br/><br/>')
-      .replace(/\n/g, '<br/>')
+  function markdownToHtml(md) {
+    if (!md) return '<p><br></p>'
+    let html = md
+      // Headings
+      .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+      .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+      .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+      // Inline
+      .replace(/`([^`]+)`/g, '<code>$1</code>')
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.+?)\*/g, '<em>$1</em>')
+      // Links
+      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>')
+      // HR
+      .replace(/^---$/gm, '<hr>')
+      // Lists — collect consecutive lines
+      .replace(/(?:^- .+\n?)+/gm, (match) => {
+        const items = match.trim().split('\n').map(l => `<li>${l.replace(/^- /, '')}</li>`).join('')
+        return `<ul>${items}</ul>`
+      })
+      .replace(/(?:^\d+\. .+\n?)+/gm, (match) => {
+        const items = match.trim().split('\n').map(l => `<li>${l.replace(/^\d+\. /, '')}</li>`).join('')
+        return `<ol>${items}</ol>`
+      })
+    // Wrap remaining bare lines in <p> tags
+    html = html.split('\n\n').map(block => {
+      const trimmed = block.trim()
+      if (!trimmed) return ''
+      if (/^<(h[1-3]|ul|ol|hr|p|div|blockquote)/.test(trimmed)) return trimmed
+      return `<p>${trimmed.replace(/\n/g, '<br>')}</p>`
+    }).join('\n')
+    return html || '<p><br></p>'
   }
 
-  function insertAtCursor(before, after = '') {
-    if (!textarea) return
-    const start = textarea.selectionStart
-    const end = textarea.selectionEnd
-    const selected = text.slice(start, end)
-    const replacement = before + (selected || 'text') + after
-    text = text.slice(0, start) + replacement + text.slice(end)
-    // Restore cursor after the inserted text
-    const cursorPos = start + replacement.length
-    requestAnimationFrame(() => {
-      textarea.focus()
-      textarea.setSelectionRange(cursorPos, cursorPos)
+  function htmlToMarkdown(html) {
+    let md = html
+    // Block elements first
+    md = md.replace(/<h1[^>]*>([\s\S]*?)<\/h1>/gi, (_, c) => `# ${stripTags(c)}\n\n`)
+    md = md.replace(/<h2[^>]*>([\s\S]*?)<\/h2>/gi, (_, c) => `## ${stripTags(c)}\n\n`)
+    md = md.replace(/<h3[^>]*>([\s\S]*?)<\/h3>/gi, (_, c) => `### ${stripTags(c)}\n\n`)
+    md = md.replace(/<hr[^>]*\/?>/gi, '---\n\n')
+    // Lists
+    md = md.replace(/<ul[^>]*>([\s\S]*?)<\/ul>/gi, (_, inner) => {
+      return inner.replace(/<li[^>]*>([\s\S]*?)<\/li>/gi, (_, li) => `- ${stripTags(li).trim()}\n`) + '\n'
     })
-  }
-
-  function insertAtLineStart(prefix) {
-    if (!textarea) return
-    const start = textarea.selectionStart
-    // Find the beginning of the current line
-    const lineStart = text.lastIndexOf('\n', start - 1) + 1
-    text = text.slice(0, lineStart) + prefix + text.slice(lineStart)
-    const cursorPos = start + prefix.length
-    requestAnimationFrame(() => {
-      textarea.focus()
-      textarea.setSelectionRange(cursorPos, cursorPos)
+    md = md.replace(/<ol[^>]*>([\s\S]*?)<\/ol>/gi, (_, inner) => {
+      let i = 0
+      return inner.replace(/<li[^>]*>([\s\S]*?)<\/li>/gi, (_, li) => `${++i}. ${stripTags(li).trim()}\n`) + '\n'
     })
+    // Links before stripping other tags
+    md = md.replace(/<a[^>]+href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/gi, (_, href, text) => `[${stripTags(text)}](${href})`)
+    // Inline formatting
+    md = md.replace(/<(strong|b)[^>]*>([\s\S]*?)<\/\1>/gi, (_, _t, c) => `**${c}**`)
+    md = md.replace(/<(em|i)[^>]*>([\s\S]*?)<\/\1>/gi, (_, _t, c) => `*${c}*`)
+    md = md.replace(/<code[^>]*>([\s\S]*?)<\/code>/gi, (_, c) => `\`${c}\``)
+    // Paragraphs and line breaks
+    md = md.replace(/<\/p>\s*<p[^>]*>/gi, '\n\n')
+    md = md.replace(/<br\s*\/?>/gi, '\n')
+    md = md.replace(/<div[^>]*>/gi, '\n')
+    md = md.replace(/<\/div>/gi, '')
+    // Strip remaining tags
+    md = md.replace(/<\/?p[^>]*>/gi, '')
+    md = md.replace(/<[^>]+>/g, '')
+    // Decode entities
+    md = md.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ').replace(/&quot;/g, '"')
+    // Clean up whitespace: collapse 3+ newlines to 2
+    md = md.replace(/\n{3,}/g, '\n\n')
+    return md.trim() + '\n'
   }
 
-  function insertBlock(block) {
-    if (!textarea) return
-    const pos = textarea.selectionStart
-    text = text.slice(0, pos) + block + text.slice(pos)
-    const cursorPos = pos + block.length
-    requestAnimationFrame(() => {
-      textarea.focus()
-      textarea.setSelectionRange(cursorPos, cursorPos)
-    })
+  function stripTags(html) {
+    return html.replace(/<[^>]+>/g, '')
   }
 
-  function bold() { insertAtCursor('**', '**') }
-  function italic() { insertAtCursor('*', '*') }
-  function code() { insertAtCursor('`', '`') }
-  function h1() { insertAtLineStart('# ') }
-  function h2() { insertAtLineStart('## ') }
-  function h3() { insertAtLineStart('### ') }
-  function bulletList() { insertAtLineStart('- ') }
-  function numberedList() { insertAtLineStart('1. ') }
-  function link() { insertAtCursor('[', '](url)') }
-  function hr() { insertBlock('\n---\n') }
+  $effect(() => { htmlContent = markdownToHtml(content) })
 
-  let lineCount = $derived(text.split('\n').length)
-  let charCount = $derived(text.length)
+  function updateToolbarState() {
+    isBold = document.queryCommandState('bold')
+    isItalic = document.queryCommandState('italic')
+  }
+
+  function onSelectionChange() {
+    updateToolbarState()
+  }
+
+  $effect(() => {
+    document.addEventListener('selectionchange', onSelectionChange)
+    return () => document.removeEventListener('selectionchange', onSelectionChange)
+  })
+
+  function execCmd(cmd, value = null) {
+    document.execCommand(cmd, false, value)
+    if (editor) htmlContent = editor.innerHTML
+    updateToolbarState()
+  }
+
+  function bold() { execCmd('bold') }
+  function italic() { execCmd('italic') }
+  function h1() { execCmd('formatBlock', 'h1') }
+  function h2() { execCmd('formatBlock', 'h2') }
+  function h3() { execCmd('formatBlock', 'h3') }
+  function paragraph() { execCmd('formatBlock', 'p') }
+  function bulletList() { execCmd('insertUnorderedList') }
+  function numberedList() { execCmd('insertOrderedList') }
+  function hr() { execCmd('insertHTML', '<hr>') }
+
+  function code() {
+    const sel = window.getSelection()
+    if (sel.rangeCount > 0) {
+      const text = sel.toString()
+      if (text) {
+        execCmd('insertHTML', `<code>${text}</code>`)
+      }
+    }
+  }
+
+  function link() {
+    const sel = window.getSelection()
+    const text = sel.toString()
+    const url = prompt('URL:', 'https://')
+    if (url) {
+      if (text) {
+        execCmd('createLink', url)
+      } else {
+        execCmd('insertHTML', `<a href="${url}">${url}</a>`)
+      }
+    }
+  }
+
+  function handleInput() {
+    if (editor) htmlContent = editor.innerHTML
+  }
+
+  function handleSave() {
+    onSave(htmlToMarkdown(htmlContent))
+  }
+
+  let charCount = $derived(stripTags(htmlContent).replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').length)
+  let lineCount = $derived(htmlToMarkdown(htmlContent).split('\n').filter(l => l !== '').length)
 </script>
 
 <!-- Full-screen modal overlay -->
@@ -90,12 +160,13 @@
 
       <!-- Formatting buttons -->
       <div class="flex items-center gap-1">
-        <button onclick={bold} class="px-2 py-1 text-xs font-bold text-gray-400 rounded hover:bg-ck-pink/20 hover:text-white transition-colors" title="Bold">B</button>
-        <button onclick={italic} class="px-2 py-1 text-xs italic text-gray-400 rounded hover:bg-ck-pink/20 hover:text-white transition-colors" title="Italic">I</button>
+        <button onclick={bold} class="px-2 py-1 text-xs font-bold rounded transition-colors {isBold ? 'bg-ck-pink/30 text-white' : 'text-gray-400 hover:bg-ck-pink/20 hover:text-white'}" title="Bold">B</button>
+        <button onclick={italic} class="px-2 py-1 text-xs italic rounded transition-colors {isItalic ? 'bg-ck-pink/30 text-white' : 'text-gray-400 hover:bg-ck-pink/20 hover:text-white'}" title="Italic">I</button>
         <span class="w-px h-4 bg-gray-700"></span>
         <button onclick={h1} class="px-2 py-1 text-xs text-gray-400 rounded hover:bg-ck-pink/20 hover:text-white transition-colors" title="Heading 1">H1</button>
         <button onclick={h2} class="px-2 py-1 text-xs text-gray-400 rounded hover:bg-ck-pink/20 hover:text-white transition-colors" title="Heading 2">H2</button>
         <button onclick={h3} class="px-2 py-1 text-xs text-gray-400 rounded hover:bg-ck-pink/20 hover:text-white transition-colors" title="Heading 3">H3</button>
+        <button onclick={paragraph} class="px-2 py-1 text-xs text-gray-400 rounded hover:bg-ck-pink/20 hover:text-white transition-colors" title="Normal text">P</button>
         <span class="w-px h-4 bg-gray-700"></span>
         <button onclick={code} class="px-2 py-1 text-xs font-mono text-gray-400 rounded hover:bg-ck-pink/20 hover:text-white transition-colors" title="Inline code">&lt;/&gt;</button>
         <button onclick={bulletList} class="px-2 py-1 text-xs text-gray-400 rounded hover:bg-ck-pink/20 hover:text-white transition-colors" title="Bullet list">&#8226; List</button>
@@ -106,7 +177,7 @@
 
       <div class="flex items-center gap-2">
         <button
-          onclick={() => onSave(text)}
+          onclick={handleSave}
           class="px-4 py-1.5 text-xs font-medium rounded-lg bg-ck-green/20 text-ck-green border border-ck-green/30 hover:bg-ck-green/30 transition-colors"
         >
           Save
@@ -120,27 +191,15 @@
       </div>
     </div>
 
-    <!-- Editor area: split view -->
-    <div class="flex-1 flex min-h-0">
-      <!-- Left: raw markdown textarea -->
-      <div class="w-1/2 flex flex-col border-r border-gray-700">
-        <div class="px-3 py-1.5 text-[10px] uppercase tracking-wider text-ck-dim border-b border-gray-800 bg-ck-bg/50">Markdown</div>
-        <textarea
-          bind:this={textarea}
-          bind:value={text}
-          class="flex-1 w-full bg-ck-bg p-4 text-sm font-mono text-gray-300 resize-none focus:outline-none leading-relaxed"
-          spellcheck="false"
-          placeholder="Start writing markdown..."
-        ></textarea>
-      </div>
-
-      <!-- Right: rendered preview -->
-      <div class="w-1/2 flex flex-col">
-        <div class="px-3 py-1.5 text-[10px] uppercase tracking-wider text-ck-dim border-b border-gray-800 bg-ck-bg/50">Preview</div>
-        <div class="flex-1 overflow-y-auto p-4 text-sm text-gray-300 leading-relaxed">
-          {@html renderMarkdown(text)}
-        </div>
-      </div>
+    <!-- WYSIWYG editor area -->
+    <div
+      bind:this={editor}
+      contenteditable="true"
+      oninput={handleInput}
+      class="flex-1 overflow-y-auto p-6 prose prose-invert prose-headings:text-ck-pink prose-strong:text-white prose-code:text-ck-gold prose-code:bg-ck-bg prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-a:text-ck-rose prose-hr:border-gray-700 max-w-none focus:outline-none text-sm text-gray-300 leading-relaxed bg-ck-bg"
+      style="min-height: 100%"
+    >
+      {@html htmlContent}
     </div>
 
     <!-- Bottom bar -->
@@ -149,7 +208,7 @@
         <span>{charCount} characters</span>
         <span>{lineCount} lines</span>
       </div>
-      <span class="text-[11px] text-ck-dim">Markdown supported</span>
+      <span class="text-[11px] text-ck-dim">WYSIWYG editor</span>
     </div>
   </div>
 </div>
