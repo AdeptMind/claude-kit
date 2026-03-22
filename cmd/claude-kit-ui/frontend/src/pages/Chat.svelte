@@ -11,8 +11,21 @@
     let fitAddon = null
     let running = $state(false)
     let projectPath = $state('')
+    let projectName = $state('')
 
-    currentProject.subscribe(p => projectPath = p?.path || '')
+    currentProject.subscribe(async (p) => {
+        const newPath = p?.path || ''
+        const oldPath = projectPath
+        projectPath = newPath
+        projectName = p?.name || ''
+
+        // If project changed while running, restart in new directory
+        if (running && newPath && newPath !== oldPath) {
+            if (term) term.writeln(`\r\n\x1b[33m— Switching to project: ${p.name} —\x1b[0m`)
+            await stopSession()
+            setTimeout(() => startSession(), 500)
+        }
+    })
 
     onMount(() => {
         term = new Terminal({
@@ -119,6 +132,9 @@
     <div class="flex items-center justify-between px-4 py-2 border-b border-gray-800 shrink-0">
         <div class="flex items-center gap-3">
             <h1 class="text-sm font-semibold text-white">Claude Chat</h1>
+            {#if projectName}
+                <span class="text-xs text-ck-dim font-mono">{projectName}</span>
+            {/if}
             {#if running}
                 <span class="flex items-center gap-1.5 text-xs text-ck-green">
                     <span class="w-1.5 h-1.5 rounded-full bg-ck-green animate-pulse"></span>
