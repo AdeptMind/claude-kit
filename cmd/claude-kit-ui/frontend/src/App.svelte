@@ -5,10 +5,12 @@
   import FileManager from './pages/FileManager.svelte'
   import ProfileEditor from './pages/ProfileEditor.svelte'
   import WorkflowLauncher from './pages/WorkflowLauncher.svelte'
+  import Stories from './pages/Stories.svelte'
   import Settings from './pages/Settings.svelte'
 
   const pages = {
     dashboard: Dashboard,
+    stories: Stories,
     files: FileManager,
     profile: ProfileEditor,
     workflow: WorkflowLauncher,

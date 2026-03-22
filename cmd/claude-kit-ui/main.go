@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"embed"
 
 	"github.com/wailsapp/wails/v2"
@@ -13,6 +14,12 @@ var assets embed.FS
 
 func main() {
 	app := NewApp()
+	projectService := &ProjectService{}
+	roleService := &RoleService{}
+	fileService := &FileService{}
+	profileService := &ProfileService{}
+	workflowService := &WorkflowService{}
+	storyService := &StoryService{}
 
 	err := wails.Run(&options.App{
 		Title:  "Claude Kit",
@@ -22,9 +29,19 @@ func main() {
 			Assets: assets,
 		},
 		BackgroundColour: &options.RGBA{R: 13, G: 17, B: 23, A: 1},
-		OnStartup:        app.startup,
+		OnStartup: func(ctx context.Context) {
+			app.startup(ctx)
+			projectService.startup(ctx)
+			workflowService.startup(ctx)
+		},
 		Bind: []interface{}{
 			app,
+			projectService,
+			roleService,
+			fileService,
+			profileService,
+			workflowService,
+			storyService,
 		},
 	})
 

@@ -3,6 +3,7 @@
 
   const managementItems = [
     { id: 'dashboard', icon: '\u{1F4CA}', label: 'Dashboard' },
+    { id: 'stories', icon: '\u{1F4CB}', label: 'Stories' },
     { id: 'files', icon: '\u{1F4C1}', label: 'Files' },
     { id: 'profile', icon: '\u{1F464}', label: 'Profile' },
     { id: 'workflow', icon: '\u{1F504}', label: 'Workflow' },
