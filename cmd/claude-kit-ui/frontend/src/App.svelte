@@ -1,5 +1,6 @@
 <script>
   import { currentPage } from './stores/navigation.js'
+  import TopBar from './components/TopBar.svelte'
   import Sidebar from './Sidebar.svelte'
   import Dashboard from './pages/Dashboard.svelte'
   import FileManager from './pages/FileManager.svelte'
@@ -21,13 +22,16 @@
   currentPage.subscribe(v => activePage = v)
 </script>
 
-<main class="flex h-screen bg-ck-bg text-white font-sans">
-  <Sidebar />
-  <div class="flex-1 overflow-auto p-6">
-    {#each Object.entries(pages) as [id, Component]}
-      {#if activePage === id}
-        <Component />
-      {/if}
-    {/each}
+<div class="flex flex-col h-screen bg-ck-bg text-white font-sans">
+  <TopBar />
+  <div class="flex flex-1 overflow-hidden">
+    <Sidebar />
+    <main class="flex-1 overflow-auto p-6">
+      {#each Object.entries(pages) as [id, Component]}
+        {#if activePage === id}
+          <Component />
+        {/if}
+      {/each}
+    </main>
   </div>
-</main>
+</div>

@@ -1,4 +1,6 @@
 <script>
+  import { currentProject } from '../stores/project.js'
+
   let stories = $state([])
   let stats = $state({ done: 0, inProgress: 0, todo: 0, total: 0 })
   let loading = $state(true)
@@ -7,6 +9,12 @@
   let priorityFilter = $state('all')
   let componentFilter = $state('all')
   let search = $state('')
+
+  let projectPath = $state('')
+  currentProject.subscribe(p => {
+    projectPath = p?.path || ''
+    loadStories()
+  })
 
   let components = $derived([...new Set(stories.map(s => s.component).filter(Boolean))])
 
@@ -32,7 +40,7 @@
   async function loadStories() {
     try {
       const { List, GetStats } = await import('../../wailsjs/go/main/StoryService.js')
-      const [list, st] = await Promise.all([List(''), GetStats('')])
+      const [list, st] = await Promise.all([List(projectPath), GetStats(projectPath)])
       stories = list || []
       stats = st || stats
     } catch {
