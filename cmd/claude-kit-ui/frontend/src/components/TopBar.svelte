@@ -19,8 +19,8 @@
 
   async function openFolderPicker() {
     try {
-      const { OpenDirectoryDialog } = await import('../../wailsjs/runtime/runtime.js')
-      const path = await OpenDirectoryDialog({ title: 'Select Project Folder' })
+      const { OpenFolderDialog } = await import('../../wailsjs/go/main/App.js')
+      const path = await OpenFolderDialog()
       if (path) {
         const name = path.split('/').filter(Boolean).pop() || path
         setProject({ name, path })
