@@ -1,16 +1,31 @@
 <script>
-  let version = $state('0.1.0')
+  import { currentPage } from './stores/navigation.js'
+  import Sidebar from './Sidebar.svelte'
+  import Dashboard from './pages/Dashboard.svelte'
+  import FileManager from './pages/FileManager.svelte'
+  import ProfileEditor from './pages/ProfileEditor.svelte'
+  import WorkflowLauncher from './pages/WorkflowLauncher.svelte'
+  import Settings from './pages/Settings.svelte'
+
+  const pages = {
+    dashboard: Dashboard,
+    files: FileManager,
+    profile: ProfileEditor,
+    workflow: WorkflowLauncher,
+    settings: Settings,
+  }
+
+  let activePage = $state('dashboard')
+  currentPage.subscribe(v => activePage = v)
 </script>
 
-<main class="min-h-screen bg-ck-bg text-white font-sans">
-  <div class="max-w-2xl mx-auto px-8 py-12">
-    <header class="flex items-baseline gap-3 mb-10">
-      <h1 class="text-3xl font-bold text-ck-pink">Claude Kit</h1>
-      <span class="text-sm font-mono text-ck-gold">v{version}</span>
-    </header>
-
-    <section class="rounded-lg border border-ck-dim/30 bg-ck-dark p-6">
-      <p class="text-ck-dim text-sm">Ready for services — Round 2 will add panels here.</p>
-    </section>
+<main class="flex h-screen bg-ck-bg text-white font-sans">
+  <Sidebar />
+  <div class="flex-1 overflow-auto p-6">
+    {#each Object.entries(pages) as [id, Component]}
+      {#if activePage === id}
+        <Component />
+      {/if}
+    {/each}
   </div>
 </main>
