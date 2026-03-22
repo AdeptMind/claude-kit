@@ -447,11 +447,9 @@ Both enhance Claude Code with structured workflows. Here's how they differ:
 | **Packaging** | `.skill`, `.agent`, `.claude-kit` archives | None |
 | **Eval framework** | `ck skill eval/grade/benchmark/optimize` | None |
 
-**When to use which:**
-- **Superpowers** if you want TDD-first coding with minimal setup and you're a developer working solo
-- **Claude Kit** if you want a full project lifecycle tool that works for developers AND non-technical stakeholders, with role-based workflows, security policies, and team orchestration
+**Bottom line:** Claude Kit covers everything Superpowers does (TDD enforcement, subagent development, structured review) and extends it with architecture design, role-based workflows, security policies, quality gates (DoR/DoD), management agents, a desktop app, and team orchestration. A solo dev using `ck init` + `ck user dev` gets the same TDD-first experience as Superpowers — plus 40+ agents, policy-as-code, and the option to scale to multi-role workflows when the project grows.
 
-They're not mutually exclusive — Claude Kit's TDD enforcement was inspired by Superpowers, and both can coexist in the same project.
+Claude Kit's TDD enforcement was inspired by Superpowers. Both can coexist in the same project.
 
 </details>
 
