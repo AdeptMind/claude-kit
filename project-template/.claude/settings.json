@@ -10,6 +10,17 @@
     "EVAL_HOLDOUT_RATIO": "0.4"
   },
   "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '## Quality Enforcement Protocol\n\n### TDD (non-negotiable for code stories)\nRED: Write ONE failing test → GREEN: Minimum code to pass → REFACTOR: Clean up with tests green.\nNo production code without a failing test first. Code written before a test = delete and restart.\nExceptions: config, infra, migrations, static assets, markdown templates.\n\n### Double Review (po/all-roles modes)\nAfter teammate reports done: spec-reviewer (conformity) + code-quality-reviewer (quality) run in parallel as fresh subagents.\nBoth must PASS before acceptance-validator runs.\nSkipped in dev mode.\n\n### Plan Granularity\nStories > 50 lines: decompose into 2-5 minute tasks with exact files, complete code, and verification commands.\nPriority: CLAUDE.md > these guidelines > defaults.'"
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Bash",
