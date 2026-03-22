@@ -94,11 +94,16 @@
   async function openFile(file) {
     selectedFile = file
     editMode = false
+    let loaded = false
     try {
       const { ReadPreview } = await import('../../wailsjs/go/main/FileService.js')
       const result = await ReadPreview(file.path)
-      fileContent = result
-    } catch {
+      if (result && result.trim() && !result.includes('not yet implemented')) {
+        fileContent = result
+        loaded = true
+      }
+    } catch {}
+    if (!loaded) {
       // Placeholder content for demo
       const placeholders = {
         'problem.yaml': 'project_name: my-project\nversion: "1.0"\nphase: break\n\nproblem_statement:\n  summary: >\n    Your project description here\n  target_users:\n    - User type 1\n  pain_points:\n    - Pain point 1',
