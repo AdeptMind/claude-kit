@@ -148,7 +148,7 @@
                 class="w-full text-left px-4 py-2 text-sm flex items-center gap-2 transition-colors
                   {r === role ? 'bg-ck-rose text-white' : 'text-gray-300 hover:bg-ck-pink/20 hover:text-white'}"
               >
-                <span role="button" tabindex="0" onclick={(e) => toggleFavorite(e, r)} onkeydown={(e) => e.key === 'Enter' && toggleFavorite(e, r)} class="text-xs cursor-pointer hover:scale-125 transition-transform {favorites.has(r) ? 'text-ck-gold' : 'text-gray-600'}">
+                <span role="button" tabindex="0" onclick={(e) => toggleFavorite(e, r)} onkeydown={(e) => e.key === 'Enter' && toggleFavorite(e, r)} class="text-base cursor-pointer hover:scale-125 transition-transform {favorites.has(r) ? 'text-ck-gold' : 'text-gray-600'}">
                   {favorites.has(r) ? '★' : '☆'}
                 </span>
                 <span>{r}</span>
@@ -172,7 +172,7 @@
                   class="w-full text-left px-4 py-2 text-sm flex items-center gap-2 transition-colors
                     {r === role ? 'bg-ck-rose text-white' : 'text-gray-300 hover:bg-ck-pink/20 hover:text-white'}"
                 >
-                  <span role="button" tabindex="0" onclick={(e) => toggleFavorite(e, r)} onkeydown={(e) => e.key === 'Enter' && toggleFavorite(e, r)} class="text-xs text-ck-gold cursor-pointer hover:scale-125 transition-transform">★</span>
+                  <span role="button" tabindex="0" onclick={(e) => toggleFavorite(e, r)} onkeydown={(e) => e.key === 'Enter' && toggleFavorite(e, r)} class="text-base text-ck-gold cursor-pointer hover:scale-125 transition-transform">★</span>
                   <span>{r}</span>
                 </button>
               {/each}
@@ -189,7 +189,7 @@
                   class="w-full text-left px-4 py-2 text-sm flex items-center gap-2 transition-colors
                     {r === role ? 'bg-ck-rose text-white' : 'text-gray-300 hover:bg-ck-pink/20 hover:text-white'}"
                 >
-                  <span role="button" tabindex="0" onclick={(e) => toggleFavorite(e, r)} onkeydown={(e) => e.key === 'Enter' && toggleFavorite(e, r)} class="text-xs cursor-pointer hover:scale-125 transition-transform {favorites.has(r) ? 'text-ck-gold' : 'text-gray-600 hover:text-gray-400'}">
+                  <span role="button" tabindex="0" onclick={(e) => toggleFavorite(e, r)} onkeydown={(e) => e.key === 'Enter' && toggleFavorite(e, r)} class="text-base cursor-pointer hover:scale-125 transition-transform {favorites.has(r) ? 'text-ck-gold' : 'text-gray-600 hover:text-gray-400'}">
                     {favorites.has(r) ? '★' : '☆'}
                   </span>
                   <span>{r}</span>
