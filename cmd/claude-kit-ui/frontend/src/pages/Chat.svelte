@@ -1,0 +1,166 @@
+<script>
+    import { onMount, onDestroy } from 'svelte'
+    import { Terminal } from '@xterm/xterm'
+    import { FitAddon } from '@xterm/addon-fit'
+    import { WebLinksAddon } from '@xterm/addon-web-links'
+    import { currentProject } from '../stores/project.js'
+    import { EventsOn, EventsOff } from '../../wailsjs/runtime/runtime.js'
+
+    let terminalEl = $state(null)
+    let term = null
+    let fitAddon = null
+    let running = $state(false)
+    let projectPath = $state('')
+
+    currentProject.subscribe(p => projectPath = p?.path || '')
+
+    onMount(() => {
+        term = new Terminal({
+            theme: {
+                background: '#0d1117',
+                foreground: '#d1d5db',
+                cursor: '#FF69B4',
+                cursorAccent: '#0d1117',
+                selectionBackground: '#E91E8B40',
+                black: '#1a1a2e',
+                red: '#FF5555',
+                green: '#00FF87',
+                yellow: '#FFD700',
+                blue: '#6C6C6C',
+                magenta: '#FF69B4',
+                cyan: '#E91E8B',
+                white: '#FAFAFA',
+            },
+            fontFamily: 'Menlo, Monaco, "Courier New", monospace',
+            fontSize: 13,
+            lineHeight: 1.4,
+            cursorBlink: true,
+            cursorStyle: 'bar',
+            scrollback: 10000,
+        })
+
+        fitAddon = new FitAddon()
+        term.loadAddon(fitAddon)
+        term.loadAddon(new WebLinksAddon())
+
+        term.open(terminalEl)
+        fitAddon.fit()
+
+        // Send keystrokes to Go PTY
+        term.onData(async (data) => {
+            try {
+                const { Write } = await import('../../wailsjs/go/main/TerminalService.js')
+                await Write(data)
+            } catch {}
+        })
+
+        // Resize PTY when terminal resizes
+        term.onResize(async ({ cols, rows }) => {
+            try {
+                const { Resize } = await import('../../wailsjs/go/main/TerminalService.js')
+                await Resize(cols, rows)
+            } catch {}
+        })
+
+        // Listen for output from Go PTY
+        EventsOn('terminal:output', (data) => {
+            term.write(data)
+        })
+
+        EventsOn('terminal:exit', () => {
+            running = false
+            term.writeln('\r\n\x1b[90m--- Session ended ---\x1b[0m')
+        })
+
+        // Handle window resize
+        const resizeObserver = new ResizeObserver(() => {
+            if (fitAddon) fitAddon.fit()
+        })
+        resizeObserver.observe(terminalEl)
+
+        return () => {
+            resizeObserver.disconnect()
+        }
+    })
+
+    onDestroy(() => {
+        EventsOff('terminal:output')
+        EventsOff('terminal:exit')
+        if (term) term.dispose()
+    })
+
+    async function startSession() {
+        if (!projectPath) {
+            term.writeln('\x1b[31mNo project selected. Select a project first.\x1b[0m')
+            return
+        }
+        try {
+            const { Start } = await import('../../wailsjs/go/main/TerminalService.js')
+            await Start(projectPath)
+            running = true
+            term.clear()
+            term.focus()
+        } catch (e) {
+            term.writeln(`\x1b[31mFailed to start: ${e}\x1b[0m`)
+        }
+    }
+
+    async function stopSession() {
+        try {
+            const { Stop } = await import('../../wailsjs/go/main/TerminalService.js')
+            await Stop()
+        } catch {}
+        running = false
+    }
+</script>
+
+<div class="flex flex-col h-full">
+    <!-- Header -->
+    <div class="flex items-center justify-between px-4 py-2 border-b border-gray-800 shrink-0">
+        <div class="flex items-center gap-3">
+            <h1 class="text-sm font-semibold text-white">Claude Chat</h1>
+            {#if running}
+                <span class="flex items-center gap-1.5 text-xs text-ck-green">
+                    <span class="w-1.5 h-1.5 rounded-full bg-ck-green animate-pulse"></span>
+                    Running
+                </span>
+            {:else}
+                <span class="text-xs text-ck-dim">Not connected</span>
+            {/if}
+        </div>
+        <div class="flex items-center gap-2">
+            {#if running}
+                <button
+                    onclick={stopSession}
+                    class="px-3 py-1 text-xs rounded bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30 transition-colors"
+                >
+                    Stop
+                </button>
+            {:else}
+                <button
+                    onclick={startSession}
+                    class="px-3 py-1 text-xs rounded bg-ck-green/20 text-ck-green border border-ck-green/30 hover:bg-ck-green/30 transition-colors"
+                >
+                    Start Claude
+                </button>
+            {/if}
+        </div>
+    </div>
+
+    <!-- Terminal -->
+    <div
+        bind:this={terminalEl}
+        class="flex-1 p-1"
+        style="background: #0d1117;"
+    ></div>
+</div>
+
+<style>
+    :global(.xterm) {
+        height: 100%;
+    }
+    :global(.xterm-viewport) {
+        scrollbar-width: thin;
+        scrollbar-color: #333 #0d1117;
+    }
+</style>

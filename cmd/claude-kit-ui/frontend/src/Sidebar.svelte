@@ -7,6 +7,7 @@
     { id: 'files', icon: '\u{1F4C1}', label: 'Files' },
     { id: 'profile', icon: '\u{1F464}', label: 'Profile' },
     { id: 'workflow', icon: '\u{1F504}', label: 'Workflow' },
+    { id: 'chat', icon: '\u{1F4AC}', label: 'Chat' },
     { id: 'settings', icon: '\u2699\uFE0F', label: 'Settings' },
   ]
 
@@ -15,6 +16,7 @@
     { id: 'code', icon: '\u{1F4BB}', label: 'Code' },
     { id: 'tests', icon: '\u{1F9EA}', label: 'Tests' },
     { id: 'architecture', icon: '\u{1F3D7}', label: 'Architecture' },
+    { id: 'chat', icon: '\u{1F4AC}', label: 'Chat' },
     { id: 'settings', icon: '\u2699\uFE0F', label: 'Settings' },
   ]
 
