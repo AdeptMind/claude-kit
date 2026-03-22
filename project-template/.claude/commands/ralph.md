@@ -178,6 +178,19 @@ The following shared interfaces have been committed for this round — use them,
 You own these files — only modify files in this list:
 {list of files assigned to this teammate}
 
+## TDD Protocol (non-negotiable for code stories)
+
+Follow strict RED-GREEN-REFACTOR for every behavior you implement:
+1. RED: Write ONE failing test. Run it. Confirm it fails for the right reason.
+2. GREEN: Write the MINIMUM code to pass the test. Run all tests. Confirm they pass.
+3. REFACTOR: Clean up with tests green. Run tests after each change.
+
+If you write production code before a failing test exists: DELETE the code and start over.
+If a test passes immediately without new code: the test is wrong — investigate.
+
+Exceptions (TDD optional): config files, infrastructure, migrations, static assets, markdown templates.
+See the tdd-enforced skill for the full anti-rationalization table and red flags.
+
 ## Instructions
 
 FIRST: Scan before planning:
@@ -190,6 +203,16 @@ THEN: Create an implementation plan describing:
 - Your implementation approach — **reference the existing pattern you will follow**, not a generic description
 - How each acceptance criterion will be met
 - Which tests you will write
+
+**Granular plan (stories > 50 lines estimated):**
+If the story is estimated at more than 50 lines of code, produce a granular plan using the plan-writer skill format:
+- Decompose into tasks of 2-5 minutes each
+- Each task: step number, files (Create/Modify/Test), complete code, verification command + expected output
+- Include a File Structure Map before the tasks
+- Follow TDD task ordering: RED (write test) → VERIFY RED → GREEN (implement) → VERIFY GREEN → REFACTOR
+- A plan-reviewer subagent validates the plan (max 3 iterations) before the lead approves
+
+For stories ≤ 50 lines: the standard plan format above is sufficient.
 
 Wait for plan approval from the lead before writing any code.
 
@@ -259,6 +282,17 @@ After approving all plans for the round, teammates implement in parallel. Monito
 ### Phase D: Validate (lead reviews each completed story)
 
 After each teammate reports completion:
+
+**Double Review Gate (po/all-roles only)**
+If `CK_USER_ROLE` is not `"dev"` and not empty, run the double review BEFORE acceptance validation:
+
+1. Obtain the git diff of the teammate's changes (BASE_SHA..HEAD)
+2. Dispatch **in parallel** as fresh subagents (no session context):
+   a. **Spec reviewer** — using the prompt from `.claude/skills/spec-reviewer/spec-reviewer-prompt.md`. Fill placeholders: {STORY_ID}, {STORY_TITLE}, {ACCEPTANCE_CRITERIA}, {GIT_DIFF}, {FILES_CHANGED}
+   b. **Code quality reviewer** — using the prompt from `.claude/skills/code-reviewer/code-quality-reviewer-prompt.md`. Fill placeholders: {STORY_ID}, {STORY_TITLE}, {GIT_DIFF}, {FILES_CHANGED}, {PROJECT_RULES} (content of `.claude/rules/`)
+3. If **both PASS** (spec: PASS, quality: APPROVE) → proceed to acceptance validation below
+4. If **either FAILS** → write a feedback file (format below) combining issues from both reviews → re-spawn the teammate with the feedback → max 3 iterations before escalading to the user (mark story as `"blocked": true`)
+5. In `dev` mode (or when `CK_USER_ROLE` is unset): **skip this gate entirely** — go directly to acceptance validation (preserves current behavior)
 
 1. **Run acceptance validation** using the acceptance-validator skill:
    - Check every acceptance criterion — PASS or FAIL with evidence
