@@ -116,7 +116,7 @@
       {#if favorites.has(role)}
         <span class="text-ck-gold text-xs">★</span>
       {/if}
-      <span class="text-xs font-mono text-ck-gold truncate">{role}</span>
+      <span class="text-sm font-semibold text-ck-gold truncate">{role}</span>
       {#if expanded}
         <span class="text-ck-dim text-xs ml-auto">{roleSelectorOpen ? '▲' : '▼'}</span>
       {/if}
