@@ -10,13 +10,24 @@
     "EVAL_HOLDOUT_RATIO": "0.4"
   },
   "hooks": {
+    "PreCompact": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "SF=.claude/.session-snapshot.md; echo '# Session Snapshot' > $SF; echo \"Generated: $(date -u +%Y-%m-%dT%H:%M:%SZ)\" >> $SF; echo \"Branch: $(git branch --show-current 2>/dev/null || echo 'unknown')\" >> $SF; echo '' >> $SF; echo '## Modified Files' >> $SF; git diff --name-only HEAD 2>/dev/null >> $SF; echo '' >> $SF; echo '## Staged Files' >> $SF; git diff --cached --name-only 2>/dev/null >> $SF; echo '' >> $SF; echo '## Recent Commits (this branch)' >> $SF; git log --oneline -5 2>/dev/null >> $SF; echo '' >> $SF; if [ -f .claude/ralph-prd.json ]; then echo '## Ralph Progress' >> $SF; grep -c '\"passes\": true' .claude/ralph-prd.json 2>/dev/null | xargs -I{} echo \"Stories passed: {}\" >> $SF; grep -c '\"passes\": false' .claude/ralph-prd.json 2>/dev/null | xargs -I{} echo \"Stories remaining: {}\" >> $SF; echo '' >> $SF; fi; echo '## Active Tasks' >> $SF; echo 'Review the snapshot above to resume where you left off.' >> $SF; echo 'Session snapshot saved to .claude/.session-snapshot.md'"
+          }
+        ]
+      }
+    ],
     "SessionStart": [
       {
         "matcher": "",
         "hooks": [
           {
             "type": "command",
-            "command": "echo '## Quality Enforcement Protocol\n\n### TDD (non-negotiable for code stories)\nRED: Write ONE failing test → GREEN: Minimum code to pass → REFACTOR: Clean up with tests green.\nNo production code without a failing test first. Code written before a test = delete and restart.\nExceptions: config, infra, migrations, static assets, markdown templates.\n\n### Double Review (po/all-roles modes)\nAfter teammate reports done: spec-reviewer (conformity) + code-quality-reviewer (quality) run in parallel as fresh subagents.\nBoth must PASS before acceptance-validator runs.\nSkipped in dev mode.\n\n### Plan Granularity\nStories > 50 lines: decompose into 2-5 minute tasks with exact files, complete code, and verification commands.\nPriority: CLAUDE.md > these guidelines > defaults.'"
+            "command": "echo '## Quality Enforcement Protocol\n\n### TDD (non-negotiable for code stories)\nRED: Write ONE failing test → GREEN: Minimum code to pass → REFACTOR: Clean up with tests green.\nNo production code without a failing test first. Code written before a test = delete and restart.\nExceptions: config, infra, migrations, static assets, markdown templates.\n\n### Double Review (po/all-roles modes)\nAfter teammate reports done: spec-reviewer (conformity) + code-quality-reviewer (quality) run in parallel as fresh subagents.\nBoth must PASS before acceptance-validator runs.\nSkipped in dev mode.\n\n### Plan Granularity\nStories > 50 lines: decompose into 2-5 minute tasks with exact files, complete code, and verification commands.\nPriority: CLAUDE.md > these guidelines > defaults.'; echo ''; if [ -f .claude/.session-snapshot.md ]; then echo '## Session Resumed — Previous State'; cat .claude/.session-snapshot.md; fi"
           }
         ]
       }
