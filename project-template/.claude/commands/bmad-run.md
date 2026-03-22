@@ -64,7 +64,7 @@ Follow the instructions in `/bmad-break`:
 - Gather the project brief from the user
 - Clarify requirements through targeted questions
 - Break features into rich user stories with Given/When/Then acceptance scenarios and business value (WHY)
-- Produce `.claude/output/problem.yaml`
+- Produce `.claude/output/problem.md`
 - Get user confirmation before proceeding
 
 **Gate**: Do not proceed to Phase 1.5 until the user confirms the problem definition.
@@ -72,9 +72,9 @@ Follow the instructions in `/bmad-break`:
 ### Phase 1.5: Clarify -- Structured Ambiguity Scan
 
 Follow the instructions in `/clarify`:
-- Scan `problem.yaml` across 8 categories (functional scope, data model, UX flow, non-functional, integrations, edge cases, constraints, terminology)
+- Scan `problem.md` across 8 categories (functional scope, data model, UX flow, non-functional, integrations, edge cases, constraints, terminology)
 - Ask max 5 targeted questions with recommendations and options
-- Update `problem.yaml` with clarifications (inline + audit trail)
+- Update `problem.md` with clarifications (inline + audit trail)
 - Report summary
 
 **Gate**: Do not proceed to Phase 1.75 until clarification is complete. If significant gaps remain, warn the user.
@@ -82,7 +82,7 @@ Follow the instructions in `/clarify`:
 ### Phase 1.75: UX Spec -- UX Design (optional)
 
 Check if the project involves significant UI work:
-- Scan `problem.yaml` for UI-related stories (keywords: screen, page, form, dashboard, UI, UX, interface, button, navigation, layout, responsive, mobile)
+- Scan `problem.md` for UI-related stories (keywords: screen, page, form, dashboard, UI, UX, interface, button, navigation, layout, responsive, mobile)
 - If UI stories are detected, ask: "This project has UI-heavy stories. Design a UX spec now, or skip?"
 
 If the user wants a UX spec:
@@ -97,7 +97,7 @@ Follow the instructions in `/bmad-model`:
 - Design system architecture based on the confirmed problem definition
 - Produce architecture decision records
 - Generate a prioritized implementation backlog
-- Produce `.claude/output/architecture.yaml` and `.claude/output/backlog.yaml`
+- Produce `.claude/output/architecture.md` and `.claude/output/backlog.md`
 - Get user confirmation before proceeding
 
 **Gate**: Do not proceed to Phase 2.25 until the user confirms the architecture and backlog.
@@ -105,7 +105,7 @@ Follow the instructions in `/bmad-model`:
 ### Phase 2.25: Analyze -- Cross-Artifact Consistency
 
 Follow the instructions in `/analyze`:
-- Read-only analysis across `problem.yaml`, `architecture.yaml`, `backlog.yaml`, and `principles.md` (if present)
+- Read-only analysis across `problem.md`, `architecture.md`, `backlog.md`, and `principles.md` (if present)
 - Detect duplications, ambiguities, underspecification, principles violations, coverage gaps, inconsistencies, terminology drift
 - Report findings with severity (CRITICAL/HIGH/MEDIUM/LOW)
 - Coverage summary: requirement → architecture → backlog mapping
@@ -187,10 +187,10 @@ Throughout the entire workflow, enforce:
 At the end of the workflow, the following files will exist in `.claude/output/`:
 - `brainstorm-*.md` -- Brainstorm output (Brainstorm, optional)
 - `principles.md` -- Project principles (Principles, optional)
-- `problem.yaml` -- Problem definition with rich user stories (Break)
+- `problem.md` -- Problem definition with rich user stories (Break)
 - `ux-spec.md` -- UX specification (UX Spec, optional)
-- `architecture.yaml` -- Architecture design (Model)
-- `backlog.yaml` -- Implementation backlog (Model)
+- `architecture.md` -- Architecture design (Model)
+- `backlog.md` -- Implementation backlog (Model)
 - `checklist.md` -- Pre-implementation readiness check (Checklist)
 - `gsd/prep-report.md` -- GSD preparation report (GSD Prep)
 - `gsd/gap-analysis.md` -- Gap analysis (GSD Prep)

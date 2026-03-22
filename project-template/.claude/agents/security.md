@@ -17,7 +17,7 @@ interfaces:
     - "threat models"
     - "vulnerability assessments"
   consumes:
-    - "architecture.yaml"
+    - "architecture.md"
     - "source code"
     - "infrastructure configs"
 ---

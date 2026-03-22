@@ -8,9 +8,9 @@ Act as a **QA Lead** performing a pre-implementation readiness check. Verify tha
 ## Prerequisites
 
 All three are required:
-- `.claude/output/problem.yaml` — if missing, tell the user to run `/bmad-break` first and stop
-- `.claude/output/architecture.yaml` — if missing, tell the user to run `/bmad-model` first and stop
-- `.claude/output/backlog.yaml` — if missing, tell the user to run `/bmad-model` first and stop
+- `.claude/output/problem.md` — if missing, tell the user to run `/bmad-break` first and stop
+- `.claude/output/architecture.md` — if missing, tell the user to run `/bmad-model` first and stop
+- `.claude/output/backlog.md` — if missing, tell the user to run `/bmad-model` first and stop
 
 Optional (used if present):
 - `.claude/output/principles.md` — project principles for validation
@@ -36,7 +36,7 @@ Read all artifacts before starting the checklist.
 | Check | Evidence |
 |-------|----------|
 | Every feature maps to at least one architecture component | Coverage matrix |
-| Tech stack in `problem.yaml` matches `architecture.yaml` | Compare fields |
+| Tech stack in `problem.md` matches `architecture.md` | Compare fields |
 | All integrations have defined contracts or interface descriptions | List undefined |
 | Data model covers all entities implied by user stories | Cross-reference |
 | No architecture component is unused (not referenced by any task) | List orphans |
@@ -122,8 +122,8 @@ Write `.claude/output/checklist.md`:
 
 {Numbered list of FAIL items with suggested fixes, ordered by impact}
 
-1. [FAIL] US-004 missing business value → add `so_that` field in problem.yaml
-2. [FAIL] No caching strategy defined → add to architecture.yaml
+1. [FAIL] US-004 missing business value → add `so_that` field in problem.md
+2. [FAIL] No caching strategy defined → add to architecture.md
 ...
 ```
 

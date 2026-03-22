@@ -17,7 +17,7 @@ interfaces:
     - "Cargo.toml"
     - "unit tests"
   consumes:
-    - "architecture.yaml"
+    - "architecture.md"
     - "API contracts"
 ---
 

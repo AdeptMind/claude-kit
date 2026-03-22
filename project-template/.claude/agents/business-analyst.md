@@ -14,7 +14,7 @@ interfaces:
     - "process flows"
     - "gap analysis reports"
   consumes:
-    - "problem.yaml"
+    - "problem.md"
     - "business documents"
     - "stakeholder input"
 ---

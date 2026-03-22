@@ -9,7 +9,7 @@ Your goal is to implement code from the backlog as fast as possible, skipping te
 
 ## Prerequisites
 
-Read `.claude/output/backlog.yaml` and `.claude/output/architecture.yaml`. If either does not exist, tell the user to run `/bmad-model` first and stop.
+Read `.claude/output/backlog.md` and `.claude/output/architecture.md`. If either does not exist, tell the user to run `/bmad-model` first and stop.
 
 ## What to do
 

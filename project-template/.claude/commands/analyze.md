@@ -8,9 +8,9 @@ Act as a **QA Analyst** performing a cross-artifact consistency check. This comm
 ## Prerequisites
 
 All three are required:
-- `.claude/output/problem.yaml` — if missing, tell the user to run `/bmad-break` first and stop
-- `.claude/output/architecture.yaml` — if missing, tell the user to run `/bmad-model` first and stop
-- `.claude/output/backlog.yaml` — if missing, tell the user to run `/bmad-model` first and stop
+- `.claude/output/problem.md` — if missing, tell the user to run `/bmad-break` first and stop
+- `.claude/output/architecture.md` — if missing, tell the user to run `/bmad-model` first and stop
+- `.claude/output/backlog.md` — if missing, tell the user to run `/bmad-model` first and stop
 
 Optional (used if present):
 - `.claude/output/principles.md` — project principles for violation checks
@@ -22,7 +22,7 @@ Read all artifacts before starting the analysis.
 ### 1. Duplications
 Detect requirements, features, or tasks that appear in multiple places with different wording but the same intent. Flag cases where:
 - Two backlog tasks cover the same functionality
-- A feature in `problem.yaml` maps to multiple overlapping tasks
+- A feature in `problem.md` maps to multiple overlapping tasks
 - Architecture components duplicate responsibilities
 
 ### 2. Ambiguities
@@ -49,13 +49,13 @@ Cross-reference artifacts against the project principles:
 
 ### 5. Coverage Gaps
 Check that the full chain is complete: every requirement maps to architecture, every architecture component maps to backlog tasks:
-- Requirements in `problem.yaml` not covered by any backlog task
+- Requirements in `problem.md` not covered by any backlog task
 - Architecture components not exercised by any task
 - Backlog tasks that don't trace back to any requirement (orphan tasks)
 
 ### 6. Inconsistencies
 Detect contradictions between artifacts:
-- `problem.yaml` says REST but `architecture.yaml` defines GraphQL
+- `problem.md` says REST but `architecture.md` defines GraphQL
 - Priority P1 in problem but task is marked low priority in backlog
 - Tech stack mismatch between problem definition and architecture
 - Conflicting non-functional requirements (e.g., "real-time" + "batch processing" for same data)
@@ -73,23 +73,23 @@ Find cases where the same concept uses different names across artifacts:
 When `CK_USER_ROLE` is `po` or `all`, run the four additional analysis categories below. Findings use the same severity levels and output format as the core categories.
 
 ### 8. Traceability
-Invoke the `traceability-check` skill and include its matrix output in the report. The matrix maps every requirement in `problem.yaml` to its architecture component(s) and backlog task(s). Flag:
+Invoke the `traceability-check` skill and include its matrix output in the report. The matrix maps every requirement in `problem.md` to its architecture component(s) and backlog task(s). Flag:
 - Requirements with no architecture mapping (orphan requirements)
 - Requirements with no backlog task (unplanned work)
 - Backlog tasks with no requirement origin (orphan tasks)
 - Architecture components not referenced by any requirement (dead components)
 
 ### 9. Business Value Quality
-Review each user story's `so_that` clause in `problem.yaml`. Flag:
+Review each user story's `so_that` clause in `problem.md`. Flag:
 - Missing `so_that` — no business justification provided
 - Weak justifications that restate the action instead of the value (e.g., "so that I can click the button" instead of "so that I can track my spending")
 - Generic justifications that could apply to any feature (e.g., "so that the system works better")
 - Duplicate business value across unrelated stories (copy-paste smell)
 
 ### 10. SRE Operability
-Review `architecture.yaml` for production-readiness gaps. Flag:
+Review `architecture.md` for production-readiness gaps. Flag:
 - **Observability**: missing or incomplete logging, monitoring, or tracing strategy
-- **Scaling**: no scaling strategy defined, or scaling strategy that doesn't match expected load from `problem.yaml`
+- **Scaling**: no scaling strategy defined, or scaling strategy that doesn't match expected load from `problem.md`
 - **Failover**: no failover or disaster recovery plan for stateful components
 - **Circuit breakers**: external integrations without circuit breaker or retry/backoff strategy
 - **Health checks**: services without defined health check endpoints
@@ -97,7 +97,7 @@ Review `architecture.yaml` for production-readiness gaps. Flag:
 Critical SRE findings (e.g., no observability strategy, no failover for stateful data) use CRITICAL severity and block progression — same gate behavior as existing critical findings.
 
 ### 11. Security Threat Surface
-Review `architecture.yaml` for security gaps. Flag:
+Review `architecture.md` for security gaps. Flag:
 - **Authentication**: endpoints or services without auth coverage; missing auth strategy
 - **Input validation**: user-facing interfaces without input validation strategy
 - **OWASP concerns**: architecture patterns susceptible to OWASP Top 10 (injection, broken access control, security misconfiguration, etc.)
@@ -122,9 +122,9 @@ Cross-Artifact Analysis Report
 ═══════════════════════════════
 
 Artifacts analyzed:
-  - problem.yaml (version X, N features, N user stories)
-  - architecture.yaml (N components, N decisions)
-  - backlog.yaml (N tasks across N rounds)
+  - problem.md (version X, N features, N user stories)
+  - architecture.md (N components, N decisions)
+  - backlog.md (N tasks across N rounds)
   - principles.md (present/absent)
 
 Findings: N total (N critical, N high, N medium, N low)
@@ -132,14 +132,14 @@ Findings: N total (N critical, N high, N medium, N low)
 ─── CRITICAL ───────────────────────────────────────
 
 [C-001] Category: Coverage Gap
-  Requirement "payment processing" (problem.yaml, feature #3) has no
+  Requirement "payment processing" (problem.md, feature #3) has no
   corresponding backlog task. This feature will not be implemented.
   → Fix: Add tasks for payment processing to the backlog.
 
 ─── HIGH ───────────────────────────────────────────
 
 [H-001] Category: Inconsistency
-  problem.yaml specifies PostgreSQL but architecture.yaml references
+  problem.md specifies PostgreSQL but architecture.md references
   MongoDB in the data layer.
   → Fix: Align database choice across artifacts.
 
@@ -147,13 +147,13 @@ Findings: N total (N critical, N high, N medium, N low)
 
 [M-001] Category: Underspecification
   User story US-003 has no acceptance scenarios (Given/When/Then).
-  → Fix: Add acceptance scenarios to problem.yaml.
+  → Fix: Add acceptance scenarios to problem.md.
 
 ─── LOW ────────────────────────────────────────────
 
 [L-001] Category: Terminology Drift
-  "user" in problem.yaml, "account" in architecture.yaml,
-  "customer" in backlog.yaml — all refer to the same entity.
+  "user" in problem.md, "account" in architecture.md,
+  "customer" in backlog.md — all refer to the same entity.
   → Fix: Standardize on one term.
 
 ─── Coverage Summary ───────────────────────────────

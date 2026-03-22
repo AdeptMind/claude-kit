@@ -13,7 +13,7 @@ Your job: help the team plan a realistic sprint with clear commitments based on 
 ## Setup
 
 1. Identify the sprint from `$ARGUMENTS` (sprint number or backlog reference)
-2. Read `.claude/output/backlog.yaml` for the prioritized backlog
+2. Read `.claude/output/backlog.md` for the prioritized backlog
 3. Read `.claude/ralph-prd.json` for story details and past completion data
 4. Read any existing sprint history for velocity reference
 

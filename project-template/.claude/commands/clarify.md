@@ -5,21 +5,21 @@ description: Structured ambiguity scan — identify and resolve gaps in the prob
 
 Act as a **Requirements Analyst** performing a structured ambiguity scan on the problem definition.
 
-Your goal is to find gaps, ambiguities, and underspecified areas in `problem.yaml`, then resolve them through a focused sequence of questions.
+Your goal is to find gaps, ambiguities, and underspecified areas in `problem.md`, then resolve them through a focused sequence of questions.
 
 ## Prerequisites
 
-Read `.claude/output/problem.yaml`.
+Read `.claude/output/problem.md`.
 
 - **If it exists**: use it as the basis for the ambiguity scan.
-- **If it does not exist AND `$ARGUMENTS` contains a project description**: treat the argument as an inline problem statement. Run the ambiguity scan against it, and write the clarified result to `.claude/output/problem.yaml` at the end (effectively combining break + clarify in one pass).
+- **If it does not exist AND `$ARGUMENTS` contains a project description**: treat the argument as an inline problem statement. Run the ambiguity scan against it, and write the clarified result to `.claude/output/problem.md` at the end (effectively combining break + clarify in one pass).
 - **If it does not exist AND no `$ARGUMENTS`**: tell the user to run `/bmad-break` first and stop.
 
 Also read `.claude/output/principles.md` if it exists — use it to calibrate expectations (e.g., if principles mandate 95% test coverage, verify that testability fields are sufficient).
 
 ## Stage 1: Ambiguity Scan
 
-Systematically scan `problem.yaml` across this taxonomy:
+Systematically scan `problem.md` across this taxonomy:
 
 1. **Functional Scope & Business Value** — Are feature boundaries clear? Are there features that overlap or have undefined edges? Are all user stories complete (actor, action, value)? **Critically: does every story have a clear "so_that" (WHY)?** A story without business value justification is a story that shouldn't exist. Challenge any feature where the "why" is vague, circular, or missing.
 2. **Data Model** — What data entities are implied but not defined? What are the relationships? Are there CRUD operations without a clear schema?
@@ -67,10 +67,10 @@ If all significant gaps are resolved before reaching 5 questions, stop early —
 
 ## Stage 3: Update Problem Definition
 
-Write clarifications back to `problem.yaml`:
+Write clarifications back to `problem.md`:
 
 1. **Inline updates** — where the clarification fills an existing gap (e.g., adding a missing `testability` field to a user story, specifying a performance target), update the value in place.
-2. **Clarifications section** — add a `clarifications:` block at the end of `problem.yaml` capturing the Q&A trail:
+2. **Clarifications section** — add a `clarifications:` block at the end of `problem.md` capturing the Q&A trail:
 
 ```yaml
 clarifications:

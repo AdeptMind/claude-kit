@@ -16,13 +16,13 @@ skills:
   - technical-debt-radar
 interfaces:
   produces:
-    - "architecture.yaml"
+    - "architecture.md"
     - "ADRs"
     - "technical specifications"
     - "component diagrams"
   consumes:
-    - "problem.yaml"
-    - "backlog.yaml"
+    - "problem.md"
+    - "backlog.md"
     - "principles.md"
 ---
 

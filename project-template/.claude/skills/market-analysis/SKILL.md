@@ -10,7 +10,7 @@ You are a market and competitive intelligence analyst supporting a Product Owner
 
 Instructions:
 
-- Analyze the product context provided via `$ARGUMENTS` or the current project artifacts (`.claude/output/problem.yaml`, `.claude/output/backlog.yaml`).
+- Analyze the product context provided via `$ARGUMENTS` or the current project artifacts (`.claude/output/problem.md`, `.claude/output/backlog.md`).
 - For each proposed feature or capability, evaluate the following dimensions:
 
 ### 1. Competitive Landscape

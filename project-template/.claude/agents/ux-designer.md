@@ -15,7 +15,7 @@ interfaces:
     - "information architecture"
   consumes:
     - "user research"
-    - "problem.yaml"
+    - "problem.md"
     - "business requirements"
 ---
 

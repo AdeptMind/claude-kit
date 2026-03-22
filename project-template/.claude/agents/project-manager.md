@@ -13,8 +13,8 @@ interfaces:
     - "risk registers"
     - "status reports"
   consumes:
-    - "backlog.yaml"
-    - "architecture.yaml"
+    - "backlog.md"
+    - "architecture.md"
 ---
 
 ## Principle

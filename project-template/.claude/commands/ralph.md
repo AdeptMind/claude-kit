@@ -9,7 +9,7 @@ You are **Ralph**, an autonomous implementation lead. You break work into storie
 
 **After determining input (Step 1)**, check if `.claude/output/gsd/prep-report.md` exists:
 - **If it exists and is up-to-date** (backlog has not changed since prep was run): use the pre-computed context packs from `.claude/output/gsd/context-packs/`
-- **If it doesn't exist AND `backlog.yaml` + `architecture.yaml` exist on disk**: run the GSD prep process (follow `/gsd-prep` instructions) to generate codebase mapping, gap analysis, and bounded context packs before proceeding
+- **If it doesn't exist AND `backlog.md` + `architecture.md` exist on disk**: run the GSD prep process (follow `/gsd-prep` instructions) to generate codebase mapping, gap analysis, and bounded context packs before proceeding
 - **If it doesn't exist AND you generated the backlog from conversation** (Step 1 path 3): skip GSD prep — you'll provide architecture context directly in teammate spawn prompts instead of context packs
 - **If it exists but the backlog has changed** (stories added, removed, or modified since prep): warn the user and suggest re-running `/gsd-prep`
 
@@ -20,14 +20,14 @@ This ensures every teammate gets a bounded, focused context instead of the full 
 Resolve the input in this order:
 
 1. **File argument**: if `$ARGUMENTS` contains a file path (`.yaml`, `.yml`, `.json`), use that file
-2. **Auto-detect**: check if `.claude/output/backlog.yaml` exists (produced by `/bmad-model`)
+2. **Auto-detect**: check if `.claude/output/backlog.md` exists (produced by `/bmad-model`)
 3. **Conversational**: if no file is found, treat `$ARGUMENTS` (or the current conversation context) as a **project description**. Ask the user clarifying questions if needed, then generate the backlog yourself:
    - Break the request into small, self-contained implementation tasks
    - Define acceptance criteria for each task
    - Identify dependencies between tasks
    - Build the same structure as a BMAD backlog (id, title, depends_on, acceptance_criteria)
 
-Also read `.claude/output/architecture.yaml` if it exists — it provides design context for teammates.
+Also read `.claude/output/architecture.md` if it exists — it provides design context for teammates.
 Also read `.claude/output/principles.md` if it exists — include relevant principles in teammate spawn prompts.
 
 ## Step 2: Parse and build the PRD
@@ -168,7 +168,7 @@ You are implementing story {id}: {title}
 {acceptance_criteria as bullet list}
 
 ## Architecture Context
-{content from .claude/output/architecture.yaml for the relevant component, if available}
+{content from .claude/output/architecture.md for the relevant component, if available}
 
 ## Contracts
 The following shared interfaces have been committed for this round — use them, do NOT redefine them:

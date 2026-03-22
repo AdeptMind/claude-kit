@@ -16,7 +16,7 @@ interfaces:
     - "SLO definitions"
     - "alerting rules"
   consumes:
-    - "architecture.yaml"
+    - "architecture.md"
     - "infrastructure configs"
     - "incident history"
 ---

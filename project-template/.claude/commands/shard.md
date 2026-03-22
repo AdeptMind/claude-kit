@@ -31,7 +31,7 @@ Read the file and determine its format.
 
 ## Stage 3: Generate Shards
 
-Derive a base name from the source file (e.g., `architecture` from `architecture.yaml`).
+Derive a base name from the source file (e.g., `architecture` from `architecture.md`).
 
 Create output directory: `.claude/output/shards/{base-name}/`
 

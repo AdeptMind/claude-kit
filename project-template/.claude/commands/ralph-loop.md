@@ -8,7 +8,7 @@ Resume **Ralph** — pick up where the last session left off.
 ## Setup Check
 
 1. Read `.claude/ralph-prd.json`. If it doesn't exist, tell the user to run `/ralph` first.
-2. Read `.claude/output/architecture.yaml` if it exists (for teammate context).
+2. Read `.claude/output/architecture.md` if it exists (for teammate context).
 3. Read `.claude/output/gsd/prep-report.md` if it exists — use context packs from `.claude/output/gsd/context-packs/` when spawning teammates (each teammate gets their story's bounded context pack instead of the full architecture dump).
 4. Show progress: X/Y stories done, list remaining stories grouped by round.
 

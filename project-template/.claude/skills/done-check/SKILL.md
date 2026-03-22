@@ -77,7 +77,7 @@ Do NOT accept vague claims like "it works" or "tests pass" as proof of `so_that`
 
 ### 4a. User Journey Verification
 
-1. Read `.claude/output/user-journey.yaml`
+1. Read `.claude/output/user-journey.md`
 2. If the file does not exist, skip this check and note it in the report
 3. For each step in the user journey related to this story:
    - Verify the step can be executed as described

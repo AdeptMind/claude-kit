@@ -19,7 +19,7 @@ interfaces:
     - "LLM integrations"
     - "evaluation sets"
   consumes:
-    - "architecture.yaml"
+    - "architecture.md"
     - "API contracts"
     - "knowledge bases"
 ---

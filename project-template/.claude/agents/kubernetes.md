@@ -16,7 +16,7 @@ interfaces:
     - "Helm charts"
     - "Kustomize overlays"
   consumes:
-    - "architecture.yaml"
+    - "architecture.md"
     - "container images"
     - "deployment requirements"
 ---

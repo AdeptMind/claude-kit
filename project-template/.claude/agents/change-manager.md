@@ -13,7 +13,7 @@ interfaces:
     - "communication plans"
     - "training materials"
   consumes:
-    - "architecture.yaml"
+    - "architecture.md"
     - "stakeholder map"
 ---
 

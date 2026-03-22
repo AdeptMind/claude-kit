@@ -9,7 +9,7 @@ This is Phase 3 of the BMAD workflow — all prior phases (Break, Clarify, Model
 
 ## Prerequisites
 
-1. Read `.claude/output/backlog.yaml` and `.claude/output/architecture.yaml`. If either does not exist, tell the user to run `/bmad-model` first and stop.
+1. Read `.claude/output/backlog.md` and `.claude/output/architecture.md`. If either does not exist, tell the user to run `/bmad-model` first and stop.
 2. Read `.claude/output/principles.md` if it exists — pass project-specific standards to Ralph for teammate spawn prompts.
 3. Read `.claude/output/checklist.md` if it exists — confirm there are no unresolved FAIL items. If there are, warn the user before proceeding.
 4. Check if `.claude/output/gsd/prep-report.md` exists. If not, run `/gsd-prep` first to generate codebase mapping and context packs.
@@ -67,7 +67,7 @@ After Ralph completes a round's implementation and before moving to the next rou
    - Check failover, health checks, and circuit-breaker patterns
 
 5. **QA**
-   - Read `.claude/output/user-journey.yaml` if it exists
+   - Read `.claude/output/user-journey.md` if it exists
    - Prepare end-to-end test scenarios derived from user journeys
    - Write e2e test plan to `.claude/output/e2e-test-scenarios.md` for the Deliver phase
 

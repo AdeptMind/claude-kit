@@ -20,7 +20,7 @@ interfaces:
     - "model cards"
   consumes:
     - "data specs"
-    - "architecture.yaml"
+    - "architecture.md"
     - "performance requirements"
 ---
 

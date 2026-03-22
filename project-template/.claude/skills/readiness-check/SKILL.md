@@ -43,10 +43,10 @@ For each criterion, mark as PASS (testable) or FAIL (vague) with a reason.
 
 Skip this check if `CK_USER_ROLE` is `dev`.
 
-Verify that the task has a `story_ref` field that links back to a story in `.claude/output/problem.yaml`:
+Verify that the task has a `story_ref` field that links back to a story in `.claude/output/problem.md`:
 
 - Read the task's `story_ref` value
-- Read `.claude/output/problem.yaml` and confirm the referenced story exists
+- Read `.claude/output/problem.md` and confirm the referenced story exists
 - If the reference is missing or points to a non-existent story, mark as FAIL
 
 ## Output Format
@@ -68,7 +68,7 @@ Verify that the task has a `story_ref` field that links back to a story in `.cla
 
 ### Traceability: PASS / FAIL / SKIPPED (dev mode)
 - story_ref: {value or MISSING}
-- Links to: {story in problem.yaml or NOT FOUND}
+- Links to: {story in problem.md or NOT FOUND}
 
 ### Blocking Issues
 - {issue description and what needs to change}

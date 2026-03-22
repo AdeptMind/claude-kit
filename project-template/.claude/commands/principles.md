@@ -17,7 +17,7 @@ The output is a human-readable governance document (`.claude/output/principles.m
    - Security tools (`snyk`, `trivy`, `dependabot.yml`, `.npmrc`, etc.)
    - Type checking (`tsconfig.json`, `mypy.ini`, `pyright`, etc.)
    - Code formatting (`prettier`, `black`, `gofmt`, `rustfmt`, etc.)
-3. Read `.claude/output/problem.yaml` if it exists — extract project context (tech stack, constraints).
+3. Read `.claude/output/problem.md` if it exists — extract project context (tech stack, constraints).
 4. Read `CLAUDE.md` for any existing code principles.
 
 Summarize what you found to the user before proceeding.

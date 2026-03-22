@@ -16,7 +16,7 @@ interfaces:
   consumes:
     - "K8s manifests"
     - "security requirements"
-    - "architecture.yaml"
+    - "architecture.md"
 ---
 
 ## Principle

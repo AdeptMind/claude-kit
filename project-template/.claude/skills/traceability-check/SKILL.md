@@ -1,6 +1,6 @@
 ---
 name: traceability-check
-description: Build a traceability matrix from BMAD artifacts (problem.yaml, backlog.yaml, user-journey.yaml). Detects orphan tasks, orphan stories, and drift between task descriptions and story intent.
+description: Build a traceability matrix from BMAD artifacts (problem.md, backlog.md, user-journey.md). Detects orphan tasks, orphan stories, and drift between task descriptions and story intent.
 disable-model-invocation: true
 allowed-tools: Read, Grep, Glob
 ---
@@ -10,23 +10,23 @@ You are a traceability analyst. Your job is to verify end-to-end traceability ac
 ## Step 1: Load Artifacts
 
 Read the following files:
-1. `.claude/output/problem.yaml` — contains `user_stories` (each with an ID, persona, pain point, `i_want`, `so_that`)
-2. `.claude/output/backlog.yaml` — contains tasks/stories organized by epic (each task has an ID, title, description, and a `story` or `story_id` reference)
-3. `.claude/output/user-journey.yaml` (optional) — contains journey flows with steps linked to stories
+1. `.claude/output/problem.md` — contains `user_stories` (each with an ID, persona, pain point, `i_want`, `so_that`)
+2. `.claude/output/backlog.md` — contains tasks/stories organized by epic (each task has an ID, title, description, and a `story` or `story_id` reference)
+3. `.claude/output/user-journey.md` (optional) — contains journey flows with steps linked to stories
 
-If `problem.yaml` or `backlog.yaml` is missing, stop and report which artifacts are required.
+If `problem.md` or `backlog.md` is missing, stop and report which artifacts are required.
 
-If `user-journey.yaml` is missing, skip journey linkage and note it in the output.
+If `user-journey.md` is missing, skip journey linkage and note it in the output.
 
 ## Step 2: Extract Entities
 
-From `problem.yaml`, extract:
+From `problem.md`, extract:
 - Each user story: ID, persona, pain point, `i_want`, `so_that`
 
-From `backlog.yaml`, extract:
+From `backlog.md`, extract:
 - Each task: ID, title, description, referenced story ID
 
-From `user-journey.yaml` (if present), extract:
+From `user-journey.md` (if present), extract:
 - Each journey flow: name, persona, steps
 - Each step: description, linked story ID (if any)
 
@@ -35,7 +35,7 @@ From `user-journey.yaml` (if present), extract:
 For each task in the backlog:
 1. Find the story it references (by story ID)
 2. From that story, find the pain point and persona
-3. If `user-journey.yaml` exists, find journey steps linked to that story
+3. If `user-journey.md` exists, find journey steps linked to that story
 
 Produce a matrix row per task:
 
@@ -44,16 +44,16 @@ Produce a matrix row per task:
 
 ## Step 4: Detect Orphan Tasks
 
-An orphan task is a task in `backlog.yaml` that:
+An orphan task is a task in `backlog.md` that:
 - Has no `story` or `story_id` field, OR
-- References a story ID that does not exist in `problem.yaml` `user_stories`
+- References a story ID that does not exist in `problem.md` `user_stories`
 
 List all orphan tasks with their ID, title, and the reason (missing reference or broken reference).
 
 ## Step 5: Detect Orphan Stories
 
-An orphan story is a user story in `problem.yaml` that:
-- Has no task in `backlog.yaml` referencing it
+An orphan story is a user story in `problem.md` that:
+- Has no task in `backlog.md` referencing it
 
 List all orphan stories with their ID and `i_want` summary.
 
@@ -69,7 +69,7 @@ Flag drift when the task description has significantly diverged from the story i
 
 For each flagged drift, show the task description and story `i_want` side by side.
 
-## Step 7: Journey Coverage (if user-journey.yaml exists)
+## Step 7: Journey Coverage (if user-journey.md exists)
 
 Check if every journey step that references a story has at least one task implementing that story. Flag journey steps with no backing task.
 
@@ -120,7 +120,7 @@ Check if every journey step that references a story has at least one task implem
 |---------|------|---------------|--------|
 | {flow}  | {step desc} | {story-id} | No backing task |
 
-(or "N/A — no user-journey.yaml" / "None found.")
+(or "N/A — no user-journey.md" / "None found.")
 ```
 
 ## Hard Rules

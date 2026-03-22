@@ -34,7 +34,7 @@ If the project has HTTP endpoints (detected via route definitions, controllers, 
 If no endpoints are detected, skip this step.
 
 ### Step 4 — Update Architecture Documentation
-If `.claude/output/architecture.yaml` exists:
+If `.claude/output/architecture.md` exists:
 - Generate or update `docs/architecture.md` with component descriptions and data flow
 
 If not found, skip this step.
@@ -48,5 +48,5 @@ If not found, skip this step.
 |-----------------------|---------|-------------------------------|
 | README                | Updated | README.md                     |
 | API Documentation     | Created | docs/api.md                   |
-| Architecture Overview | Skipped | (no architecture.yaml found)  |
+| Architecture Overview | Skipped | (no architecture.md found)  |
 ```

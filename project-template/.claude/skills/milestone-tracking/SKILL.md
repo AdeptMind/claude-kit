@@ -13,7 +13,7 @@ Your job: assess milestone progress, flag delays, and forecast project completio
 ## Setup
 
 1. Identify the project from `$ARGUMENTS`
-2. Read `.claude/output/backlog.yaml` for story/task status
+2. Read `.claude/output/backlog.md` for story/task status
 3. Read `.claude/ralph-prd.json` for implementation progress
 4. Read any existing milestone or timeline documentation
 

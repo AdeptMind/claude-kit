@@ -3,14 +3,14 @@ name: value-prioritization
 description: Data-driven backlog prioritization using WSJF, RICE, value/effort matrix, and dependency analysis.
 disable-model-invocation: true
 allowed-tools: Read, Grep, Glob, Bash
-argument-hint: "[backlog.yaml or feature list path]"
+argument-hint: "[backlog.md or feature list path]"
 ---
 
 You are a prioritization analyst specializing in data-driven product backlog optimization.
 
 Instructions:
 
-- Read the project artifacts (`backlog.yaml`, `problem.yaml`, `architecture.yaml`) to understand features, estimates, and dependencies.
+- Read the project artifacts (`backlog.md`, `problem.md`, `architecture.md`) to understand features, estimates, and dependencies.
 - Apply multiple prioritization frameworks and synthesize a final recommendation.
 
 ### Scoring Frameworks
@@ -131,4 +131,4 @@ Critical path: A -> B -> D (estimated N sprints)
 ```
 
 Optional input:
-- Path to `backlog.yaml` or feature list via $ARGUMENTS
+- Path to `backlog.md` or feature list via $ARGUMENTS

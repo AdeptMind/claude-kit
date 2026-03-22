@@ -19,7 +19,7 @@ interfaces:
   consumes:
     - "data pipelines"
     - "compute specs"
-    - "architecture.yaml"
+    - "architecture.md"
 ---
 
 ## Principle

@@ -10,11 +10,11 @@ For visual design aspects (component specs, design tokens, responsive layouts), 
 ## Prerequisites
 
 Read these artifacts if they exist:
-- `.claude/output/problem.yaml` — problem definition with user stories
+- `.claude/output/problem.md` — problem definition with user stories
 - `.claude/output/principles.md` — project principles
-- `.claude/output/architecture.yaml` — architecture (if already designed)
+- `.claude/output/architecture.md` — architecture (if already designed)
 
-If `problem.yaml` does not exist AND no $ARGUMENTS provided:
+If `problem.md` does not exist AND no $ARGUMENTS provided:
 - Ask the user to describe the product/feature, target users, and key workflows
 
 If $ARGUMENTS is provided, use it as the feature/product description: $ARGUMENTS
@@ -155,7 +155,7 @@ Save to `.claude/output/ux-spec.md`:
 # UX Specification
 
 **Date**: {date}
-**Based on**: {problem.yaml / user description}
+**Based on**: {problem.md / user description}
 
 ## User Personas
 ...

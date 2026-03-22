@@ -13,7 +13,7 @@ Your job: guide a structured discovery process to surface, document, and validat
 ## Setup
 
 1. Identify the project or domain from `$ARGUMENTS`
-2. Scan `.claude/output/` for existing artifacts (`problem.yaml`, `architecture.yaml`) to understand current context
+2. Scan `.claude/output/` for existing artifacts (`problem.md`, `architecture.md`) to understand current context
 3. If no context exists, proceed with a blank-slate discovery
 
 ## Process

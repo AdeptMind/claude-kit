@@ -17,7 +17,7 @@ interfaces:
     - "migrations"
     - "unit tests"
   consumes:
-    - "architecture.yaml"
+    - "architecture.md"
     - "API contracts"
     - "database schemas"
 ---

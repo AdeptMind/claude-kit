@@ -19,7 +19,7 @@ interfaces:
     - "tagging compliance reports"
   consumes:
     - "cloud billing data"
-    - "architecture.yaml"
+    - "architecture.md"
     - "infrastructure configs"
 ---
 

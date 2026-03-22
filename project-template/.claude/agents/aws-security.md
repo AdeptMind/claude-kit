@@ -16,7 +16,7 @@ interfaces:
   consumes:
     - "AWS infrastructure configs"
     - "CloudTrail logs"
-    - "architecture.yaml"
+    - "architecture.md"
 ---
 
 ## Principle

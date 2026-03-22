@@ -16,7 +16,7 @@ interfaces:
     - "backup strategies"
   consumes:
     - "data model"
-    - "architecture.yaml"
+    - "architecture.md"
     - "performance metrics"
 ---
 

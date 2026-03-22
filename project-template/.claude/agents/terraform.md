@@ -15,7 +15,7 @@ interfaces:
     - "terraform modules"
     - "tfvars files"
   consumes:
-    - "architecture.yaml"
+    - "architecture.md"
     - "cloud requirements"
     - "infrastructure configs"
 ---

@@ -12,12 +12,12 @@ skills:
   - client-advocacy
 interfaces:
   produces:
-    - "problem.yaml"
-    - "backlog.yaml"
+    - "problem.md"
+    - "backlog.md"
     - "user stories"
     - "acceptance criteria"
   consumes:
-    - "architecture.yaml"
+    - "architecture.md"
     - "stakeholder feedback"
 ---
 

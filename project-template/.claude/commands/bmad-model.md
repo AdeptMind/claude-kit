@@ -9,7 +9,7 @@ Your goal is to take the problem definition from the Break phase and produce an 
 
 ## Prerequisites
 
-Read `.claude/output/problem.yaml`. If it does not exist, tell the user to run `/bmad-break` first and stop.
+Read `.claude/output/problem.md`. If it does not exist, tell the user to run `/bmad-break` first and stop.
 
 Read `.claude/output/principles.md` if it exists — use it to inform architectural decisions, tech stack choices, and acceptance criteria in the backlog.
 
@@ -45,86 +45,79 @@ Break the architecture into an ordered backlog of implementation tasks. Each tas
 
 ## Stage 4: Produce Output
 
-Create `.claude/output/architecture.yaml`:
+Create `.claude/output/architecture.md`:
 
-```yaml
-project_name: <from problem.yaml>
-version: "1.0"
-phase: model
+```markdown
+# Architecture: <project name>
+**Version:** 1.0
+**Phase:** model
 
-components:
-  - name: <component name>
-    type: <service | library | infrastructure | config>
-    responsibility: <what it does>
-    tech: <specific technology>
-    depends_on:
-      - <other component>
+## Components
 
-data_model:
-  entities:
-    - name: <entity>
-      fields:
-        - name: <field>
-          type: <type>
-          constraints: <nullable, unique, indexed, etc.>
-      relationships:
-        - type: <has_many | belongs_to | has_one>
-          target: <entity>
+### <component name>
+- **Type:** service | library | infrastructure | config
+- **Responsibility:** <what it does>
+- **Tech:** <specific technology>
+- **Depends on:** <other component>
 
-api_surface:
-  - method: <GET|POST|PUT|DELETE>
-    path: <endpoint path>
-    component: <which component owns this>
-    description: <what it does>
-    auth: <public | authenticated | admin>
+## Data Model
 
-infrastructure:
-  compute: <ECS, Lambda, K8s, etc.>
-  database: <RDS, DynamoDB, etc.>
-  cache: <ElastiCache, Redis, etc.>
-  storage: <S3, etc.>
-  networking: <VPC layout, load balancer>
-  ci_cd: <pipeline description>
+### <entity name>
+| Field | Type | Constraints |
+|-------|------|------------|
+| <field> | <type> | <nullable, unique, indexed, etc.> |
 
-security:
-  authentication: <strategy>
-  authorization: <strategy>
-  encryption: <at rest, in transit>
-  secrets_management: <approach>
+**Relationships:**
+- <has_many | belongs_to | has_one> → <target entity>
 
-adrs:
-  - id: <ADR-001>
-    title: <decision title>
-    decision: <what was decided>
-    rationale: <why>
-    alternatives:
-      - <option considered>
-    trade_offs:
-      - <accepted trade-off>
+## API Surface
+| Method | Path | Component | Description | Auth |
+|--------|------|-----------|-------------|------|
+| <GET\|POST\|PUT\|DELETE> | <endpoint path> | <which component> | <what it does> | <public \| authenticated \| admin> |
+
+## Infrastructure
+- **Compute:** <ECS, Lambda, K8s, etc.>
+- **Database:** <RDS, DynamoDB, etc.>
+- **Cache:** <ElastiCache, Redis, etc.>
+- **Storage:** <S3, etc.>
+- **Networking:** <VPC layout, load balancer>
+- **CI/CD:** <pipeline description>
+
+## Security
+- **Authentication:** <strategy>
+- **Authorization:** <strategy>
+- **Encryption:** <at rest, in transit>
+- **Secrets Management:** <approach>
+
+## ADRs
+
+### ADR-001: <decision title>
+- **Decision:** <what was decided>
+- **Rationale:** <why>
+- **Alternatives:** <options considered>
+- **Trade-offs:** <accepted trade-off>
 ```
 
-Create `.claude/output/backlog.yaml`:
+Create `.claude/output/backlog.md`:
 
-```yaml
-project_name: <from problem.yaml>
-version: "1.0"
-phase: model
+```markdown
+# Backlog: <project name>
+**Version:** 1.0
+**Phase:** model
 
-tasks:
-  - id: <T-001>
-    title: <short title>
-    component: <which component>
-    priority: <P0|P1|P2>
-    type: <setup | feature | integration | test | infra | docs>
-    description: <what to implement>
-    depends_on:
-      - <task id>
-    acceptance_criteria:
-      - <criterion>
-    files_to_create:
-      - <path>
-    files_to_modify:
-      - <path>
+## Round 1: <theme>
+
+### T-001: <short title>
+- **Component:** <which component>
+- **Priority:** P0
+- **Type:** setup | feature | integration | test | infra | docs
+- **Description:** <what to implement>
+- **Depends on:** none
+- **Acceptance Criteria:**
+  - <criterion 1>
+  - <criterion 2>
+- **Files to create:** `<path>`
+- **Files to modify:** `<path>`
 ```
 
 ## Stage 5: Validate
@@ -152,11 +145,11 @@ Or simply run `/bmad-run` which orchestrates all of this automatically.
 
 > **Role gate**: check the `CK_USER_ROLE` environment variable. If it is `dev` or unset, **skip this section entirely**.
 
-After the Architect produces `architecture.yaml` (end of Stage 4) and before presenting results to the user (Stage 5), run the following challenge rounds:
+After the Architect produces `architecture.md` (end of Stage 4) and before presenting results to the user (Stage 5), run the following challenge rounds:
 
 ### Challenge Round 1 — Tech Lead ADR Review
 
-Act as a **Tech Lead** and review every ADR in `architecture.yaml`:
+Act as a **Tech Lead** and review every ADR in `architecture.md`:
 
 1. **Rationale strength**: is the "why" convincing? Would a senior engineer reading this understand the decision without extra context?
 2. **Alternatives considered**: are there obvious alternatives missing? Did the Architect evaluate at least two options?
@@ -192,7 +185,7 @@ Where `<role>` is `tech-lead` or `sre`.
 The Architect MUST address ALL flagged challenges before proceeding to Stage 5 (Validate). For each challenge:
 
 1. The Architect provides a response explaining the decision or proposing a change
-2. If a change is needed, update `architecture.yaml` accordingly
+2. If a change is needed, update `architecture.md` accordingly
 3. Record the outcome in the challenge entry (`revised`, `accepted`, or `deferred`)
 
 Only proceed to Stage 5 when every challenge has a recorded outcome.

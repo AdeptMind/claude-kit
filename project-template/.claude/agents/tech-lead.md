@@ -24,8 +24,8 @@ interfaces:
     - "technical decisions"
     - "coding standards"
   consumes:
-    - "architecture.yaml"
-    - "backlog.yaml"
+    - "architecture.md"
+    - "backlog.md"
     - "source code"
 ---
 

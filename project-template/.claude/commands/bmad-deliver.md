@@ -9,7 +9,7 @@ Your goal is to prepare the project for release: deployment configuration, docum
 
 ## Prerequisites
 
-1. Read `.claude/output/architecture.yaml` for infrastructure and deployment design.
+1. Read `.claude/output/architecture.md` for infrastructure and deployment design.
 2. Read `.claude/output/act-report.md` for what was implemented.
 3. Read `.claude/output/principles.md` if it exists — use security and deployment principles to guide the release process.
 4. Scan the project source tree to understand the current state of the code.
@@ -121,7 +121,7 @@ If `CK_USER_ROLE` is `po` or `all-roles`, execute the following multi-role valid
 
 ### QA — User Journey Verification
 
-1. Read `.claude/output/user-journey.yaml` (if it exists).
+1. Read `.claude/output/user-journey.md` (if it exists).
 2. For each journey step, execute a manual walkthrough or automated check against the running application.
 3. Capture evidence (command output, screenshots, or log excerpts) for each step.
 4. Report **pass/fail per step** with evidence summary.
@@ -138,7 +138,7 @@ Sign-off format:
 
 ### PO — Business Value Confirmation
 
-1. Read `.claude/output/problem.yaml` — extract each feature's `so_that` clause.
+1. Read `.claude/output/problem.md` — extract each feature's `so_that` clause.
 2. For each feature, confirm the business value is delivered with concrete evidence (demo output, test results, or user-facing behavior).
 3. Flag any feature whose `so_that` is not demonstrably met.
 
@@ -173,7 +173,7 @@ Sign-off format:
 
 ### FinOps — Cost Report
 
-1. Read `.claude/output/architecture.yaml` for estimated resource costs (if present).
+1. Read `.claude/output/architecture.md` for estimated resource costs (if present).
 2. Compare estimated costs against actual or projected resource usage.
 3. Report budget compliance status.
 

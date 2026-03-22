@@ -16,7 +16,7 @@ interfaces:
   consumes:
     - "GCP infrastructure configs"
     - "Cloud Audit Logs"
-    - "architecture.yaml"
+    - "architecture.md"
 ---
 
 ## Principle

@@ -17,7 +17,7 @@ interfaces:
   consumes:
     - "data inventory"
     - "compliance requirements"
-    - "architecture.yaml"
+    - "architecture.md"
 ---
 
 ## Principle

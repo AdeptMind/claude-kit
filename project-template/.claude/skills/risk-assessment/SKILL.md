@@ -13,7 +13,7 @@ Your job: identify, classify, score, and plan mitigations for project risks.
 ## Setup
 
 1. Identify the project or area from `$ARGUMENTS`
-2. Scan `.claude/output/` for existing artifacts (problem.yaml, architecture.yaml, backlog.yaml)
+2. Scan `.claude/output/` for existing artifacts (problem.md, architecture.md, backlog.md)
 3. Read any existing risk documentation or retrospectives
 
 ## Process

@@ -23,7 +23,7 @@ For each acceptance criterion listed in the story:
 
 ### Architecture Compliance
 
-Read `.claude/output/architecture.yaml` (if it exists) and verify:
+Read `.claude/output/architecture.md` (if it exists) and verify:
 - The implementation follows the designed component structure
 - API contracts match the defined surface (methods, paths, auth)
 - Data model matches the defined entities and relationships

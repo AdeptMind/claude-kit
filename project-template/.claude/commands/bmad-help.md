@@ -11,9 +11,9 @@ Check for the existence and content of these artifacts:
 
 **BMAD artifacts** (in `.claude/output/`):
 - `principles.md` — Project principles (Phase 0)
-- `problem.yaml` — Problem definition (Phase 1: Break)
-- `architecture.yaml` — Architecture design (Phase 2: Model)
-- `backlog.yaml` — Implementation backlog (Phase 2: Model)
+- `problem.md` — Problem definition (Phase 1: Break)
+- `architecture.md` — Architecture design (Phase 2: Model)
+- `backlog.md` — Implementation backlog (Phase 2: Model)
 - `checklist.md` — Pre-implementation readiness (Phase 2.3)
 - `gsd/prep-report.md` — GSD preparation (Phase 2.5)
 - `gsd/gap-analysis.md` — Gap analysis (Phase 2.5)
@@ -43,10 +43,10 @@ Based on artifacts found, determine the furthest completed phase:
 |-------|------------------|--------|
 | Phase -1: Brainstorm | `brainstorm-*.md` | Optional |
 | Phase 0: Principles | `principles.md` | Optional |
-| Phase 1: Break | `problem.yaml` | Required |
-| Phase 1.5: Clarify | clarifications in `problem.yaml` | Auto |
+| Phase 1: Break | `problem.md` | Required |
+| Phase 1.5: Clarify | clarifications in `problem.md` | Auto |
 | Phase 1.75: UX Spec | `ux-spec.md` | Optional |
-| Phase 2: Model | `architecture.yaml` + `backlog.yaml` | Required |
+| Phase 2: Model | `architecture.md` + `backlog.md` | Required |
 | Phase 2.25: Analyze | (read-only check) | Auto |
 | Phase 2.3: Checklist | `checklist.md` | Required |
 | Phase 2.5: GSD Prep | `gsd/prep-report.md` | Required |
@@ -83,8 +83,8 @@ Present the dashboard in this format:
 Based on the current state:
 
 - **No artifacts at all**: "Start with `/bmad-break` to define your problem, or `/ralph` for direct implementation."
-- **Only `problem.yaml`**: "Run `/bmad-model` to design architecture and backlog."
-- **`problem.yaml` + `architecture.yaml` + `backlog.yaml`**: "Run `/analyze` and `/checklist` to verify readiness, then `/gsd-prep`."
+- **Only `problem.md`**: "Run `/bmad-model` to design architecture and backlog."
+- **`problem.md` + `architecture.md` + `backlog.md`**: "Run `/analyze` and `/checklist` to verify readiness, then `/gsd-prep`."
 - **All prep done, no act-report**: "Run `/ralph` to start implementation."
 - **`act-report.md` exists**: "Run `/bmad-deliver` to prepare the release."
 - **Ralph interrupted**: "Resume with `/ralph-loop`."

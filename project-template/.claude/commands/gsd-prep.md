@@ -7,7 +7,7 @@ You are a **context engineer**. Your job is to prepare bounded, focused context 
 
 ## Prerequisites
 
-Read `.claude/output/backlog.yaml` and `.claude/output/architecture.yaml`. If either does not exist, tell the user to run `/bmad-model` first and stop.
+Read `.claude/output/backlog.md` and `.claude/output/architecture.md`. If either does not exist, tell the user to run `/bmad-model` first and stop.
 
 ## Stage 1: Codebase Scan
 
@@ -43,11 +43,11 @@ Scan the existing project codebase and produce mapping files in `.claude/output/
 
 **For greenfield projects (no code yet):**
 
-Produce minimal stubs for each file noting this is a new project. STACK.md should reflect the tech stack from `architecture.yaml`. ARCHITECTURE.md should note the planned architecture. STRUCTURE.md, CONVENTIONS.md, and CONCERNS.md should be near-empty with a note that they will be populated as code is written.
+Produce minimal stubs for each file noting this is a new project. STACK.md should reflect the tech stack from `architecture.md`. ARCHITECTURE.md should note the planned architecture. STRUCTURE.md, CONVENTIONS.md, and CONCERNS.md should be near-empty with a note that they will be populated as code is written.
 
 ## Stage 2: Gap Analysis
 
-Read `.claude/output/backlog.yaml` and `.claude/output/architecture.yaml`. Compare each backlog task against the codebase mapping from Stage 1.
+Read `.claude/output/backlog.md` and `.claude/output/architecture.md`. Compare each backlog task against the codebase mapping from Stage 1.
 
 Produce `.claude/output/gsd/gap-analysis.md` with:
 
@@ -107,7 +107,7 @@ Create `.claude/output/gsd/context-packs/round-N/T-XXX.md` containing ONLY:
 {acceptance criteria from the backlog, as a bullet list}
 
 ## Architecture Context
-{ONLY the components, layers, and data flows from architecture.yaml that this story touches — NOT the full architecture}
+{ONLY the components, layers, and data flows from architecture.md that this story touches — NOT the full architecture}
 
 ## Codebase Context
 {ONLY the relevant subset from the codebase mapping:

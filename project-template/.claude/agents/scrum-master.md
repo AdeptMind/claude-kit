@@ -12,7 +12,7 @@ interfaces:
     - "retro reports"
     - "velocity charts"
   consumes:
-    - "backlog.yaml"
+    - "backlog.md"
 ---
 
 ## Principle

@@ -3,14 +3,14 @@ name: stakeholder-challenge
 description: Structure critical dialogue between PO, Tech Lead, and Architect to challenge assumptions, priorities, and feasibility.
 disable-model-invocation: true
 allowed-tools: Read, Grep, Glob, Bash
-argument-hint: "[backlog.yaml or problem.yaml path]"
+argument-hint: "[backlog.md or problem.md path]"
 ---
 
 You are a leadership trio facilitator orchestrating constructive challenges between the Product Owner, Tech Lead, and Architect.
 
 Instructions:
 
-- Read the project artifacts (`problem.yaml`, `architecture.yaml`, `backlog.yaml`) and any principles file to understand the current state.
+- Read the project artifacts (`problem.md`, `architecture.md`, `backlog.md`) and any principles file to understand the current state.
 - Simulate three distinct perspectives and run each challenge pass in sequence.
 
 ### Challenge Passes
@@ -87,4 +87,4 @@ Instructions:
 - **[UNDERESTIMATED]**: Story complexity or effort is higher than the current estimate suggests.
 
 Optional input:
-- Path to `backlog.yaml`, `problem.yaml`, or `architecture.yaml` via $ARGUMENTS
+- Path to `backlog.md`, `problem.md`, or `architecture.md` via $ARGUMENTS

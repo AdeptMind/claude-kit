@@ -18,7 +18,7 @@ interfaces:
     - "Helm charts"
     - "terraform modules"
   consumes:
-    - "architecture.yaml"
+    - "architecture.md"
     - "deployment requirements"
 ---
 
