@@ -143,6 +143,8 @@ Before spawning any teammate for this round:
 
 ### Phase B: Plan & Approve (teammates plan, lead reviews)
 
+**Story Lock Check**: Before spawning a teammate for a story, check if the story has `"locked": true` in `ralph-prd.json`. If locked, SKIP this story and log: "Story {id} is locked (being edited by user) — skipping." Move to the next eligible story. The locked story will be picked up in the next round or when unlocked.
+
 Spawn one teammate per story in the round. **Require plan approval** — teammates must plan before implementing.
 
 **Role-Aware Readiness Gate (po/all-roles only)**

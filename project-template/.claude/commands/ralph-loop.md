@@ -14,7 +14,7 @@ Resume **Ralph** — pick up where the last session left off.
 
 ## Resume
 
-1. Find all stories where `passes` is `false`
+1. Find all stories where `passes` is `false` and `locked` is not `true` (locked stories are being edited by the user — skip them and log: "Story {id} is locked (being edited by user) — skipping.")
 2. Recompute remaining rounds (stories whose `dependsOn` are all passing form the next round)
 3. Check for existing feedback files in `.claude/output/gsd/context-packs/round-N/T-XXX-feedback.md` — stories with feedback files were mid-fix when the session was interrupted. These teammates should be re-spawned with both their context pack AND their feedback file, so they know exactly what failed and what was already attempted.
 4. Follow the same process as `/ralph` Step 6:

@@ -82,8 +82,9 @@
 
   async function editStory() {
     try {
-      const { GetStoryMarkdown } = await import('../../wailsjs/go/main/StoryService.js')
+      const { GetStoryMarkdown, LockStory } = await import('../../wailsjs/go/main/StoryService.js')
       editContent = await GetStoryMarkdown(projectPath, selectedStory.id)
+      try { await LockStory(projectPath, selectedStory.id) } catch {}
     } catch {
       editContent = storyToMarkdown(selectedStory)
     }
@@ -92,11 +93,20 @@
 
   async function saveStoryEdit(content) {
     try {
-      const { SaveStoryMarkdown } = await import('../../wailsjs/go/main/StoryService.js')
+      const { SaveStoryMarkdown, UnlockStory } = await import('../../wailsjs/go/main/StoryService.js')
       await SaveStoryMarkdown(projectPath, selectedStory.id, content)
+      try { await UnlockStory(projectPath, selectedStory.id) } catch {}
     } catch {}
     editingStory = false
     loadStories()
+  }
+
+  async function cancelEdit() {
+    try {
+      const { UnlockStory } = await import('../../wailsjs/go/main/StoryService.js')
+      await UnlockStory(projectPath, selectedStory.id)
+    } catch {}
+    editingStory = false
   }
 
   function storyToMarkdown(s) {
@@ -197,7 +207,9 @@
                     P{story.priority}
                   </span>
                 </div>
-                <p class="text-sm text-white mb-3">{story.title}</p>
+                <p class="text-sm text-white mb-3">
+                  {#if story.locked}<span class="text-ck-gold text-xs mr-1" title="Being edited">🔒</span>{/if}{story.title}
+                </p>
                 <div class="flex items-center gap-2 flex-wrap">
                   {#if story.component}
                     <span class="text-xs px-2 py-0.5 rounded bg-white/5 text-ck-dim">{story.component}</span>
@@ -353,7 +365,7 @@
         content={editContent}
         filename="{selectedStory.id}.md"
         onSave={saveStoryEdit}
-        onCancel={() => editingStory = false}
+        onCancel={cancelEdit}
       />
     {/if}
   {/if}

@@ -20,6 +20,7 @@ type Story struct {
 	Type               string   `json:"type"`
 	AcceptanceCriteria []string `json:"acceptanceCriteria"`
 	DependsOn          []string `json:"dependsOn"`
+	Locked             bool     `json:"locked"`
 }
 
 type StoryService struct{}
@@ -39,6 +40,7 @@ type ralphStory struct {
 	Type               string   `json:"type"`
 	AcceptanceCriteria []string `json:"acceptanceCriteria"`
 	DependsOn          []string `json:"dependsOn"`
+	Locked             bool     `json:"locked,omitempty"`
 }
 
 // backlog.md structures
@@ -194,6 +196,7 @@ func (s *StoryService) loadFromRalph(projectPath string) ([]Story, error) {
 			Type:               rs.Type,
 			AcceptanceCriteria: rs.AcceptanceCriteria,
 			DependsOn:          rs.DependsOn,
+			Locked:             rs.Locked,
 		})
 	}
 	return stories, nil
@@ -338,6 +341,52 @@ func (s *StoryService) SaveStoryMarkdown(projectPath string, storyID string, mar
 			if len(newAC) > 0 {
 				prd.UserStories[i].AcceptanceCriteria = newAC
 			}
+			found = true
+			break
+		}
+	}
+	if !found {
+		return fmt.Errorf("story %s not found in ralph-prd.json", storyID)
+	}
+
+	out, err := json.MarshalIndent(prd, "", "  ")
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(prdPath, out, 0644)
+}
+
+func (s *StoryService) LockStory(projectPath string, storyID string) error {
+	return s.setStoryLock(projectPath, storyID, true)
+}
+
+func (s *StoryService) UnlockStory(projectPath string, storyID string) error {
+	return s.setStoryLock(projectPath, storyID, false)
+}
+
+func (s *StoryService) setStoryLock(projectPath string, storyID string, locked bool) error {
+	if projectPath == "" {
+		projectPath = s.findProjectPath()
+	}
+	if projectPath == "" {
+		return fmt.Errorf("no project path found")
+	}
+
+	prdPath := filepath.Join(projectPath, ".claude", "ralph-prd.json")
+	data, err := os.ReadFile(prdPath)
+	if err != nil {
+		return fmt.Errorf("cannot read ralph-prd.json: %w", err)
+	}
+
+	var prd ralphPRD
+	if err := json.Unmarshal(data, &prd); err != nil {
+		return fmt.Errorf("cannot parse ralph-prd.json: %w", err)
+	}
+
+	found := false
+	for i := range prd.UserStories {
+		if prd.UserStories[i].ID == storyID {
+			prd.UserStories[i].Locked = locked
 			found = true
 			break
 		}
