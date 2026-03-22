@@ -28,15 +28,64 @@
   let active = $state('dashboard')
   let role = $state('po')
   let roleSelectorOpen = $state(false)
+  let searchQuery = $state('')
+  let favorites = $state(loadFavorites())
 
   currentPage.subscribe(v => active = v)
   currentRole.subscribe(v => role = v)
 
   let navItems = $derived(isManagementRole(role) ? managementItems : devItems)
 
+  // Filtered roles based on search
+  let filteredRoles = $derived(() => {
+    const q = searchQuery.toLowerCase().trim()
+    if (!q) return null // null = show normal groups
+    const matches = []
+    for (const group of allRoles) {
+      for (const r of group.roles) {
+        if (r.includes(q)) matches.push(r)
+      }
+    }
+    return matches
+  })
+
+  // Favorite roles sorted at top
+  let favoriteRoles = $derived(
+    allRoles.flatMap(g => g.roles).filter(r => favorites.has(r))
+  )
+
   function selectRole(newRole) {
     setRole(newRole)
     roleSelectorOpen = false
+    searchQuery = ''
+  }
+
+  function toggleFavorite(e, r) {
+    e.stopPropagation()
+    const next = new Set(favorites)
+    if (next.has(r)) {
+      next.delete(r)
+    } else {
+      next.add(r)
+    }
+    favorites = next
+    saveFavorites(next)
+  }
+
+  function loadFavorites() {
+    try {
+      const stored = localStorage.getItem('ck-role-favorites')
+      return stored ? new Set(JSON.parse(stored)) : new Set()
+    } catch { return new Set() }
+  }
+
+  function saveFavorites(favs) {
+    localStorage.setItem('ck-role-favorites', JSON.stringify([...favs]))
+  }
+
+  function openSelector() {
+    roleSelectorOpen = !roleSelectorOpen
+    searchQuery = ''
   }
 
   function handleResize() {
@@ -61,9 +110,12 @@
   <!-- Role indicator — click to open selector -->
   <div class="relative">
     <button
-      onclick={() => roleSelectorOpen = !roleSelectorOpen}
+      onclick={openSelector}
       class="w-full flex items-center gap-2 px-4 py-2.5 border-b border-gray-800 hover:bg-ck-pink/10 transition-colors cursor-pointer"
     >
+      {#if favorites.has(role)}
+        <span class="text-ck-gold text-xs">★</span>
+      {/if}
       <span class="text-xs font-mono text-ck-gold truncate">{role}</span>
       {#if expanded}
         <span class="text-ck-dim text-xs ml-auto">{roleSelectorOpen ? '▲' : '▼'}</span>
@@ -72,21 +124,80 @@
 
     <!-- Role selector dropdown -->
     {#if roleSelectorOpen}
-      <div class="absolute left-0 top-full z-50 w-56 max-h-80 overflow-y-auto bg-ck-dark border border-gray-700 rounded-lg shadow-xl">
-        {#each allRoles as group}
-          <div class="px-3 py-1.5 text-[10px] uppercase tracking-wider text-ck-dim border-b border-gray-800">
-            {group.group}
-          </div>
-          {#each group.roles as r}
-            <button
-              onclick={() => selectRole(r)}
-              class="w-full text-left px-4 py-2 text-sm transition-colors
-                {r === role ? 'bg-ck-rose text-white' : 'text-gray-300 hover:bg-ck-pink/20 hover:text-white'}"
-            >
-              {r}
-            </button>
-          {/each}
-        {/each}
+      <div class="absolute left-0 top-full z-50 w-60 max-h-96 flex flex-col bg-ck-dark border border-gray-700 rounded-lg shadow-xl">
+
+        <!-- Search input -->
+        <div class="p-2 border-b border-gray-800">
+          <!-- svelte-ignore a11y_autofocus -->
+          <input
+            type="text"
+            placeholder="Search roles..."
+            bind:value={searchQuery}
+            autofocus
+            class="w-full px-3 py-1.5 text-sm bg-ck-bg border border-gray-700 rounded text-white placeholder-ck-dim focus:border-ck-pink focus:outline-none"
+          />
+        </div>
+
+        <div class="overflow-y-auto flex-1">
+
+          <!-- Search results mode -->
+          {#if filteredRoles() !== null}
+            {#each filteredRoles() as r}
+              <button
+                onclick={() => selectRole(r)}
+                class="w-full text-left px-4 py-2 text-sm flex items-center gap-2 transition-colors
+                  {r === role ? 'bg-ck-rose text-white' : 'text-gray-300 hover:bg-ck-pink/20 hover:text-white'}"
+              >
+                <span role="button" tabindex="0" onclick={(e) => toggleFavorite(e, r)} onkeydown={(e) => e.key === 'Enter' && toggleFavorite(e, r)} class="text-xs cursor-pointer hover:scale-125 transition-transform {favorites.has(r) ? 'text-ck-gold' : 'text-gray-600'}">
+                  {favorites.has(r) ? '★' : '☆'}
+                </span>
+                <span>{r}</span>
+              </button>
+            {/each}
+            {#if filteredRoles().length === 0}
+              <div class="px-4 py-3 text-sm text-ck-dim">No roles match "{searchQuery}"</div>
+            {/if}
+
+          <!-- Normal grouped mode -->
+          {:else}
+
+            <!-- Favorites section (if any) -->
+            {#if favoriteRoles.length > 0}
+              <div class="px-3 py-1.5 text-[10px] uppercase tracking-wider text-ck-gold border-b border-gray-800">
+                ★ Favorites
+              </div>
+              {#each favoriteRoles as r}
+                <button
+                  onclick={() => selectRole(r)}
+                  class="w-full text-left px-4 py-2 text-sm flex items-center gap-2 transition-colors
+                    {r === role ? 'bg-ck-rose text-white' : 'text-gray-300 hover:bg-ck-pink/20 hover:text-white'}"
+                >
+                  <span role="button" tabindex="0" onclick={(e) => toggleFavorite(e, r)} onkeydown={(e) => e.key === 'Enter' && toggleFavorite(e, r)} class="text-xs text-ck-gold cursor-pointer hover:scale-125 transition-transform">★</span>
+                  <span>{r}</span>
+                </button>
+              {/each}
+            {/if}
+
+            <!-- All groups -->
+            {#each allRoles as group}
+              <div class="px-3 py-1.5 text-[10px] uppercase tracking-wider text-ck-dim border-b border-gray-800">
+                {group.group}
+              </div>
+              {#each group.roles as r}
+                <button
+                  onclick={() => selectRole(r)}
+                  class="w-full text-left px-4 py-2 text-sm flex items-center gap-2 transition-colors
+                    {r === role ? 'bg-ck-rose text-white' : 'text-gray-300 hover:bg-ck-pink/20 hover:text-white'}"
+                >
+                  <span role="button" tabindex="0" onclick={(e) => toggleFavorite(e, r)} onkeydown={(e) => e.key === 'Enter' && toggleFavorite(e, r)} class="text-xs cursor-pointer hover:scale-125 transition-transform {favorites.has(r) ? 'text-ck-gold' : 'text-gray-600 hover:text-gray-400'}">
+                    {favorites.has(r) ? '★' : '☆'}
+                  </span>
+                  <span>{r}</span>
+                </button>
+              {/each}
+            {/each}
+          {/if}
+        </div>
       </div>
     {/if}
   </div>
