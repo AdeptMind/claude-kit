@@ -175,6 +175,18 @@ A Wails-based `.app` for non-technical users:
 - Management roles prominent, dev roles collapsible
 - One-click "Open in Cowork" for workflow execution
 
+```bash
+# Build from source
+make app
+
+# Install to /Applications
+make app-install
+
+# Or download from GitHub releases, unzip, then:
+xattr -cr "Claude Kit.app"    # Required — app is not signed
+open "Claude Kit.app"
+```
+
 ### Guardrails
 
 - **Pattern-first coding** — agents scan existing code before implementing
