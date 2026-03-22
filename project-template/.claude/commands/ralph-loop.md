@@ -31,6 +31,7 @@ Resume **Ralph** — pick up where the last session left off.
      g. Commit with: `feat(<story-id>): <title>`
      h. Message the lead with a completion report — do NOT update `.claude/ralph-prd.json` directly. The lead validates and marks stories as passed.
    - Wait for all teammates in a round to finish before starting the next round
+   - Before acceptance validation: if `CK_USER_ROLE` is not `"dev"` and not empty, run the **double review gate** (spec-reviewer + code-quality-reviewer in parallel as fresh subagents) — see `/ralph` Phase D for details. Skip in dev mode.
    - Validate each story (acceptance-validator) and update `.claude/ralph-prd.json` as stories pass
 5. After all stories pass, run quality checks:
    - Code review (use code-reviewer skill)

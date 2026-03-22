@@ -1,0 +1,16 @@
+{
+  "trigger": [
+    "enforce TDD on this implementation",
+    "make sure the teammate follows test-driven development",
+    "inject TDD protocol into the teammate prompt",
+    "verify that tests were written before code",
+    "apply strict RED-GREEN-REFACTOR discipline"
+  ],
+  "non_trigger": [
+    "generate tests for this function",
+    "review the code quality",
+    "run the test suite",
+    "help me write a unit test",
+    "what's the test coverage?"
+  ]
+}

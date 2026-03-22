@@ -1,0 +1,16 @@
+{
+  "trigger": [
+    "review this story against the acceptance criteria",
+    "verify the implementation matches the spec",
+    "check if the teammate's work meets all requirements",
+    "run a spec review on T-005",
+    "does this implementation satisfy the acceptance criteria?"
+  ],
+  "non_trigger": [
+    "review the code for bugs and quality issues",
+    "generate tests for this function",
+    "what does this code do?",
+    "run the security audit",
+    "help me write a user story"
+  ]
+}

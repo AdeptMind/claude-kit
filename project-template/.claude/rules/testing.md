@@ -3,6 +3,36 @@ description: Testing rules applied when generating or reviewing tests
 globs: ["tests/**", "test/**", "**/*.test.*", "**/*.spec.*"]
 ---
 
+## TDD Protocol
+
+All code stories MUST follow the RED-GREEN-REFACTOR cycle. This is non-negotiable.
+
+1. **RED**: Write ONE failing test for ONE behavior. Run it. Confirm it fails for the right reason.
+2. **GREEN**: Write the MINIMUM code to pass the test. Run all tests. Confirm they pass.
+3. **REFACTOR**: Clean up with all tests green. Run tests after each change.
+
+### Red Flags — Start Over
+
+- Production code written before a failing test exists → **delete the code, write the test first**
+- A new test passes immediately → the test is wrong or the feature already exists
+- Tests added after implementation "for coverage" → these are not TDD tests
+
+### Anti-Rationalization
+
+| Excuse | Response |
+|--------|----------|
+| "Too simple to test" | Simple code breaks. The test takes 30 seconds. |
+| "I'll test after" | Tests written after code are designed to pass, not to catch bugs. |
+| "TDD slows me down" | TDD is faster than debugging. |
+| "Just a config change" | If it can break, test it. |
+| "I know this works" | Prove it. Write the test. |
+
+### Exceptions
+
+TDD is optional for: config files, infrastructure (Terraform, Helm, Docker), database migrations, static assets, and markdown templates.
+
+---
+
 ## Test Design
 
 - Write a failing test before fixing a bug to prove the bug exists and prevent regression

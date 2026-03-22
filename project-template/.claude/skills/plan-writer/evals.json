@@ -1,0 +1,16 @@
+{
+  "trigger": [
+    "create a granular implementation plan for this story",
+    "break this task into 2-5 minute steps",
+    "write a detailed plan with exact file paths and code",
+    "decompose this story into small executable tasks",
+    "plan the implementation step by step with verification"
+  ],
+  "non_trigger": [
+    "implement this feature",
+    "review the code changes",
+    "what's the architecture of this component?",
+    "generate tests for this module",
+    "help me write acceptance criteria"
+  ]
+}
