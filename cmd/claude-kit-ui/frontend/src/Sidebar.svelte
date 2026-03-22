@@ -1,7 +1,7 @@
 <script>
-  import { currentPage, navigateTo } from './stores/navigation.js'
+  import { currentPage, navigateTo, currentRole, isManagementRole } from './stores/navigation.js'
 
-  const navItems = [
+  const managementItems = [
     { id: 'dashboard', icon: '\u{1F4CA}', label: 'Dashboard' },
     { id: 'files', icon: '\u{1F4C1}', label: 'Files' },
     { id: 'profile', icon: '\u{1F464}', label: 'Profile' },
@@ -9,10 +9,22 @@
     { id: 'settings', icon: '\u2699\uFE0F', label: 'Settings' },
   ]
 
+  const devItems = [
+    { id: 'dashboard', icon: '\u{1F4CA}', label: 'Dashboard' },
+    { id: 'code', icon: '\u{1F4BB}', label: 'Code' },
+    { id: 'tests', icon: '\u{1F9EA}', label: 'Tests' },
+    { id: 'architecture', icon: '\u{1F3D7}', label: 'Architecture' },
+    { id: 'settings', icon: '\u2699\uFE0F', label: 'Settings' },
+  ]
+
   let expanded = $state(true)
   let active = $state('dashboard')
+  let role = $state('po')
 
   currentPage.subscribe(v => active = v)
+  currentRole.subscribe(v => role = v)
+
+  let navItems = $derived(isManagementRole(role) ? managementItems : devItems)
 
   function handleResize() {
     expanded = window.innerWidth >= 768
@@ -31,6 +43,10 @@
     {#if expanded}
       <span class="text-ck-gold text-xs font-mono">ui</span>
     {/if}
+  </div>
+
+  <div class="flex items-center gap-2 px-4 py-2 border-b border-gray-800">
+    <span class="text-xs font-mono text-ck-gold truncate">{role}</span>
   </div>
 
   <nav class="flex-1 flex flex-col gap-1 p-2">
