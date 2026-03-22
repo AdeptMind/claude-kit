@@ -21,11 +21,11 @@
   ]
 
   const recentFiles = [
-    { name: 'problem.yaml', type: 'yaml', modified: '2 min ago', path: '.claude/output/problem.yaml' },
-    { name: 'architecture.yaml', type: 'yaml', modified: '5 min ago', path: '.claude/output/architecture.yaml' },
-    { name: 'backlog.yaml', type: 'yaml', modified: '12 min ago', path: '.claude/output/backlog.yaml' },
+    { name: 'problem.md', type: 'md', modified: '2 min ago', path: '.claude/output/problem.md' },
+    { name: 'architecture.md', type: 'md', modified: '5 min ago', path: '.claude/output/architecture.md' },
+    { name: 'backlog.md', type: 'md', modified: '12 min ago', path: '.claude/output/backlog.md' },
     { name: 'principles.md', type: 'md', modified: '1h ago', path: '.claude/output/principles.md' },
-    { name: 'user-journey.yaml', type: 'yaml', modified: '3h ago', path: '.claude/output/user-journey.yaml' },
+    { name: 'user-journey.md', type: 'md', modified: '3h ago', path: '.claude/output/user-journey.md' },
   ]
 
   const fileIcons = {
@@ -38,7 +38,7 @@
   }
 
   // Files that are editable (not yet consumed by a BMAD phase)
-  const editableFiles = new Set(['principles.md', 'user-journey.yaml', 'problem.yaml'])
+  const editableFiles = new Set(['principles.md', 'user-journey.md', 'problem.md'])
 
   const quickActions = [
     {
@@ -106,11 +106,11 @@
     if (!loaded) {
       // Placeholder content for demo
       const placeholders = {
-        'problem.yaml': 'project_name: my-project\nversion: "1.0"\nphase: break\n\nproblem_statement:\n  summary: >\n    Your project description here\n  target_users:\n    - User type 1\n  pain_points:\n    - Pain point 1',
-        'architecture.yaml': 'project_name: my-project\nversion: "1.0"\nphase: model\n\ncomponents:\n  - name: api-server\n    type: service\n    responsibility: Handle HTTP requests',
-        'backlog.yaml': 'project_name: my-project\nversion: "1.0"\nphase: model\n\ntasks:\n  - id: T-001\n    title: Setup project\n    priority: P1',
+        'problem.md': '# Problem Definition\n\n## Project\n- **Name:** my-project\n- **Version:** 1.0\n- **Phase:** break\n\n## Problem Statement\nYour project description here\n\n## Target Users\n- User type 1\n\n## Pain Points\n- Pain point 1',
+        'architecture.md': '# Architecture\n\n## Project\n- **Name:** my-project\n- **Version:** 1.0\n- **Phase:** model\n\n## Components\n\n### api-server\n- **Type:** service\n- **Responsibility:** Handle HTTP requests',
+        'backlog.md': '# Backlog\n\n## Project\n- **Name:** my-project\n- **Version:** 1.0\n- **Phase:** model\n\n## Tasks\n\n### T-001 — Setup project\n- **Priority:** P1',
         'principles.md': '# Project Principles\n\n## Code Quality\n- DRY, KISS, SOLID\n- Pattern-first coding\n\n## Testing\n- TDD enforced\n- 80% coverage target',
-        'user-journey.yaml': 'journeys:\n  - name: "User login"\n    persona: "end user"\n    story_refs: [US-001]\n    steps:\n      - action: "Navigate to /login"\n        expected: "Login form displayed"',
+        'user-journey.md': '# User Journeys\n\n## User login\n- **Persona:** end user\n- **Story refs:** US-001\n\n### Steps\n1. **Action:** Navigate to /login — **Expected:** Login form displayed',
       }
       fileContent = placeholders[file.name] || `# ${file.name}\n\nFile content will appear here when connected to a project.`
     }

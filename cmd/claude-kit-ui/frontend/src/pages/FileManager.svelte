@@ -28,9 +28,9 @@
         },
         {
           name: 'output', path: '.claude/output', expanded: false, children: [
-            { name: 'problem.yaml', path: '.claude/output/problem.yaml' },
-            { name: 'architecture.yaml', path: '.claude/output/architecture.yaml' },
-            { name: 'backlog.yaml', path: '.claude/output/backlog.yaml' },
+            { name: 'problem.md', path: '.claude/output/problem.md' },
+            { name: 'architecture.md', path: '.claude/output/architecture.md' },
+            { name: 'backlog.md', path: '.claude/output/backlog.md' },
           ]
         },
       ]
@@ -47,7 +47,7 @@
   const placeholderContents = {
     '.claude/CLAUDE.md': '# BMAD Project Template\n\nSee workflow commands below...',
     '.claude/agents/ralph.md': '---\nname: ralph\nrole: Full-stack implementer\n---\n\n# Ralph Agent\n\nImplements stories from backlog.',
-    '.claude/output/problem.yaml': 'name: claude-kit-ui\nversion: 1.0\nfeatures:\n  - file-manager\n  - dashboard\n  - workflow-launcher',
+    '.claude/output/problem.md': '# claude-kit-ui\n\n- **Version:** 1.0\n\n## Features\n- file-manager\n- dashboard\n- workflow-launcher',
     'go.mod': 'module github.com/adrien-barret/claude-kit\n\ngo 1.23',
     'README.md': '# Claude Kit\n\nBMAD workflow orchestration toolkit.',
   }

@@ -3,8 +3,8 @@
   import ArtifactMonitor from '../components/ArtifactMonitor.svelte'
 
   let phases = $state([
-    { id: 'break', status: 'done', label: 'Break', artifacts: ['problem.yaml'] },
-    { id: 'model', status: 'done', label: 'Model', artifacts: ['architecture.yaml', 'backlog.yaml'] },
+    { id: 'break', status: 'done', label: 'Break', artifacts: ['problem.md'] },
+    { id: 'model', status: 'done', label: 'Model', artifacts: ['architecture.md', 'backlog.md'] },
     { id: 'analyze', status: 'active', label: 'Analyze', artifacts: ['analysis-report.md'] },
     { id: 'act', status: 'pending', label: 'Act', artifacts: [] },
     { id: 'deliver', status: 'pending', label: 'Deliver', artifacts: [] },

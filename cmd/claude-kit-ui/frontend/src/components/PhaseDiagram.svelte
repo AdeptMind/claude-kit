@@ -1,7 +1,7 @@
 <script>
   const PHASES = [
-    { id: 'break', label: 'Break', artifacts: ['problem.yaml'] },
-    { id: 'model', label: 'Model', artifacts: ['architecture.yaml', 'backlog.yaml'] },
+    { id: 'break', label: 'Break', artifacts: ['problem.md'] },
+    { id: 'model', label: 'Model', artifacts: ['architecture.md', 'backlog.md'] },
     { id: 'analyze', label: 'Analyze', artifacts: ['analysis-report.md'] },
     { id: 'act', label: 'Act', artifacts: ['src/'] },
     { id: 'deliver', label: 'Deliver', artifacts: ['CHANGELOG.md'] },

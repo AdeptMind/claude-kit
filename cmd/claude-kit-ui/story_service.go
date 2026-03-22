@@ -39,7 +39,7 @@ type ralphStory struct {
 	DependsOn          []string `json:"dependsOn"`
 }
 
-// backlog.yaml structures
+// backlog.md structures
 type backlogFile struct {
 	Tasks []backlogTask `yaml:"tasks"`
 }
@@ -137,7 +137,7 @@ func (s *StoryService) loadFromRalph(projectPath string) ([]Story, error) {
 }
 
 func (s *StoryService) loadFromBacklog(projectPath string) ([]Story, error) {
-	data, err := os.ReadFile(filepath.Join(projectPath, ".claude", "output", "backlog.yaml"))
+	data, err := os.ReadFile(filepath.Join(projectPath, ".claude", "output", "backlog.md"))
 	if err != nil {
 		return nil, err
 	}
