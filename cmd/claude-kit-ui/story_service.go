@@ -56,6 +56,14 @@ type backlogTask struct {
 }
 
 func (s *StoryService) List(projectPath string) ([]Story, error) {
+	if projectPath == "" {
+		cwd, err := os.Getwd()
+		if err != nil {
+			return []Story{}, nil
+		}
+		projectPath = cwd
+	}
+
 	stories, err := s.loadFromRalph(projectPath)
 	if err == nil && len(stories) > 0 {
 		return stories, nil
@@ -69,6 +77,10 @@ func (s *StoryService) List(projectPath string) ([]Story, error) {
 }
 
 func (s *StoryService) GetStats(projectPath string) (map[string]int, error) {
+	if projectPath == "" {
+		cwd, _ := os.Getwd()
+		projectPath = cwd
+	}
 	stories, err := s.List(projectPath)
 	if err != nil {
 		return nil, err
