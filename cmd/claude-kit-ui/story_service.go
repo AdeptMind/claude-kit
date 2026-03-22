@@ -57,11 +57,10 @@ type backlogTask struct {
 
 func (s *StoryService) List(projectPath string) ([]Story, error) {
 	if projectPath == "" {
-		cwd, err := os.Getwd()
-		if err != nil {
-			return []Story{}, nil
-		}
-		projectPath = cwd
+		projectPath = s.findProjectPath()
+	}
+	if projectPath == "" {
+		return []Story{}, nil
 	}
 
 	stories, err := s.loadFromRalph(projectPath)
@@ -76,10 +75,60 @@ func (s *StoryService) List(projectPath string) ([]Story, error) {
 	return stories, nil
 }
 
+// findProjectPath tries multiple locations to find a project with .claude/
+func (s *StoryService) findProjectPath() string {
+	// 1. Try cwd
+	if cwd, err := os.Getwd(); err == nil {
+		if _, err := os.Stat(filepath.Join(cwd, ".claude", "ralph-prd.json")); err == nil {
+			return cwd
+		}
+		if _, err := os.Stat(filepath.Join(cwd, ".claude", "output", "backlog.md")); err == nil {
+			return cwd
+		}
+	}
+
+	// 2. Try last project from ~/.claude-kit/state.json
+	home, err := os.UserHomeDir()
+	if err == nil {
+		stateFile := filepath.Join(home, ".claude-kit", "state.json")
+		if data, err := os.ReadFile(stateFile); err == nil {
+			var state struct {
+				LastProject string `json:"lastProject"`
+			}
+			if json.Unmarshal(data, &state) == nil && state.LastProject != "" {
+				return state.LastProject
+			}
+		}
+	}
+
+	// 3. Scan common workspace locations
+	if home != "" {
+		for _, dir := range []string{
+			filepath.Join(home, "workspace"),
+			filepath.Join(home, "Library", "Mobile Documents", "com~apple~CloudDocs", "workspace"),
+		} {
+			entries, err := os.ReadDir(dir)
+			if err != nil {
+				continue
+			}
+			for _, e := range entries {
+				if !e.IsDir() {
+					continue
+				}
+				candidate := filepath.Join(dir, e.Name())
+				if _, err := os.Stat(filepath.Join(candidate, ".claude", "ralph-prd.json")); err == nil {
+					return candidate
+				}
+			}
+		}
+	}
+
+	return ""
+}
+
 func (s *StoryService) GetStats(projectPath string) (map[string]int, error) {
 	if projectPath == "" {
-		cwd, _ := os.Getwd()
-		projectPath = cwd
+		projectPath = s.findProjectPath()
 	}
 	stories, err := s.List(projectPath)
 	if err != nil {
