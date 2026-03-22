@@ -33,7 +33,7 @@ func (t *TerminalService) startup(ctx context.Context) {
 }
 
 // Start launches or resumes a session for the given project.
-func (t *TerminalService) Start(projectPath string) error {
+func (t *TerminalService) Start(projectPath string, cols int, rows int) error {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 
@@ -52,7 +52,12 @@ func (t *TerminalService) Start(projectPath string) error {
 	cmd.Dir = projectPath
 	cmd.Env = append(os.Environ(), "TERM=xterm-256color")
 
-	ptmx, err := pty.Start(cmd)
+	// Set initial PTY size to match the xterm.js terminal
+	winSize := &pty.Winsize{Rows: uint16(rows), Cols: uint16(cols)}
+	if cols <= 0 || rows <= 0 {
+		winSize = &pty.Winsize{Rows: 40, Cols: 120}
+	}
+	ptmx, err := pty.StartWithSize(cmd, winSize)
 	if err != nil {
 		return err
 	}

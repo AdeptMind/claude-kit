@@ -129,7 +129,10 @@
         }
         try {
             const { Start } = await import('../../wailsjs/go/main/TerminalService.js')
-            await Start(projectPath)
+            // Pass terminal dimensions so PTY matches xterm.js size
+            const cols = term?.cols || 120
+            const rows = term?.rows || 40
+            await Start(projectPath, cols, rows)
             running = true
             term.clear()
             term.focus()

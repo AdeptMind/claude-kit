@@ -1,5 +1,6 @@
 <script>
   import { currentProject, recentProjects, setProject, removeProject, loadRecents } from '../stores/project.js'
+  import { navigateTo } from '../stores/navigation.js'
 
   let project = $state(null)
   let recents = $state([])
@@ -141,6 +142,16 @@
     </div>
   </div>
 
-  <!-- Right: Version badge -->
-  <span class="text-xs text-ck-gold font-mono select-none">v0.5.0</span>
+  <!-- Right: Chat button + Version -->
+  <div class="flex items-center gap-3">
+    <button
+      onclick={() => navigateTo('chat')}
+      class="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-colors
+        text-ck-dim hover:text-white hover:bg-white/5"
+      title="Open Claude Chat"
+    >
+      💬 Chat
+    </button>
+    <span class="text-xs text-ck-gold font-mono select-none">v0.5.0</span>
+  </div>
 </div>
