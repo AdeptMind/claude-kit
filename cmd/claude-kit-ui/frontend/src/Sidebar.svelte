@@ -1,5 +1,5 @@
 <script>
-  import { currentPage, navigateTo, currentRole, isManagementRole } from './stores/navigation.js'
+  import { currentPage, navigateTo, currentRole, setRole, isManagementRole } from './stores/navigation.js'
 
   const managementItems = [
     { id: 'dashboard', icon: '\u{1F4CA}', label: 'Dashboard' },
@@ -18,14 +18,26 @@
     { id: 'settings', icon: '\u2699\uFE0F', label: 'Settings' },
   ]
 
+  const allRoles = [
+    { group: 'Management', roles: ['po', 'business-analyst', 'project-manager', 'scrum-master', 'people-ops', 'change-manager', 'architect', 'ux-designer', 'finops', 'soc2-compliance', 'access-review', 'data-governance'] },
+    { group: 'Dev', roles: ['dev', 'backend', 'frontend', 'devops', 'security', 'sre', 'golang', 'python', 'typescript'] },
+    { group: 'Special', roles: ['all'] },
+  ]
+
   let expanded = $state(true)
   let active = $state('dashboard')
   let role = $state('po')
+  let roleSelectorOpen = $state(false)
 
   currentPage.subscribe(v => active = v)
   currentRole.subscribe(v => role = v)
 
   let navItems = $derived(isManagementRole(role) ? managementItems : devItems)
+
+  function selectRole(newRole) {
+    setRole(newRole)
+    roleSelectorOpen = false
+  }
 
   function handleResize() {
     expanded = window.innerWidth >= 768
@@ -46,8 +58,37 @@
     {/if}
   </div>
 
-  <div class="flex items-center gap-2 px-4 py-2 border-b border-gray-800">
-    <span class="text-xs font-mono text-ck-gold truncate">{role}</span>
+  <!-- Role indicator — click to open selector -->
+  <div class="relative">
+    <button
+      onclick={() => roleSelectorOpen = !roleSelectorOpen}
+      class="w-full flex items-center gap-2 px-4 py-2.5 border-b border-gray-800 hover:bg-ck-pink/10 transition-colors cursor-pointer"
+    >
+      <span class="text-xs font-mono text-ck-gold truncate">{role}</span>
+      {#if expanded}
+        <span class="text-ck-dim text-xs ml-auto">{roleSelectorOpen ? '▲' : '▼'}</span>
+      {/if}
+    </button>
+
+    <!-- Role selector dropdown -->
+    {#if roleSelectorOpen}
+      <div class="absolute left-0 top-full z-50 w-56 max-h-80 overflow-y-auto bg-ck-dark border border-gray-700 rounded-lg shadow-xl">
+        {#each allRoles as group}
+          <div class="px-3 py-1.5 text-[10px] uppercase tracking-wider text-ck-dim border-b border-gray-800">
+            {group.group}
+          </div>
+          {#each group.roles as r}
+            <button
+              onclick={() => selectRole(r)}
+              class="w-full text-left px-4 py-2 text-sm transition-colors
+                {r === role ? 'bg-ck-rose text-white' : 'text-gray-300 hover:bg-ck-pink/20 hover:text-white'}"
+            >
+              {r}
+            </button>
+          {/each}
+        {/each}
+      </div>
+    {/if}
   </div>
 
   <nav class="flex-1 flex flex-col gap-1 p-2">
