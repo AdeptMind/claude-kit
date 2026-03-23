@@ -67,6 +67,14 @@
 
         fitAddon = new FitAddon()
         term.loadAddon(fitAddon)
+
+        // Let Cmd+key shortcuts pass through to the global handler
+        term.attachCustomKeyEventHandler((e) => {
+            if ((e.metaKey || e.ctrlKey) && ['s','d','f','j','k','e','ArrowLeft','ArrowRight'].includes(e.key)) {
+                return false // Don't let xterm handle it — let it bubble to window
+            }
+            return true
+        })
         term.loadAddon(new WebLinksAddon())
 
         term.open(terminalEl)
