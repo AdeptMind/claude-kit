@@ -68,13 +68,15 @@
         fitAddon = new FitAddon()
         term.loadAddon(fitAddon)
 
-        // Let Alt+key shortcuts pass through to the global handler
+        // Cmd+Shift+key shortcuts — Claude CLI doesn't capture these
         term.attachCustomKeyEventHandler((e) => {
-            if (e.altKey && ['s','d','f','j','k','e','ArrowLeft','ArrowRight'].includes(e.key)) {
+            if ((e.metaKey || e.ctrlKey) && e.shiftKey && ['s','d','f','j','k','e','S','D','F','J','K','E','ArrowLeft','ArrowRight'].includes(e.key)) {
                 if (e.type === 'keydown') {
                     window.dispatchEvent(new KeyboardEvent('keydown', {
-                        key: e.key,
-                        altKey: true,
+                        key: e.key.toLowerCase(),
+                        metaKey: e.metaKey,
+                        ctrlKey: e.ctrlKey,
+                        shiftKey: true,
                         bubbles: true,
                     }))
                 }

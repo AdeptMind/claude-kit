@@ -32,7 +32,8 @@
   }
 
   function handleGlobalKeydown(e) {
-    const cmd = e.metaKey || e.ctrlKey || e.altKey
+    // Accept both Cmd+key and Cmd+Shift+key (the latter works inside Chat terminal)
+    const cmd = e.metaKey || e.ctrlKey
 
     if (e.key === 'Escape') {
       window.dispatchEvent(new CustomEvent('ck:close-modal'))
@@ -47,23 +48,23 @@
     } else if (e.key === 'ArrowRight') {
       e.preventDefault()
       switchProjectNext()
-    } else if (e.key === 'k') {
+    } else if (e.key === 'k' || e.key === 'K') {
       e.preventDefault()
       projectFinderOpen.set(true)
-    } else if (e.key === 'j') {
+    } else if (e.key === 'j' || e.key === 'J') {
       e.preventDefault()
       navigateTo('chat')
-    } else if (e.key === 's' && !e.shiftKey && !isEditing()) {
+    } else if ((e.key === 's' || e.key === 'S') && !isEditing()) {
       e.preventDefault()
       navigateTo('stories')
-    } else if (e.key === 'd' && !isEditing()) {
+    } else if ((e.key === 'd' || e.key === 'D') && !isEditing()) {
       e.preventDefault()
       navigateTo('dashboard')
-    } else if (e.key === 'f' && !isEditing()) {
+    } else if ((e.key === 'f' || e.key === 'F') && !isEditing()) {
       e.preventDefault()
       navigateTo('files')
       window.dispatchEvent(new CustomEvent('ck:file-search'))
-    } else if (e.key === 'e') {
+    } else if (e.key === 'e' || e.key === 'E') {
       e.preventDefault()
       window.dispatchEvent(new CustomEvent('ck:edit-story'))
     }
