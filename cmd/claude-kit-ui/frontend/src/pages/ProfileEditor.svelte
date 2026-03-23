@@ -1,6 +1,8 @@
 <script>
   import { currentProject } from '../stores/project.js'
+  import SetupModal from '../components/SetupModal.svelte'
 
+  let showSetup = $state(false)
   let agents = $state([])
   let loading = $state(true)
   let selectedAgent = $state(null)
@@ -138,8 +140,13 @@
   {:else if agents.length === 0}
     <div class="flex flex-col items-center justify-center h-64 gap-3">
       <p class="text-sm text-ck-dim">No agents installed in this project.</p>
-      <p class="text-xs text-ck-dim">Run <code class="text-ck-gold bg-ck-dark px-1.5 py-0.5 rounded">ck init</code> to install agents.</p>
+      <button onclick={() => showSetup = true}
+        class="px-4 py-2 text-sm rounded-lg bg-ck-rose text-white font-medium hover:bg-ck-pink transition-colors">
+        Setup Project
+      </button>
+      <p class="text-xs text-ck-dim">or run <code class="text-ck-gold bg-ck-dark px-1.5 py-0.5 rounded">ck init</code> in the terminal</p>
     </div>
+    <SetupModal bind:show={showSetup} onComplete={loadAgents} />
   {:else}
     <div class="flex-1 flex gap-4 min-h-0">
       <!-- Left: Agent selector + Form -->

@@ -21,6 +21,7 @@ func main() {
 	workflowService := &WorkflowService{}
 	storyService := &StoryService{}
 	terminalService := &TerminalService{}
+	initService := &InitService{}
 
 	err := wails.Run(&options.App{
 		Title:  "Claude Kit",
@@ -48,6 +49,7 @@ func main() {
 			workflowService,
 			storyService,
 			terminalService,
+			initService,
 		},
 	})
 
