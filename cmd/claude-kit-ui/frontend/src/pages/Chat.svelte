@@ -71,7 +71,17 @@
         // Let Cmd+key shortcuts pass through to the global handler
         term.attachCustomKeyEventHandler((e) => {
             if ((e.metaKey || e.ctrlKey) && ['s','d','f','j','k','e','ArrowLeft','ArrowRight'].includes(e.key)) {
-                return false // Don't let xterm handle it — let it bubble to window
+                // xterm eats the event — manually fire it on window so App.svelte catches it
+                if (e.type === 'keydown') {
+                    window.dispatchEvent(new KeyboardEvent('keydown', {
+                        key: e.key,
+                        metaKey: e.metaKey,
+                        ctrlKey: e.ctrlKey,
+                        shiftKey: e.shiftKey,
+                        bubbles: true,
+                    }))
+                }
+                return false
             }
             return true
         })
