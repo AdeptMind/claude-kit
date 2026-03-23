@@ -14,8 +14,21 @@
   let projectPath = $state('')
 
   currentProject.subscribe(p => {
-    projectPath = p?.path || ''
-    if (p?.path) loadAgents()
+    const newPath = p?.path || ''
+    if (newPath !== projectPath) {
+      projectPath = newPath
+      agents = []
+      selectedAgent = null
+      agentName = ''
+      roleTitle = ''
+      description = ''
+      responsibilities = ''
+      focusAreas = ''
+      commStyle = 'Direct'
+      language = 'Technical'
+      customRules = ''
+      if (newPath) loadAgents()
+    }
   })
 
   let agentName = $state('')
