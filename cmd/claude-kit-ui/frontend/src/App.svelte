@@ -62,6 +62,7 @@
     } else if (e.key === 'f' && !isEditing()) {
       e.preventDefault()
       navigateTo('files')
+      window.dispatchEvent(new CustomEvent('ck:file-search'))
     } else if (e.key === 'e') {
       e.preventDefault()
       window.dispatchEvent(new CustomEvent('ck:edit-story'))

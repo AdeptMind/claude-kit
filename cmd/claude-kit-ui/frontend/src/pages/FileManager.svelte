@@ -1,4 +1,5 @@
 <script>
+  import { onMount, onDestroy } from 'svelte'
   import FileTree from '../components/FileTree.svelte'
   import FilePreview from '../components/FilePreview.svelte'
   import { currentProject } from '../stores/project.js'
@@ -8,6 +9,39 @@
   let dragging = $state(false)
   let fileTree = $state([])
   let projectPath = $state('')
+  let fileSearch = $state('')
+  let searchOpen = $state(false)
+
+  // Filter tree recursively
+  function filterTree(nodes, query) {
+    if (!query) return nodes
+    const q = query.toLowerCase()
+    return nodes.reduce((acc, node) => {
+      if (node.name.toLowerCase().includes(q)) {
+        acc.push(node)
+      } else if (node.children) {
+        const filtered = filterTree(node.children, query)
+        if (filtered.length > 0) {
+          acc.push({ ...node, children: filtered, expanded: true })
+        }
+      }
+      return acc
+    }, [])
+  }
+
+  let filteredTree = $derived(filterTree(fileTree, fileSearch))
+
+  onMount(() => {
+    const handler = () => {
+      searchOpen = true
+      setTimeout(() => {
+        const input = document.querySelector('[data-file-search]')
+        if (input) input.focus()
+      }, 50)
+    }
+    window.addEventListener('ck:file-search', handler)
+    return () => window.removeEventListener('ck:file-search', handler)
+  })
 
   currentProject.subscribe(p => {
     projectPath = p?.path || ''
@@ -74,11 +108,30 @@
     role="tree"
     tabindex="0"
   >
-    <div class="px-3 py-2 border-b border-gray-800 text-xs font-semibold text-ck-gold uppercase tracking-wider">
-      Explorer
+    <div class="border-b border-gray-800">
+      <div class="flex items-center justify-between px-3 py-2">
+        <span class="text-xs font-semibold text-ck-gold uppercase tracking-wider">Explorer</span>
+        <button
+          onclick={() => { searchOpen = !searchOpen; if (!searchOpen) fileSearch = '' }}
+          class="text-xs text-ck-dim hover:text-white transition-colors"
+          title="Search files (⌘F)"
+        >🔍</button>
+      </div>
+      {#if searchOpen}
+        <div class="px-2 pb-2">
+          <input
+            type="text"
+            data-file-search
+            placeholder="Filter files..."
+            bind:value={fileSearch}
+            class="w-full px-2 py-1 text-xs bg-ck-bg border border-gray-700 rounded text-white
+              placeholder-ck-dim focus:border-ck-pink focus:outline-none"
+          />
+        </div>
+      {/if}
     </div>
     <div class="flex-1 overflow-auto py-1">
-      <FileTree nodes={fileTree} {selectedPath} onSelect={handleSelect} onOpen={handleOpen} />
+      <FileTree nodes={filteredTree} {selectedPath} onSelect={handleSelect} onOpen={handleOpen} />
     </div>
 
     {#if dragging}
