@@ -32,7 +32,7 @@
   }
 
   function handleGlobalKeydown(e) {
-    const cmd = e.metaKey || e.ctrlKey
+    const cmd = e.metaKey || e.ctrlKey || e.altKey
 
     if (e.key === 'Escape') {
       window.dispatchEvent(new CustomEvent('ck:close-modal'))

@@ -68,16 +68,13 @@
         fitAddon = new FitAddon()
         term.loadAddon(fitAddon)
 
-        // Let Cmd+key shortcuts pass through to the global handler
+        // Let Alt+key shortcuts pass through to the global handler
         term.attachCustomKeyEventHandler((e) => {
-            if ((e.metaKey || e.ctrlKey) && ['s','d','f','j','k','e','ArrowLeft','ArrowRight'].includes(e.key)) {
-                // xterm eats the event — manually fire it on window so App.svelte catches it
+            if (e.altKey && ['s','d','f','j','k','e','ArrowLeft','ArrowRight'].includes(e.key)) {
                 if (e.type === 'keydown') {
                     window.dispatchEvent(new KeyboardEvent('keydown', {
                         key: e.key,
-                        metaKey: e.metaKey,
-                        ctrlKey: e.ctrlKey,
-                        shiftKey: e.shiftKey,
+                        altKey: true,
                         bubbles: true,
                     }))
                 }
