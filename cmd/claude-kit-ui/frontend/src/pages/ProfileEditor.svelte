@@ -34,11 +34,10 @@
   const devAgents = $derived(agents.filter(a => a.category === 'dev'))
   const specialAgentsList = $derived(agents.filter(a => a.category === 'special'))
 
-  $effect(() => {
-    loadAgents()
-  })
-
   async function loadAgents() {
+    if (!projectPath) return
+    loading = true
+    selectedAgent = null
     try {
       agents = await ListAgents(projectPath)
       loading = false
