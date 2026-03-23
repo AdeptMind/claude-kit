@@ -196,6 +196,7 @@ A native `.app` for non-technical users — POs, PMs, HR, and stakeholders.
 | `⌘←` `⌘→` | Previous / next project |
 | `⌘J` | Open Claude Chat |
 | `⌘S` | Open Stories board |
+| `⌘F` | Open File Manager |
 | `⌘D` | Open Dashboard |
 | `⌘E` | Edit selected story |
 | `Escape` | Close any modal |

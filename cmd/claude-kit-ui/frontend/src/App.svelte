@@ -59,6 +59,9 @@
     } else if (e.key === 'd' && !isEditing()) {
       e.preventDefault()
       navigateTo('dashboard')
+    } else if (e.key === 'f' && !isEditing()) {
+      e.preventDefault()
+      navigateTo('files')
     } else if (e.key === 'e') {
       e.preventDefault()
       window.dispatchEvent(new CustomEvent('ck:edit-story'))
