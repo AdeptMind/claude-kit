@@ -129,6 +129,30 @@
     return md
   }
 
+  let syncing = $state(false)
+  let syncResults = $state(null)
+  let showSyncConfig = $state(false)
+
+  async function syncStories() {
+    syncing = true
+    syncResults = null
+    try {
+      const svc = await import('../../wailsjs/go/main/MCPService.js')
+      const cfg = await svc.GetConfig(projectPath)
+      if (!cfg) {
+        showSyncConfig = true
+        syncing = false
+        return
+      }
+      const results = await svc.SyncStories(projectPath, stories)
+      syncResults = results
+    } catch (e) {
+      syncResults = [{ storyId: 'error', success: false, message: e.message || 'Sync failed' }]
+    }
+    syncing = false
+    if (syncResults) setTimeout(() => syncResults = null, 8000)
+  }
+
   function closeStory() {
     selectedStoryId = null
     editingStory = false
@@ -200,7 +224,33 @@
         class="bg-ck-dark border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white
           placeholder-ck-dim focus:border-ck-pink focus:outline-none flex-1 min-w-[200px]"
       />
+
+      <button onclick={syncStories}
+        class="px-3 py-1.5 text-xs rounded-lg bg-ck-gold/20 text-ck-gold border border-ck-gold/30 hover:bg-ck-gold/30 transition-colors flex items-center gap-1.5 disabled:opacity-50"
+        disabled={syncing}>
+        {syncing ? 'Syncing...' : 'Sync Stories'}
+      </button>
     </div>
+
+    <!-- Sync results banner -->
+    {#if syncResults}
+      <div class="rounded-lg border p-3 text-xs space-y-1 {syncResults.every(r => r.success) ? 'bg-green-500/10 border-green-500/30 text-green-400' : 'bg-ck-rose/10 border-ck-rose/30 text-ck-rose'}">
+        {#each syncResults as r}
+          <div class="flex items-center gap-2">
+            <span>{r.success ? '✓' : '✗'}</span>
+            <span class="font-mono">{r.storyId}</span>
+            <span class="text-ck-dim">{r.message}</span>
+            {#if r.extId}<span class="text-white">{r.extId}</span>{/if}
+          </div>
+        {/each}
+      </div>
+    {/if}
+
+    {#if showSyncConfig}
+      <div class="rounded-lg border border-ck-gold/30 bg-ck-gold/10 p-4 text-sm text-ck-gold">
+        No MCP sync configured. Go to <button onclick={() => { showSyncConfig = false; window.dispatchEvent(new CustomEvent('ck:navigate', { detail: 'settings' })) }} class="underline hover:text-white">Settings</button> to set up an MCP server (Jira, Linear, etc.).
+      </div>
+    {/if}
 
     <!-- Board -->
     <div class="grid grid-cols-3 gap-4">

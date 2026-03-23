@@ -22,6 +22,7 @@ func main() {
 	storyService := &StoryService{}
 	terminalService := &TerminalService{}
 	initService := &InitService{}
+	mcpService := &MCPService{}
 
 	err := wails.Run(&options.App{
 		Title:  "Claude Kit",
@@ -36,6 +37,7 @@ func main() {
 			projectService.startup(ctx)
 			workflowService.startup(ctx)
 			terminalService.startup(ctx)
+			mcpService.startup(ctx)
 		},
 		OnShutdown: func(ctx context.Context) {
 			terminalService.StopAll()
@@ -50,6 +52,7 @@ func main() {
 			storyService,
 			terminalService,
 			initService,
+			mcpService,
 		},
 	})
 
