@@ -225,4 +225,16 @@
       </button>
     {/each}
   </nav>
+
+  {#if expanded}
+    <div class="px-3 py-2 border-t border-gray-800">
+      <span class="text-[10px] text-ck-dim leading-relaxed">
+        <kbd class="font-mono">&#8984;K</kbd> search
+        <span class="mx-0.5">&middot;</span>
+        <kbd class="font-mono">&#8984;J</kbd> chat
+        <span class="mx-0.5">&middot;</span>
+        <kbd class="font-mono">&#8984;S</kbd> stories
+      </span>
+    </div>
+  {/if}
 </aside>

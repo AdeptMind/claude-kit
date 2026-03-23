@@ -1,5 +1,5 @@
 <script>
-  import { currentProject, recentProjects, setProject, removeProject, loadRecents } from '../stores/project.js'
+  import { currentProject, recentProjects, setProject, removeProject, loadRecents, projectFinderOpen } from '../stores/project.js'
   import { navigateTo } from '../stores/navigation.js'
 
   let project = $state(null)
@@ -7,15 +7,28 @@
   let dropdownOpen = $state(false)
   let manualInput = $state(false)
   let manualPath = $state('')
+  let projectSearch = $state('')
 
   currentProject.subscribe(v => project = v)
   recentProjects.subscribe(v => recents = v)
 
   $effect(() => { loadRecents() })
 
+  projectFinderOpen.subscribe(v => {
+    if (v) {
+      dropdownOpen = true
+      setTimeout(() => {
+        const input = document.querySelector('[data-project-search]')
+        if (input) input.focus()
+      }, 50)
+      projectFinderOpen.set(false)
+    }
+  })
+
   function selectProject(p) {
     setProject(p)
     dropdownOpen = false
+    projectSearch = ''
   }
 
   async function openFolderPicker() {
@@ -42,15 +55,19 @@
     dropdownOpen = false
   }
 
-  function handleKeydown(e) {
-    if (e.key === 'Escape') {
+  function handleCloseModal() {
+    if (dropdownOpen) {
       dropdownOpen = false
       manualInput = false
+      projectSearch = ''
     }
   }
-</script>
 
-<svelte:window on:keydown={handleKeydown} />
+  $effect(() => {
+    window.addEventListener('ck:close-modal', handleCloseModal)
+    return () => window.removeEventListener('ck:close-modal', handleCloseModal)
+  })
+</script>
 
 <div class="h-10 bg-ck-dark border-b border-gray-800 flex items-center px-4 shrink-0 relative z-50">
   <!-- Left: App icon -->
@@ -74,14 +91,25 @@
         <!-- Backdrop -->
         <button
           class="fixed inset-0 z-40 cursor-default"
-          onclick={() => { dropdownOpen = false; manualInput = false }}
+          onclick={() => { dropdownOpen = false; manualInput = false; projectSearch = '' }}
           aria-label="Close dropdown"
         ></button>
 
         <div class="absolute top-full mt-1 left-1/2 -translate-x-1/2 w-72 bg-ck-dark border border-gray-700 rounded-lg shadow-xl z-50 overflow-hidden">
+          <!-- Search input -->
+          <div class="p-2 border-b border-gray-700">
+            <input
+              type="text"
+              data-project-search
+              placeholder="Search projects..."
+              bind:value={projectSearch}
+              class="w-full px-3 py-1.5 text-sm bg-ck-bg border border-gray-700 rounded text-white
+                placeholder-ck-dim focus:border-ck-pink focus:outline-none"
+            />
+          </div>
           {#if recents.length > 0}
             <div class="max-h-60 overflow-y-auto">
-              {#each recents as p}
+              {#each recents.filter(p => !projectSearch || p.name.toLowerCase().includes(projectSearch.toLowerCase()) || p.path.toLowerCase().includes(projectSearch.toLowerCase())) as p}
                 <div
                   class="group flex items-center hover:bg-white/5 transition-colors
                     {project?.path === p.path ? 'bg-ck-rose/10 border-l-2 border-ck-rose' : 'border-l-2 border-transparent'}"

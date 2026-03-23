@@ -133,6 +133,25 @@
     selectedStoryId = null
     editingStory = false
   }
+
+  $effect(() => {
+    function handleEditStory() {
+      if (selectedStoryId && !editingStory) editStory()
+    }
+    function handleCloseModal() {
+      if (editingStory) {
+        cancelEdit()
+      } else if (selectedStoryId) {
+        closeStory()
+      }
+    }
+    window.addEventListener('ck:edit-story', handleEditStory)
+    window.addEventListener('ck:close-modal', handleCloseModal)
+    return () => {
+      window.removeEventListener('ck:edit-story', handleEditStory)
+      window.removeEventListener('ck:close-modal', handleCloseModal)
+    }
+  })
 </script>
 
 {#if loading}

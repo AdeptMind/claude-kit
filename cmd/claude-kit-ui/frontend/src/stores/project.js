@@ -33,6 +33,28 @@ export function removeProject(path) {
   })
 }
 
+export const projectFinderOpen = writable(false)
+
+export function switchProjectPrev() {
+  let recents, current
+  recentProjects.subscribe(v => recents = v)()
+  currentProject.subscribe(v => current = v)()
+  if (!recents || recents.length < 2) return
+  const idx = recents.findIndex(p => p.path === current?.path)
+  const prev = idx > 0 ? recents[idx - 1] : recents[recents.length - 1]
+  setProject(prev)
+}
+
+export function switchProjectNext() {
+  let recents, current
+  recentProjects.subscribe(v => recents = v)()
+  currentProject.subscribe(v => current = v)()
+  if (!recents || recents.length < 2) return
+  const idx = recents.findIndex(p => p.path === current?.path)
+  const next = idx < recents.length - 1 ? recents[idx + 1] : recents[0]
+  setProject(next)
+}
+
 export function loadRecents() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
