@@ -140,8 +140,17 @@
     </div>
   </div>
 
-  {#if loading}
+  {#if !projectPath}
+    <div class="flex items-center justify-center h-64">
+      <p class="text-sm text-ck-dim">Select a project first.</p>
+    </div>
+  {:else if loading}
     <p class="text-sm text-ck-dim">Loading agents...</p>
+  {:else if agents.length === 0}
+    <div class="flex flex-col items-center justify-center h-64 gap-3">
+      <p class="text-sm text-ck-dim">No agents installed in this project.</p>
+      <p class="text-xs text-ck-dim">Run <code class="text-ck-gold bg-ck-dark px-1.5 py-0.5 rounded">ck init</code> or <code class="text-ck-gold bg-ck-dark px-1.5 py-0.5 rounded">ck add</code> in the project directory to install agents.</p>
+    </div>
   {:else}
     <!-- Agent Selector -->
     <div class="space-y-3">

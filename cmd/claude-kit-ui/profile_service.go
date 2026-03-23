@@ -6,8 +6,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-
-	"github.com/AdeptMind/infra-tool/claude-cli/internal/config"
 )
 
 var managementAgents = map[string]bool{
@@ -42,16 +40,11 @@ type ProfileForm struct {
 type ProfileService struct{}
 
 func (s *ProfileService) ListAgents(projectPath string) ([]AgentInfo, error) {
-	// Read from project's installed agents, fallback to template dir
+	// Read from project's installed agents only — no fallback
 	agentsDir := filepath.Join(projectPath, ".claude", "agents")
 	entries, err := os.ReadDir(agentsDir)
 	if err != nil {
-		// No agents in project — fallback to global templates
-		agentsDir = filepath.Join(config.TemplateDir(), "agents")
-		entries, err = os.ReadDir(agentsDir)
-		if err != nil {
-			return []AgentInfo{}, nil // no agents anywhere
-		}
+		return []AgentInfo{}, nil // no agents in this project
 	}
 
 	var agents []AgentInfo
@@ -74,10 +67,6 @@ func (s *ProfileService) ListAgents(projectPath string) ([]AgentInfo, error) {
 
 func (s *ProfileService) LoadAgent(projectPath string, agentName string) (ProfileForm, error) {
 	agentPath := filepath.Join(projectPath, ".claude", "agents", agentName+".md")
-	if _, err := os.Stat(agentPath); err != nil {
-		// Fallback to template dir
-		agentPath = filepath.Join(config.TemplateDir(), "agents", agentName+".md")
-	}
 	data, err := os.ReadFile(agentPath)
 	if err != nil {
 		return ProfileForm{}, fmt.Errorf("cannot read agent %s: %w", agentName, err)
