@@ -1,5 +1,4 @@
 <script>
-  import MarkdownPreview from '../components/MarkdownPreview.svelte'
   import { currentProject } from '../stores/project.js'
 
   let agents = $state([])
@@ -7,28 +6,9 @@
   let selectedAgent = $state(null)
   let saving = $state(false)
   let saved = $state(false)
-  let error = $state('')
+  let errorMsg = $state('')
   let devExpanded = $state(false)
-  let specialExpanded = $state(false)
   let projectPath = $state('')
-
-  currentProject.subscribe(p => {
-    const newPath = p?.path || ''
-    if (newPath !== projectPath) {
-      projectPath = newPath
-      agents = []
-      selectedAgent = null
-      agentName = ''
-      roleTitle = ''
-      description = ''
-      responsibilities = ''
-      focusAreas = ''
-      commStyle = 'Direct'
-      language = 'Technical'
-      customRules = ''
-      if (newPath) loadAgents()
-    }
-  })
 
   let agentName = $state('')
   let roleTitle = $state('')
@@ -42,92 +22,99 @@
   const commStyles = ['Direct', 'Collaborative', 'Analytical', 'Supportive']
   const languages = ['Technical', 'Product', 'Mixed']
 
-  const managementAgents = $derived(agents.filter(a => a.category === 'management'))
-  const devAgents = $derived(agents.filter(a => a.category === 'dev'))
-  const specialAgentsList = $derived(agents.filter(a => a.category === 'special'))
+  let managementAgents = $derived(agents.filter(a => a.category === 'management'))
+  let devAgents = $derived(agents.filter(a => a.category === 'dev'))
+
+  let previewMd = $derived(generateMarkdown())
+
+  currentProject.subscribe(p => {
+    const newPath = p?.path || ''
+    if (newPath !== projectPath) {
+      projectPath = newPath
+      agents = []
+      selectedAgent = null
+      resetForm()
+      if (newPath) loadAgents()
+      else loading = false
+    }
+  })
+
+  function resetForm() {
+    agentName = ''
+    roleTitle = ''
+    description = ''
+    responsibilities = ''
+    focusAreas = ''
+    commStyle = 'Direct'
+    language = 'Technical'
+    customRules = ''
+  }
 
   async function loadAgents() {
-    if (!projectPath) return
+    if (!projectPath) { loading = false; return }
     loading = true
-    selectedAgent = null
+    errorMsg = ''
     try {
       const svc = await import('../../wailsjs/go/main/ProfileService.js')
-      agents = await svc.ListAgents(projectPath)
-      loading = false
-      // try loading existing profile
-      if (projectPath) {
-        try {
-          const existing = await svc.GetSavedProfile(projectPath)
-          if (existing.agentName) {
-            fillForm(existing)
-            selectedAgent = existing.agentName
-          }
-        } catch (_) { /* no saved profile */ }
-      }
-    } catch (e) {
-      error = e.message || 'Failed to load agents'
-      loading = false
+      const list = await svc.ListAgents(projectPath)
+      agents = list || []
+    } catch {
+      agents = []
     }
+    loading = false
   }
 
   async function selectAgent(name) {
     selectedAgent = name
+    agentName = name
     try {
       const svc = await import('../../wailsjs/go/main/ProfileService.js')
       const form = await svc.LoadAgent(projectPath, name)
-      fillForm(form)
-    } catch (e) {
-      error = e.message || 'Failed to load agent'
+      roleTitle = form.roleTitle || toTitle(name)
+      description = form.description || ''
+      responsibilities = form.responsibilities || ''
+      focusAreas = form.focusAreas || ''
+      commStyle = form.communicationStyle || 'Direct'
+      language = form.languagePreference || 'Technical'
+      customRules = form.customRules || ''
+    } catch {
+      roleTitle = toTitle(name)
     }
   }
 
-  function fillForm(form) {
-    agentName = form.agentName || ''
-    roleTitle = form.roleTitle || ''
-    description = form.description || ''
-    responsibilities = form.responsibilities || ''
-    focusAreas = form.focusAreas || ''
-    commStyle = form.communicationStyle || 'Direct'
-    language = form.languagePreference || 'Technical'
-    customRules = form.customRules || ''
+  function toTitle(s) {
+    return s.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
   }
 
   function generateMarkdown() {
-    const lines = [`# About Me — ${roleTitle || 'Untitled Role'}\n`]
-    if (description) lines.push(`## Role\n${description}\n`)
-    if (responsibilities) lines.push(`## Responsibilities\n${responsibilities}\n`)
-    if (focusAreas) lines.push(`## Focus Areas\n${focusAreas}\n`)
-    lines.push(`## Communication Style\n${commStyle}\n`)
-    return lines.join('\n')
+    if (!roleTitle) return ''
+    let md = `# About Me — ${roleTitle}\n\n`
+    if (description) md += `## Role\n${description}\n\n`
+    if (responsibilities) md += `## Responsibilities\n${responsibilities}\n\n`
+    if (focusAreas) md += `## Focus Areas\n${focusAreas}\n\n`
+    md += `## Communication Style\n${commStyle}\n\n`
+    md += `## Language\n${language}\n`
+    return md
   }
 
   async function save() {
-    if (!projectPath) {
-      error = 'No project selected'
-      return
-    }
+    if (!projectPath) { errorMsg = 'No project selected'; return }
     saving = true
     saved = false
-    error = ''
+    errorMsg = ''
     try {
       const svc = await import('../../wailsjs/go/main/ProfileService.js')
       await svc.SaveProfile({
-        agentName,
-        roleTitle,
-        description,
-        responsibilities,
-        focusAreas,
-        communicationStyle: commStyle,
-        languagePreference: language,
-        customRules,
+        agentName, roleTitle, description, responsibilities,
+        focusAreas, communicationStyle: commStyle,
+        languagePreference: language, customRules,
       }, projectPath)
       saved = true
       setTimeout(() => saved = false, 2000)
     } catch (e) {
-      error = e.message || 'Failed to save profile'
-    } finally {
-      saving = false
+      errorMsg = 'Failed to save'
     }
+    saving = false
   }
 </script>
 
@@ -136,7 +123,7 @@
     <h2 class="text-xl font-bold text-ck-pink">Profile Editor</h2>
     <div class="flex items-center gap-2">
       {#if saved}<span class="text-xs text-ck-green">Saved!</span>{/if}
-      {#if error}<span class="text-xs text-red-400">{error}</span>{/if}
+      {#if errorMsg}<span class="text-xs text-red-400">{errorMsg}</span>{/if}
     </div>
   </div>
 
@@ -145,58 +132,23 @@
       <p class="text-sm text-ck-dim">Select a project first.</p>
     </div>
   {:else if loading}
-    <p class="text-sm text-ck-dim">Loading agents...</p>
+    <div class="flex items-center justify-center h-64">
+      <div class="w-5 h-5 border-2 border-ck-pink border-t-transparent rounded-full animate-spin"></div>
+    </div>
   {:else if agents.length === 0}
     <div class="flex flex-col items-center justify-center h-64 gap-3">
       <p class="text-sm text-ck-dim">No agents installed in this project.</p>
-      <p class="text-xs text-ck-dim">Run <code class="text-ck-gold bg-ck-dark px-1.5 py-0.5 rounded">ck init</code> or <code class="text-ck-gold bg-ck-dark px-1.5 py-0.5 rounded">ck add</code> in the project directory to install agents.</p>
+      <p class="text-xs text-ck-dim">Run <code class="text-ck-gold bg-ck-dark px-1.5 py-0.5 rounded">ck init</code> to install agents.</p>
     </div>
   {:else}
-    <!-- Agent Selector -->
-    <div class="space-y-3">
-      <h3 class="text-xs font-semibold uppercase tracking-wider text-ck-dim">Management</h3>
-      <div class="flex flex-wrap gap-1.5">
-        {#each managementAgents as agent}
-          <button
-            onclick={() => selectAgent(agent.name)}
-            title={agent.description}
-            class="px-2.5 py-1 text-xs rounded-md transition-colors
-              {selectedAgent === agent.name ? 'bg-ck-rose text-white' : 'bg-ck-dark text-ck-dim hover:text-white hover:bg-ck-pink/20'}"
-          >{agent.name}</button>
-        {/each}
-      </div>
-
-      <button
-        onclick={() => devExpanded = !devExpanded}
-        class="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-ck-dim hover:text-white transition-colors"
-      >
-        <span class="transition-transform {devExpanded ? 'rotate-90' : ''}">&rsaquo;</span>
-        Developer ({devAgents.length})
-      </button>
-      {#if devExpanded}
-        <div class="flex flex-wrap gap-1.5">
-          {#each devAgents as agent}
-            <button
-              onclick={() => selectAgent(agent.name)}
-              title={agent.description}
-              class="px-2.5 py-1 text-xs rounded-md transition-colors
-                {selectedAgent === agent.name ? 'bg-ck-rose text-white' : 'bg-ck-dark text-ck-dim hover:text-white hover:bg-ck-pink/20'}"
-            >{agent.name}</button>
-          {/each}
-        </div>
-      {/if}
-
-      {#if specialAgentsList.length > 0}
-        <button
-          onclick={() => specialExpanded = !specialExpanded}
-          class="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-ck-dim hover:text-white transition-colors"
-        >
-          <span class="transition-transform {specialExpanded ? 'rotate-90' : ''}">&rsaquo;</span>
-          Special ({specialAgentsList.length})
-        </button>
-        {#if specialExpanded}
+    <div class="flex-1 flex gap-4 min-h-0">
+      <!-- Left: Agent selector + Form -->
+      <div class="w-1/2 flex flex-col gap-4 overflow-y-auto">
+        <!-- Agent selector -->
+        <div class="space-y-2">
+          <h3 class="text-xs font-semibold uppercase tracking-wider text-ck-dim">Management</h3>
           <div class="flex flex-wrap gap-1.5">
-            {#each specialAgentsList as agent}
+            {#each managementAgents as agent}
               <button
                 onclick={() => selectAgent(agent.name)}
                 title={agent.description}
@@ -205,68 +157,85 @@
               >{agent.name}</button>
             {/each}
           </div>
-        {/if}
-      {/if}
-    </div>
 
-    <div class="flex-1 grid grid-cols-2 gap-4 min-h-0">
-      <!-- Form -->
-      <div class="overflow-auto space-y-3 pr-2">
-        <label class="block">
-          <span class="text-xs text-ck-dim">Role Title</span>
-          <input type="text" bind:value={roleTitle}
-            class="w-full mt-1 px-3 py-2 bg-ck-dark border border-gray-700 rounded-md text-sm text-white focus:outline-none focus:ring-2 focus:ring-ck-pink" />
-        </label>
-
-        <label class="block">
-          <span class="text-xs text-ck-dim">Description</span>
-          <textarea bind:value={description} rows="2"
-            class="w-full mt-1 px-3 py-2 bg-ck-dark border border-gray-700 rounded-md text-sm text-white resize-none focus:outline-none focus:ring-2 focus:ring-ck-pink"></textarea>
-        </label>
-
-        <label class="block">
-          <span class="text-xs text-ck-dim">Responsibilities</span>
-          <textarea bind:value={responsibilities} rows="3"
-            class="w-full mt-1 px-3 py-2 bg-ck-dark border border-gray-700 rounded-md text-sm text-white resize-none focus:outline-none focus:ring-2 focus:ring-ck-pink"></textarea>
-        </label>
-
-        <label class="block">
-          <span class="text-xs text-ck-dim">Focus Areas</span>
-          <textarea bind:value={focusAreas} rows="2"
-            class="w-full mt-1 px-3 py-2 bg-ck-dark border border-gray-700 rounded-md text-sm text-white resize-none focus:outline-none focus:ring-2 focus:ring-ck-pink"></textarea>
-        </label>
-
-        <div class="grid grid-cols-2 gap-3">
-          <label class="block">
-            <span class="text-xs text-ck-dim">Communication Style</span>
-            <select bind:value={commStyle}
-              class="w-full mt-1 px-3 py-2 bg-ck-dark border border-gray-700 rounded-md text-sm text-white focus:outline-none focus:ring-2 focus:ring-ck-pink">
-              {#each commStyles as s}<option value={s}>{s}</option>{/each}
-            </select>
-          </label>
-          <label class="block">
-            <span class="text-xs text-ck-dim">Language</span>
-            <select bind:value={language}
-              class="w-full mt-1 px-3 py-2 bg-ck-dark border border-gray-700 rounded-md text-sm text-white focus:outline-none focus:ring-2 focus:ring-ck-pink">
-              {#each languages as l}<option value={l}>{l}</option>{/each}
-            </select>
-          </label>
+          <button
+            onclick={() => devExpanded = !devExpanded}
+            class="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-ck-dim hover:text-white transition-colors"
+          >
+            <span class="transition-transform {devExpanded ? 'rotate-90' : ''}">›</span>
+            Developer ({devAgents.length})
+          </button>
+          {#if devExpanded}
+            <div class="flex flex-wrap gap-1.5">
+              {#each devAgents as agent}
+                <button
+                  onclick={() => selectAgent(agent.name)}
+                  title={agent.description}
+                  class="px-2.5 py-1 text-xs rounded-md transition-colors
+                    {selectedAgent === agent.name ? 'bg-ck-rose text-white' : 'bg-ck-dark text-ck-dim hover:text-white hover:bg-ck-pink/20'}"
+                >{agent.name}</button>
+              {/each}
+            </div>
+          {/if}
         </div>
 
-        <label class="block">
-          <span class="text-xs text-ck-dim">Custom Rules</span>
-          <textarea bind:value={customRules} rows="4"
-            class="w-full mt-1 px-3 py-2 bg-ck-dark border border-gray-700 rounded-md text-sm text-white resize-none focus:outline-none focus:ring-2 focus:ring-ck-pink"></textarea>
-        </label>
-
-        <button onclick={save} disabled={saving || !$currentProject}
-          class="w-full py-2 bg-ck-rose text-white text-sm font-semibold rounded-md hover:bg-ck-pink transition-colors disabled:opacity-50">
-          {saving ? 'Saving...' : 'Save Profile'}
-        </button>
+        <!-- Form -->
+        {#if selectedAgent}
+          <div class="space-y-3">
+            <div>
+              <label class="text-xs text-ck-dim">Role Title</label>
+              <input bind:value={roleTitle} class="w-full mt-1 px-3 py-1.5 text-sm bg-ck-dark border border-gray-700 rounded text-white focus:border-ck-pink focus:outline-none" />
+            </div>
+            <div>
+              <label class="text-xs text-ck-dim">Description</label>
+              <textarea bind:value={description} rows="2" class="w-full mt-1 px-3 py-1.5 text-sm bg-ck-dark border border-gray-700 rounded text-white focus:border-ck-pink focus:outline-none resize-none"></textarea>
+            </div>
+            <div>
+              <label class="text-xs text-ck-dim">Responsibilities</label>
+              <textarea bind:value={responsibilities} rows="3" class="w-full mt-1 px-3 py-1.5 text-sm bg-ck-dark border border-gray-700 rounded text-white focus:border-ck-pink focus:outline-none resize-none"></textarea>
+            </div>
+            <div>
+              <label class="text-xs text-ck-dim">Focus Areas</label>
+              <textarea bind:value={focusAreas} rows="2" class="w-full mt-1 px-3 py-1.5 text-sm bg-ck-dark border border-gray-700 rounded text-white focus:border-ck-pink focus:outline-none resize-none"></textarea>
+            </div>
+            <div class="flex gap-3">
+              <div class="flex-1">
+                <label class="text-xs text-ck-dim">Communication Style</label>
+                <select bind:value={commStyle} class="w-full mt-1 px-3 py-1.5 text-sm bg-ck-dark border border-gray-700 rounded text-white focus:border-ck-pink focus:outline-none">
+                  {#each commStyles as s}<option value={s}>{s}</option>{/each}
+                </select>
+              </div>
+              <div class="flex-1">
+                <label class="text-xs text-ck-dim">Language</label>
+                <select bind:value={language} class="w-full mt-1 px-3 py-1.5 text-sm bg-ck-dark border border-gray-700 rounded text-white focus:border-ck-pink focus:outline-none">
+                  {#each languages as l}<option value={l}>{l}</option>{/each}
+                </select>
+              </div>
+            </div>
+            <div>
+              <label class="text-xs text-ck-dim">Custom Rules</label>
+              <textarea bind:value={customRules} rows="4" class="w-full mt-1 px-3 py-1.5 text-sm bg-ck-dark border border-gray-700 rounded text-white focus:border-ck-pink focus:outline-none resize-none"></textarea>
+            </div>
+            <button
+              onclick={save}
+              disabled={saving}
+              class="px-4 py-2 text-sm rounded-lg bg-ck-rose text-white font-medium hover:bg-ck-pink transition-colors disabled:opacity-50"
+            >{saving ? 'Saving...' : 'Save Profile'}</button>
+          </div>
+        {:else}
+          <p class="text-sm text-ck-dim">Select an agent above to configure its Cowork profile.</p>
+        {/if}
       </div>
 
-      <!-- Preview -->
-      <MarkdownPreview content={generateMarkdown()} />
+      <!-- Right: Preview -->
+      <div class="w-1/2 bg-ck-dark rounded-xl border border-gray-800 p-4 overflow-y-auto">
+        <h3 class="text-xs font-semibold text-ck-dim uppercase tracking-wider mb-3">Preview — about-me.md</h3>
+        {#if previewMd}
+          <pre class="text-sm text-gray-300 whitespace-pre-wrap leading-relaxed">{previewMd}</pre>
+        {:else}
+          <p class="text-sm text-ck-dim">Select an agent to see the profile preview.</p>
+        {/if}
+      </div>
     </div>
   {/if}
 </div>
