@@ -11,6 +11,12 @@
   let error = $state('')
   let devExpanded = $state(false)
   let specialExpanded = $state(false)
+  let projectPath = $state('')
+
+  currentProject.subscribe(p => {
+    projectPath = p?.path || ''
+    if (p?.path) loadAgents()
+  })
 
   let agentName = $state('')
   let roleTitle = $state('')
@@ -34,12 +40,12 @@
 
   async function loadAgents() {
     try {
-      agents = await ListAgents()
+      agents = await ListAgents(projectPath)
       loading = false
       // try loading existing profile
-      if ($currentProject) {
+      if (projectPath) {
         try {
-          const existing = await GetSavedProfile($currentProject)
+          const existing = await GetSavedProfile(projectPath)
           if (existing.agentName) {
             fillForm(existing)
             selectedAgent = existing.agentName
@@ -55,7 +61,7 @@
   async function selectAgent(name) {
     selectedAgent = name
     try {
-      const form = await LoadAgent(name)
+      const form = await LoadAgent(projectPath, name)
       fillForm(form)
     } catch (e) {
       error = e.message || 'Failed to load agent'
@@ -83,7 +89,7 @@
   }
 
   async function save() {
-    if (!$currentProject) {
+    if (!projectPath) {
       error = 'No project selected'
       return
     }
@@ -100,7 +106,7 @@
         communicationStyle: commStyle,
         languagePreference: language,
         customRules,
-      }, $currentProject)
+      }, projectPath)
       saved = true
       setTimeout(() => saved = false, 2000)
     } catch (e) {

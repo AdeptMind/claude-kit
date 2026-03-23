@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/AdeptMind/infra-tool/claude-cli/internal/config"
 )
 
 var managementAgents = map[string]bool{
@@ -41,8 +40,9 @@ type ProfileForm struct {
 
 type ProfileService struct{}
 
-func (s *ProfileService) ListAgents() ([]AgentInfo, error) {
-	agentsDir := filepath.Join(config.TemplateDir(), "agents")
+func (s *ProfileService) ListAgents(projectPath string) ([]AgentInfo, error) {
+	// Read from project's installed agents, not template dir
+	agentsDir := filepath.Join(projectPath, ".claude", "agents")
 	entries, err := os.ReadDir(agentsDir)
 	if err != nil {
 		return nil, fmt.Errorf("cannot read agents dir: %w", err)
@@ -66,8 +66,8 @@ func (s *ProfileService) ListAgents() ([]AgentInfo, error) {
 	return agents, nil
 }
 
-func (s *ProfileService) LoadAgent(agentName string) (ProfileForm, error) {
-	agentPath := filepath.Join(config.TemplateDir(), "agents", agentName+".md")
+func (s *ProfileService) LoadAgent(projectPath string, agentName string) (ProfileForm, error) {
+	agentPath := filepath.Join(projectPath, ".claude", "agents", agentName+".md")
 	data, err := os.ReadFile(agentPath)
 	if err != nil {
 		return ProfileForm{}, fmt.Errorf("cannot read agent %s: %w", agentName, err)
