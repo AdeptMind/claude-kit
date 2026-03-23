@@ -1,6 +1,5 @@
 <script>
   import MarkdownPreview from '../components/MarkdownPreview.svelte'
-  import { ListAgents, LoadAgent, SaveProfile, GetSavedProfile } from '../../wailsjs/go/main/ProfileService'
   import { currentProject } from '../stores/project.js'
 
   let agents = $state([])
@@ -52,12 +51,13 @@
     loading = true
     selectedAgent = null
     try {
-      agents = await ListAgents(projectPath)
+      const svc = await import('../../wailsjs/go/main/ProfileService.js')
+      agents = await svc.ListAgents(projectPath)
       loading = false
       // try loading existing profile
       if (projectPath) {
         try {
-          const existing = await GetSavedProfile(projectPath)
+          const existing = await svc.GetSavedProfile(projectPath)
           if (existing.agentName) {
             fillForm(existing)
             selectedAgent = existing.agentName
@@ -73,7 +73,8 @@
   async function selectAgent(name) {
     selectedAgent = name
     try {
-      const form = await LoadAgent(projectPath, name)
+      const svc = await import('../../wailsjs/go/main/ProfileService.js')
+      const form = await svc.LoadAgent(projectPath, name)
       fillForm(form)
     } catch (e) {
       error = e.message || 'Failed to load agent'
@@ -109,7 +110,8 @@
     saved = false
     error = ''
     try {
-      await SaveProfile({
+      const svc = await import('../../wailsjs/go/main/ProfileService.js')
+      await svc.SaveProfile({
         agentName,
         roleTitle,
         description,
