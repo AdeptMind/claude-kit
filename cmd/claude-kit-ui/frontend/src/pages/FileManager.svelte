@@ -1,65 +1,46 @@
 <script>
   import FileTree from '../components/FileTree.svelte'
   import FilePreview from '../components/FilePreview.svelte'
-
-  // Placeholder data until Wails bindings are available
-  // import { Tree, ReadPreview, OpenExternal } from '../../wailsjs/go/main/FileService.js'
+  import { currentProject } from '../stores/project.js'
 
   let selectedPath = $state('')
   let previewContent = $state('')
   let dragging = $state(false)
+  let fileTree = $state([])
+  let projectPath = $state('')
 
-  const placeholderTree = [
-    {
-      name: '.claude', path: '.claude', expanded: true, children: [
-        { name: 'CLAUDE.md', path: '.claude/CLAUDE.md' },
-        {
-          name: 'agents', path: '.claude/agents', expanded: false, children: [
-            { name: 'ralph.md', path: '.claude/agents/ralph.md' },
-            { name: 'architect.md', path: '.claude/agents/architect.md' },
-          ]
-        },
-        {
-          name: 'skills', path: '.claude/skills', expanded: false, children: [
-            { name: 'brainstorm', path: '.claude/skills/brainstorm', expanded: false, children: [
-              { name: 'SKILL.md', path: '.claude/skills/brainstorm/SKILL.md' },
-            ]},
-          ]
-        },
-        {
-          name: 'output', path: '.claude/output', expanded: false, children: [
-            { name: 'problem.md', path: '.claude/output/problem.md' },
-            { name: 'architecture.md', path: '.claude/output/architecture.md' },
-            { name: 'backlog.md', path: '.claude/output/backlog.md' },
-          ]
-        },
-      ]
-    },
-    {
-      name: 'cmd', path: 'cmd', expanded: false, children: [
-        { name: 'main.go', path: 'cmd/main.go' },
-      ]
-    },
-    { name: 'go.mod', path: 'go.mod' },
-    { name: 'README.md', path: 'README.md' },
-  ]
+  currentProject.subscribe(p => {
+    projectPath = p?.path || ''
+    if (p?.path) loadTree(p.path)
+  })
 
-  const placeholderContents = {
-    '.claude/CLAUDE.md': '# BMAD Project Template\n\nSee workflow commands below...',
-    '.claude/agents/ralph.md': '---\nname: ralph\nrole: Full-stack implementer\n---\n\n# Ralph Agent\n\nImplements stories from backlog.',
-    '.claude/output/problem.md': '# claude-kit-ui\n\n- **Version:** 1.0\n\n## Features\n- file-manager\n- dashboard\n- workflow-launcher',
-    'go.mod': 'module github.com/adrien-barret/claude-kit\n\ngo 1.23',
-    'README.md': '# Claude Kit\n\nBMAD workflow orchestration toolkit.',
+  async function loadTree(path) {
+    try {
+      const { Tree } = await import('../../wailsjs/go/main/FileService.js')
+      const tree = await Tree(path)
+      fileTree = tree || []
+    } catch {
+      fileTree = []
+    }
   }
 
-  function handleSelect(path) {
+  async function handleSelect(path) {
     selectedPath = path
-    // When Wails bindings available: previewContent = await ReadPreview(path)
-    previewContent = placeholderContents[path] || `// No preview available for ${path}`
+    if (!projectPath) {
+      previewContent = `// No project selected`
+      return
+    }
+    try {
+      const { ReadPreview } = await import('../../wailsjs/go/main/FileService.js')
+      const content = await ReadPreview(projectPath, path)
+      previewContent = content || `// No preview available for ${path}`
+    } catch {
+      previewContent = `// No preview available for ${path}`
+    }
   }
 
   function handleOpen(path) {
-    // When Wails bindings available: OpenExternal(path)
+    // TODO: OpenExternal with projectPath
     console.log('Open external:', path)
   }
 
@@ -97,7 +78,7 @@
       Explorer
     </div>
     <div class="flex-1 overflow-auto py-1">
-      <FileTree nodes={placeholderTree} {selectedPath} onSelect={handleSelect} onOpen={handleOpen} />
+      <FileTree nodes={fileTree} {selectedPath} onSelect={handleSelect} onOpen={handleOpen} />
     </div>
 
     {#if dragging}

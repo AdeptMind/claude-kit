@@ -13,11 +13,28 @@ export function navigateTo(page) {
   currentPage.set(page)
 }
 
-export function setRole(role) {
+export function setRole(role, projectPath) {
   currentRole.set(role)
   currentPage.set('dashboard')
+  // Persist role to project settings
+  if (projectPath) {
+    import('../../wailsjs/go/main/RoleService.js')
+      .then(({ SetRole }) => SetRole(projectPath, role))
+      .catch(() => {})
+  }
 }
 
 export function isManagementRole(role) {
   return MANAGEMENT_ROLES.has(role)
+}
+
+export async function refreshRole(projectPath) {
+  if (!projectPath) return
+  try {
+    const { GetCurrent } = await import('../../wailsjs/go/main/RoleService.js')
+    const info = await GetCurrent(projectPath)
+    if (info?.name) {
+      currentRole.set(info.name)
+    }
+  } catch {}
 }

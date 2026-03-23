@@ -3,11 +3,13 @@
   import QuickActions from '../components/QuickActions.svelte'
   import MarkdownEditor from '../components/MarkdownEditor.svelte'
   import ReadPreview from '../components/ReadPreview.svelte'
-  import { navigateTo } from '../stores/navigation.js'
+  import { currentProject } from '../stores/project.js'
+  import { navigateTo, currentRole, refreshRole } from '../stores/navigation.js'
 
   let project = $state(null)
   let role = $state(null)
   let workflowStatus = $state(null)
+  let recentFiles = $state([])
   let loading = $state(true)
 
   // Modal state
@@ -17,21 +19,20 @@
   let editContent = $state('')
   let deleteTarget = $state(null)
 
-  const phases = [
-    { label: 'Break', status: 'done' },
-    { label: 'Model', status: 'done' },
-    { label: 'Analyze', status: 'active' },
-    { label: 'Act', status: 'pending' },
-    { label: 'Deliver', status: 'pending' },
-  ]
+  let projectPath = $state('')
+  currentProject.subscribe(p => {
+    project = p
+    projectPath = p?.path || ''
+    if (p?.path) {
+      loadProjectData(p.path)
+    } else {
+      loading = false
+    }
+  })
 
-  const recentFiles = [
-    { name: 'problem.md', type: 'md', modified: '2 min ago', path: '.claude/output/problem.md' },
-    { name: 'architecture.md', type: 'md', modified: '5 min ago', path: '.claude/output/architecture.md' },
-    { name: 'backlog.md', type: 'md', modified: '12 min ago', path: '.claude/output/backlog.md' },
-    { name: 'principles.md', type: 'md', modified: '1h ago', path: '.claude/output/principles.md' },
-    { name: 'user-journey.md', type: 'md', modified: '3h ago', path: '.claude/output/user-journey.md' },
-  ]
+  currentRole.subscribe(v => {
+    role = v ? { name: v } : null
+  })
 
   const fileIcons = {
     yaml: '📋',
@@ -65,54 +66,45 @@
     },
   ]
 
-  const placeholders = {
-    'problem.md': '# Problem Definition\n\n## Project\n- **Name:** my-project\n- **Version:** 1.0\n- **Phase:** break\n\n## Problem Statement\nYour project description here\n\n## Target Users\n- User type 1\n\n## Pain Points\n- Pain point 1',
-    'architecture.md': '# Architecture\n\n## Project\n- **Name:** my-project\n- **Version:** 1.0\n- **Phase:** model\n\n## Components\n\n### api-server\n- **Type:** service\n- **Responsibility:** Handle HTTP requests',
-    'backlog.md': '# Backlog\n\n## Project\n- **Name:** my-project\n- **Version:** 1.0\n- **Phase:** model\n\n## Tasks\n\n### T-001 — Setup project\n- **Priority:** P1',
-    'principles.md': '# Project Principles\n\n## Code Quality\n- DRY, KISS, SOLID\n- Pattern-first coding\n\n## Testing\n- TDD enforced\n- 80% coverage target',
-    'user-journey.md': '# User Journeys\n\n## User login\n- **Persona:** end user\n- **Story refs:** US-001\n\n### Steps\n1. **Action:** Navigate to /login — **Expected:** Login form displayed',
-  }
+  async function loadProjectData(path) {
+    loading = true
 
-  $effect(() => {
-    loadProject()
-  })
+    // Load role from project
+    await refreshRole(path)
 
-  async function loadProject() {
-    try {
-      const { GetState } = await import('../../wailsjs/go/main/ProjectService.js')
-      const state = await GetState()
-      project = state
-    } catch {
-      project = { name: 'claude-kit-ui', path: '~/workspace/claude-kit' }
-    }
-
-    try {
-      const { GetCurrent } = await import('../../wailsjs/go/main/RoleService.js')
-      role = await GetCurrent()
-    } catch {
-      role = { name: 'Architect', color: 'gold' }
-    }
-
+    // Load workflow status
     try {
       const { GetStatus } = await import('../../wailsjs/go/main/WorkflowService.js')
-      workflowStatus = await GetStatus()
+      workflowStatus = await GetStatus(path)
     } catch {
-      workflowStatus = { currentPhase: 'analyze' }
+      workflowStatus = null
+    }
+
+    // Load recent files from project's .claude/output/
+    try {
+      const { RecentFiles } = await import('../../wailsjs/go/main/FileService.js')
+      const files = await RecentFiles(path)
+      recentFiles = files || []
+    } catch {
+      recentFiles = []
     }
 
     loading = false
   }
 
+  let phases = $derived(
+    workflowStatus?.phases?.map(p => ({ label: p.label, status: p.status })) || []
+  )
+
   async function loadFileContent(file) {
-    let loaded = false
     try {
       const { ReadPreview: ReadPreviewFn } = await import('../../wailsjs/go/main/FileService.js')
-      const result = await ReadPreviewFn(file.path)
-      if (result && result.trim() && !result.includes('not yet implemented')) {
+      const result = await ReadPreviewFn(projectPath, file.path)
+      if (result && result.trim()) {
         return result
       }
     } catch {}
-    return placeholders[file.name] || `# ${file.name}\n\nFile content will appear here when connected to a project.`
+    return `# ${file.name}\n\nFile content will appear here when connected to a project.`
   }
 
   async function openRead(file) {
@@ -200,49 +192,56 @@
     </div>
 
     <!-- Phase Progress -->
-    <section>
-      <h2 class="text-sm font-semibold text-ck-dim uppercase tracking-wider mb-4">BMAD Progress</h2>
-      <div class="bg-ck-dark rounded-xl p-6 border border-gray-800">
-        <PhaseProgress {phases} />
-      </div>
-    </section>
+    {#if phases.length > 0}
+      <section>
+        <h2 class="text-sm font-semibold text-ck-dim uppercase tracking-wider mb-4">BMAD Progress</h2>
+        <div class="bg-ck-dark rounded-xl p-6 border border-gray-800">
+          <PhaseProgress {phases} />
+        </div>
+      </section>
+    {/if}
 
     <!-- Recent Files -->
     <section>
       <h2 class="text-sm font-semibold text-ck-dim uppercase tracking-wider mb-4">Recent Files</h2>
-      <div class="bg-ck-dark rounded-xl border border-gray-800 divide-y divide-gray-800">
-        {#each recentFiles as file}
-          <div class="flex items-center justify-between px-5 py-3 hover:bg-white/5 transition-colors">
-            <div class="flex items-center gap-3">
-              <span class="text-base">{fileIcons[file.type] || '📄'}</span>
-              <span class="text-sm text-white">{file.name}</span>
-            </div>
-            <div class="flex items-center gap-3">
-              <span class="text-xs text-ck-dim mr-2">{file.modified}</span>
-              <button
-                onclick={() => openRead(file)}
-                class="px-2.5 py-1 text-xs rounded border border-gray-700 text-ck-dim hover:text-white hover:border-gray-500 transition-colors"
-              >
-                Read
-              </button>
-              {#if editableFiles.has(file.name)}
+      {#if recentFiles.length > 0}
+        <div class="bg-ck-dark rounded-xl border border-gray-800 divide-y divide-gray-800">
+          {#each recentFiles as file}
+            <div class="flex items-center justify-between px-5 py-3 hover:bg-white/5 transition-colors">
+              <div class="flex items-center gap-3">
+                <span class="text-base">{fileIcons[file.type] || '📄'}</span>
+                <span class="text-sm text-white">{file.name}</span>
+              </div>
+              <div class="flex items-center gap-3">
                 <button
-                  onclick={() => openEdit(file)}
-                  class="px-2.5 py-1 text-xs rounded border border-ck-gold/30 text-ck-gold hover:text-ck-pink hover:border-ck-pink/30 transition-colors"
+                  onclick={() => openRead(file)}
+                  class="px-2.5 py-1 text-xs rounded border border-gray-700 text-ck-dim hover:text-white hover:border-gray-500 transition-colors"
                 >
-                  Edit
+                  Read
                 </button>
-              {/if}
-              <button
-                onclick={() => confirmDelete(file)}
-                class="px-2 py-1 text-xs rounded border border-red-400/20 text-red-400/50 hover:text-red-400 hover:border-red-400/40 transition-colors"
-              >
-                ✕
-              </button>
+                {#if editableFiles.has(file.name)}
+                  <button
+                    onclick={() => openEdit(file)}
+                    class="px-2.5 py-1 text-xs rounded border border-ck-gold/30 text-ck-gold hover:text-ck-pink hover:border-ck-pink/30 transition-colors"
+                  >
+                    Edit
+                  </button>
+                {/if}
+                <button
+                  onclick={() => confirmDelete(file)}
+                  class="px-2 py-1 text-xs rounded border border-red-400/20 text-red-400/50 hover:text-red-400 hover:border-red-400/40 transition-colors"
+                >
+                  ✕
+                </button>
+              </div>
             </div>
-          </div>
-        {/each}
-      </div>
+          {/each}
+        </div>
+      {:else}
+        <div class="bg-ck-dark rounded-xl border border-gray-800 p-6 text-center text-sm text-ck-dim">
+          No artifacts found in .claude/output/
+        </div>
+      {/if}
     </section>
 
     <!-- Quick Actions -->

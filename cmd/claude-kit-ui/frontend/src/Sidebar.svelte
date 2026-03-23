@@ -1,5 +1,12 @@
 <script>
-  import { currentPage, navigateTo, currentRole, setRole, isManagementRole } from './stores/navigation.js'
+  import { currentPage, navigateTo, currentRole, setRole, isManagementRole, refreshRole } from './stores/navigation.js'
+  import { currentProject } from './stores/project.js'
+
+  let projectPath = $state('')
+  currentProject.subscribe(p => {
+    projectPath = p?.path || ''
+    if (p?.path) refreshRole(p.path)
+  })
 
   const managementItems = [
     { id: 'dashboard', icon: '\u{1F4CA}', label: 'Dashboard' },
@@ -57,7 +64,7 @@
   )
 
   function selectRole(newRole) {
-    setRole(newRole)
+    setRole(newRole, projectPath)
     roleSelectorOpen = false
     searchQuery = ''
   }

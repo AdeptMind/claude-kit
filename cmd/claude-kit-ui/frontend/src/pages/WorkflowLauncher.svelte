@@ -1,27 +1,25 @@
 <script>
   import PhaseDiagram from '../components/PhaseDiagram.svelte'
   import ArtifactMonitor from '../components/ArtifactMonitor.svelte'
+  import { currentProject } from '../stores/project.js'
 
-  let phases = $state([
-    { id: 'break', status: 'done', label: 'Break', artifacts: ['problem.md'] },
-    { id: 'model', status: 'done', label: 'Model', artifacts: ['architecture.md', 'backlog.md'] },
-    { id: 'analyze', status: 'active', label: 'Analyze', artifacts: ['analysis-report.md'] },
-    { id: 'act', status: 'pending', label: 'Act', artifacts: [] },
-    { id: 'deliver', status: 'pending', label: 'Deliver', artifacts: [] },
-  ])
-
+  let phases = $state([])
   let selectedPhase = $state(null)
   let launching = $state(false)
 
-  $effect(() => {
-    try {
-      import('../../wailsjs/go/main/WorkflowService.js').then(({ GetStatus }) => {
-        GetStatus().then(status => {
-          if (status?.phases) phases = status.phases
-        }).catch(() => {})
-      }).catch(() => {})
-    } catch {}
+  let projectPath = $state('')
+  currentProject.subscribe(p => {
+    projectPath = p?.path || ''
+    if (p?.path) loadStatus(p.path)
   })
+
+  async function loadStatus(path) {
+    try {
+      const { GetStatus } = await import('../../wailsjs/go/main/WorkflowService.js')
+      const status = await GetStatus(path)
+      if (status?.phases) phases = status.phases
+    } catch {}
+  }
 
   function handleSelectPhase(phase) {
     selectedPhase = phase
