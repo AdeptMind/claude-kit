@@ -168,12 +168,37 @@ Profiles are policy-as-code (`.claude/policy.yaml`) — committed, shareable, in
 
 ### Desktop App (macOS)
 
-A Wails-based `.app` for non-technical users:
-- Visual project dashboard with BMAD phase progress
-- File manager with preview (yaml, markdown, excel, pdf)
-- Cowork profile editor — form-based, no markdown editing
-- Management roles prominent, dev roles collapsible
-- One-click "Open in Cowork" for workflow execution
+A native `.app` for non-technical users — POs, PMs, HR, and stakeholders.
+
+**Dashboard** — project status, BMAD phase progress, recent files with click-to-read and edit
+
+**Stories** — 3-column board (Todo / In Progress / Done) with filters, story detail modal, inline editing as markdown, Ralph status tracking, story locking during edits
+
+**File Manager** — tree view with type icons, file preview, drag-and-drop
+
+**Profile Editor** — form-based Cowork profile configuration, agent selector (management-first)
+
+**Workflow Launcher** — visual BMAD phase diagram, artifact monitor, "Open in Cowork"
+
+**Claude Chat** — embedded terminal (xterm.js + PTY) running `claude` directly in the app. Multi-session: one session per project, sessions persist when switching projects. Auto-starts when you open Chat.
+
+**WYSIWYG Editor** — Tiptap-based markdown editor. Edit the rendered preview directly — no raw markdown. Toolbar for headings, bold, italic, lists, code, links.
+
+**Project Selector** — top bar with fuzzy search, folder picker (native macOS dialog), recent projects list with remove button
+
+**Role Selector** — sidebar dropdown with search, favorites (star system), grouped by Management/Dev/Special
+
+#### Keyboard Shortcuts
+
+| Shortcut | Action |
+|----------|--------|
+| `⌘K` | Fuzzy find and switch project |
+| `⌘←` `⌘→` | Previous / next project |
+| `⌘J` | Open Claude Chat |
+| `⌘S` | Open Stories board |
+| `⌘D` | Open Dashboard |
+| `⌘E` | Edit selected story |
+| `Escape` | Close any modal |
 
 ```bash
 # Build from source
