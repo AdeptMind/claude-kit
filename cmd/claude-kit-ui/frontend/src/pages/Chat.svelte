@@ -31,6 +31,9 @@
             running = await IsRunning()
             if (hasSession) {
                 term.writeln(`\x1b[90m— Resumed session: ${p.name} —\x1b[0m`)
+            } else {
+                // No existing session — auto-start
+                setTimeout(() => startSession(), 300)
             }
         } catch {
             running = false
@@ -100,6 +103,11 @@
             if (fitAddon) fitAddon.fit()
         })
         resizeObserver.observe(terminalEl)
+
+        // Auto-start if a project is selected
+        if (projectPath && !running) {
+            setTimeout(() => startSession(), 300)
+        }
 
         // Refresh session count periodically
         sessionInterval = setInterval(async () => {
