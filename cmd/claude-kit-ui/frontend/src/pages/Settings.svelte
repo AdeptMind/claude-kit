@@ -21,10 +21,19 @@
   let mcpTesting = $state(false)
 
   let projectPath = $state('')
+  let mcpEndpoint = $state('')
   currentProject.subscribe(p => {
     projectPath = p?.path || ''
     loadMCPConfig()
+    loadMCPEndpoint()
   })
+
+  async function loadMCPEndpoint() {
+    try {
+      const svc = await import('../../wailsjs/go/main/MCPServerService.js')
+      mcpEndpoint = await svc.GetEndpoint()
+    } catch {}
+  }
 
   async function loadMCPConfig() {
     if (!projectPath) return
@@ -178,6 +187,15 @@
         </button>
       </div>
     </section>
+
+    <!-- MCP Skills Server -->
+    {#if mcpEndpoint}
+      <section class="space-y-3">
+        <h3 class="text-sm font-semibold text-ck-gold uppercase tracking-wide">MCP Skills Server</h3>
+        <p class="text-xs text-ck-dim">Add this to your <code class="text-ck-rose">claude_desktop_config.json</code> to expose skills to Claude Desktop:</p>
+        <pre class="px-3 py-2 bg-ck-dark border border-gray-700 rounded-md text-xs text-green-400 font-mono overflow-x-auto">{`"claude-kit": { "url": "${mcpEndpoint}" }`}</pre>
+      </section>
+    {/if}
 
     <!-- MCP Story Sync -->
     <section class="space-y-3">

@@ -23,6 +23,7 @@ func main() {
 	terminalService := &TerminalService{}
 	initService := &InitService{}
 	mcpService := &MCPService{}
+	mcpServerService := &MCPServerService{}
 
 	err := wails.Run(&options.App{
 		Title:  "Claude Kit",
@@ -38,9 +39,11 @@ func main() {
 			workflowService.startup(ctx)
 			terminalService.startup(ctx)
 			mcpService.startup(ctx)
+			mcpServerService.startup(ctx)
 		},
 		OnShutdown: func(ctx context.Context) {
 			terminalService.StopAll()
+			mcpServerService.Shutdown()
 		},
 		Bind: []interface{}{
 			app,
@@ -53,6 +56,7 @@ func main() {
 			terminalService,
 			initService,
 			mcpService,
+			mcpServerService,
 		},
 	})
 

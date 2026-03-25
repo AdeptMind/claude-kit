@@ -67,6 +67,11 @@ func ScanTemplate(templateDir string) ([]Category, error) {
 	return categories, nil
 }
 
+// ScanSkillsDir scans a skills directory and returns all found skill components.
+func ScanSkillsDir(dir string) []Component {
+	return scanSkills(dir, "skills")
+}
+
 // scanSkills handles the nested skill directory structure.
 // Skills can be flat (code-reviewer/) or nested (security/pentest-web/).
 func scanSkills(dir, typeName string) []Component {
@@ -202,6 +207,12 @@ func ExtractVersion(path string) string {
 // ExtractSource reads the YAML frontmatter source from a file.
 func ExtractSource(path string) string {
 	return extractFrontmatterField(path, "source:")
+}
+
+// ExtractFrontmatterField extracts a named field from YAML frontmatter.
+// The prefix should include the colon, e.g. "argument-hint:".
+func ExtractFrontmatterField(path, prefix string) string {
+	return extractFrontmatterField(path, prefix)
 }
 
 // extractFrontmatterField is a generic helper to extract a frontmatter field.

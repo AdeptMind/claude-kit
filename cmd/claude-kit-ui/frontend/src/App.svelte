@@ -1,6 +1,6 @@
 <script>
   import { currentPage, navigateTo } from './stores/navigation.js'
-  import { switchProjectPrev, switchProjectNext, projectFinderOpen } from './stores/project.js'
+  import { currentProject, switchProjectPrev, switchProjectNext, projectFinderOpen } from './stores/project.js'
   import TopBar from './components/TopBar.svelte'
   import Sidebar from './Sidebar.svelte'
   import Dashboard from './pages/Dashboard.svelte'
@@ -23,6 +23,16 @@
 
   let activePage = $state('dashboard')
   currentPage.subscribe(v => activePage = v)
+
+  // Load skills into MCP server when project changes
+  currentProject.subscribe(async (p) => {
+    if (p?.path) {
+      try {
+        const svc = await import('../wailsjs/go/main/MCPServerService.js')
+        await svc.LoadSkills(p.path)
+      } catch {}
+    }
+  })
 
   function isEditing() {
     const el = document.activeElement
