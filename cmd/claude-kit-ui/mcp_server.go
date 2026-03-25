@@ -158,6 +158,55 @@ func (s *MCPServerService) RegisterInClaudeDesktop() error {
 	return os.WriteFile(configPath, append(out, '\n'), 0o644)
 }
 
+// BootstrapClaudeDesktop generates cowork profiles for all installed agents
+// and registers the MCP server in Claude Desktop config — one-click setup.
+func (s *MCPServerService) BootstrapClaudeDesktop(projectPath string) (int, error) {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return 0, err
+	}
+
+	profileSvc := &ProfileService{}
+	agents, err := profileSvc.ListAgents(projectPath)
+	if err != nil {
+		return 0, fmt.Errorf("listing agents: %w", err)
+	}
+
+	coworkDir := filepath.Join(home, ".claude", "cowork-profiles")
+	count := 0
+	for _, agent := range agents {
+		form, err := profileSvc.LoadAgent(projectPath, agent.Name)
+		if err != nil {
+			continue
+		}
+		// Write profile to global cowork dir (not project-local)
+		profileDir := filepath.Join(coworkDir, form.AgentName)
+		if err := os.MkdirAll(profileDir, 0o755); err != nil {
+			continue
+		}
+		writeProfileFiles(profileDir, form)
+		count++
+	}
+
+	// Register MCP server
+	_ = s.RegisterInClaudeDesktop()
+
+	return count, nil
+}
+
+func writeProfileFiles(dir string, form ProfileForm) {
+	files := map[string]string{
+		"about-me.md": fmt.Sprintf("# About Me — %s\n\n## Role\n%s\n\n## Responsibilities\n%s\n\n## Focus Areas\n%s\n\n## Communication Style\n%s\n",
+			form.RoleTitle, form.Description, form.Responsibilities, form.FocusAreas, form.CommunicationStyle),
+		"working-rules.md": fmt.Sprintf("# Working Rules — %s\n\n%s\n", form.RoleTitle, form.CustomRules),
+		"voice-and-style.md": fmt.Sprintf("# Voice and Style — %s\n\n## Language\n%s\n\n## Communication\n%s\n",
+			form.RoleTitle, form.LanguagePreference, form.CommunicationStyle),
+	}
+	for name, content := range files {
+		_ = os.WriteFile(filepath.Join(dir, name), []byte(content), 0o644)
+	}
+}
+
 // Shutdown stops the HTTP server.
 func (s *MCPServerService) Shutdown() {
 	if s.httpServer != nil {

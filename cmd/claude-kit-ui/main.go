@@ -24,6 +24,7 @@ func main() {
 	initService := &InitService{}
 	mcpService := &MCPService{}
 	mcpServerService := &MCPServerService{}
+	settingsService := &SettingsService{}
 
 	err := wails.Run(&options.App{
 		Title:  "Claude Kit",
@@ -57,6 +58,7 @@ func main() {
 			initService,
 			mcpService,
 			mcpServerService,
+			settingsService,
 		},
 	})
 

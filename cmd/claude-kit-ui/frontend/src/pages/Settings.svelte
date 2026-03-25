@@ -30,6 +30,8 @@
 
   let registering = $state(false)
   let registered = $state(false)
+  let bootstrapping = $state(false)
+  let bootstrapped = $state('')
 
   async function loadMCPEndpoint() {
     try {
@@ -50,6 +52,22 @@
       error = 'Failed to register: ' + (e?.message || e)
     } finally {
       registering = false
+    }
+  }
+
+  async function bootstrapClaude() {
+    bootstrapping = true
+    bootstrapped = ''
+    error = ''
+    try {
+      const svc = await import('../../wailsjs/go/main/MCPServerService.js')
+      const count = await svc.BootstrapClaudeDesktop(projectPath)
+      bootstrapped = `${count} cowork profiles + MCP server registered`
+      setTimeout(() => bootstrapped = '', 5000)
+    } catch (e) {
+      error = 'Bootstrap failed: ' + (e?.message || e)
+    } finally {
+      bootstrapping = false
     }
   }
 
@@ -109,8 +127,8 @@
 
   async function loadSettings() {
     try {
-      // Placeholder: will call GetState binding when available
-      const state = { coworkFolder: '', workspaceRoot: '' }
+      const svc = await import('../../wailsjs/go/main/SettingsService.js')
+      const state = await svc.Load()
       coworkFolder = state.coworkFolder || ''
       workspaceRoot = state.workspaceRoot || ''
     } catch (e) {
@@ -123,8 +141,8 @@
     saved = false
     error = ''
     try {
-      // Placeholder: will call SetState binding when available
-      await new Promise(r => setTimeout(r, 300))
+      const svc = await import('../../wailsjs/go/main/SettingsService.js')
+      await svc.Save({ coworkFolder, workspaceRoot })
       saved = true
       setTimeout(() => saved = false, 2000)
     } catch (e) {
@@ -178,6 +196,16 @@
   </div>
 
   <div class="space-y-6 max-w-xl">
+    <!-- Bootstrap Claude Desktop -->
+    <section class="space-y-3">
+      <h3 class="text-sm font-semibold text-ck-gold uppercase tracking-wide">Bootstrap Claude Desktop</h3>
+      <p class="text-xs text-ck-dim">Generate cowork profiles for all installed agents and register the MCP skills server in one click.</p>
+      <button onclick={bootstrapClaude} disabled={bootstrapping || !projectPath}
+        class="w-full py-3 bg-gradient-to-r from-ck-rose to-ck-pink text-white text-sm font-bold rounded-md hover:opacity-90 transition-opacity disabled:opacity-50">
+        {#if bootstrapped}{bootstrapped}{:else if bootstrapping}Bootstrapping...{:else}Bootstrap Claude Desktop{/if}
+      </button>
+    </section>
+
     <!-- Cowork Integration -->
     <section class="space-y-3">
       <h3 class="text-sm font-semibold text-ck-gold uppercase tracking-wide">Cowork Integration</h3>
