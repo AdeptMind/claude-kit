@@ -106,24 +106,30 @@ func runInteractiveInit() error {
 	// BMAD agents that aren't installed yet get pre-selected
 	bmadAgents := map[string]bool{"product-owner": true, "architect": true, "tech-lead": true}
 
+	const allSentinel = "__all__"
 	var preselected []string
-	options := make([]huh.Option[string], 0, len(agentComps))
+	agentOptions := make([]huh.Option[string], 0, len(agentComps))
 	for _, c := range agentComps {
 		if installedAgents[c.Name] {
 			continue // skip already installed
 		}
 		label := agentLabel(c.Name, c.Description)
-		options = append(options, huh.NewOption(label, c.Name))
+		agentOptions = append(agentOptions, huh.NewOption(label, c.Name))
 		if useBmad && bmadAgents[c.Name] {
 			preselected = append(preselected, c.Name)
 		}
 	}
 
-	if len(options) == 0 {
+	if len(agentOptions) == 0 {
 		fmt.Println(successStyle.Render(fmt.Sprintf("  %s All agents already installed!", arrow)))
 		fmt.Println(dimStyle.Render("  Use 'ck remove' to remove agents."))
 		return nil
 	}
+
+	// Prepend "All agents" option
+	options := make([]huh.Option[string], 0, len(agentOptions)+1)
+	options = append(options, huh.NewOption("All agents", allSentinel))
+	options = append(options, agentOptions...)
 
 	selectedAgents := preselected
 	agentForm := huh.NewForm(
@@ -137,6 +143,17 @@ func runInteractiveInit() error {
 
 	if err := agentForm.Run(); err != nil {
 		return err
+	}
+
+	// Expand "all" sentinel to all available agents
+	for _, s := range selectedAgents {
+		if s == allSentinel {
+			selectedAgents = make([]string, 0, len(agentOptions))
+			for _, opt := range agentOptions {
+				selectedAgents = append(selectedAgents, opt.Value)
+			}
+			break
+		}
 	}
 
 	if len(selectedAgents) == 0 {

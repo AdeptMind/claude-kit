@@ -52,6 +52,11 @@ func runAdd(cmd *cobra.Command, args []string) error {
 		return addBmadBundle(tmplDir, targetDir)
 	}
 
+	// "all" → install every available agent
+	if len(args) == 1 && strings.ToLower(args[0]) == "all" {
+		return addAllAgents(tmplDir, targetDir)
+	}
+
 	// "new" keyword → smart add: ck add new <description>
 	if strings.ToLower(args[0]) == "new" {
 		if len(args) < 2 {
@@ -105,20 +110,26 @@ func runInteractiveAdd(tmplDir, targetDir string) error {
 	}
 
 	// Build options — only show agents not yet installed
-	options := make([]huh.Option[string], 0, len(agentComps))
+	const allSentinel = "__all__"
+	agentOptions := make([]huh.Option[string], 0, len(agentComps))
 	for _, c := range agentComps {
 		if catalog.IsInstalled(targetDir, "agents", c.Name) {
 			continue
 		}
 		label := agentLabel(c.Name, c.Description)
-		options = append(options, huh.NewOption(label, c.Name))
+		agentOptions = append(agentOptions, huh.NewOption(label, c.Name))
 	}
 
-	if len(options) == 0 {
+	if len(agentOptions) == 0 {
 		fmt.Println(successStyle.Render(fmt.Sprintf("  %s All agents already installed!", arrow)))
 		fmt.Println(dimStyle.Render("  Use 'ck remove' to remove agents."))
 		return nil
 	}
+
+	// Prepend "All agents" option
+	options := make([]huh.Option[string], 0, len(agentOptions)+1)
+	options = append(options, huh.NewOption("All agents", allSentinel))
+	options = append(options, agentOptions...)
 
 	var selected []string
 	form := huh.NewForm(
@@ -132,6 +143,17 @@ func runInteractiveAdd(tmplDir, targetDir string) error {
 
 	if err := form.Run(); err != nil {
 		return err
+	}
+
+	// Expand "all" sentinel to all available agents
+	for _, s := range selected {
+		if s == allSentinel {
+			selected = make([]string, 0, len(agentOptions))
+			for _, opt := range agentOptions {
+				selected = append(selected, opt.Value)
+			}
+			break
+		}
 	}
 
 	if len(selected) == 0 {
@@ -148,6 +170,43 @@ func runInteractiveAdd(tmplDir, targetDir string) error {
 
 	fmt.Println()
 	fmt.Println(successStyle.Render(fmt.Sprintf("  %s Done!", arrow)))
+	return nil
+}
+
+// addAllAgents installs every available agent that is not yet installed.
+func addAllAgents(tmplDir, targetDir string) error {
+	fmt.Println(banner())
+
+	categories, err := catalog.ScanTemplate(tmplDir)
+	if err != nil {
+		return fmt.Errorf("scanning templates: %w", err)
+	}
+
+	var agentComps []catalog.Component
+	for _, cat := range categories {
+		if cat.Name == "agents" {
+			agentComps = cat.Components
+			break
+		}
+	}
+
+	ensureBaseFiles(tmplDir, targetDir)
+
+	installed := 0
+	for _, c := range agentComps {
+		if catalog.IsInstalled(targetDir, "agents", c.Name) {
+			continue
+		}
+		installAgent(tmplDir, targetDir, c.Name)
+		installed++
+	}
+
+	if installed == 0 {
+		fmt.Println(successStyle.Render(fmt.Sprintf("  %s All agents already installed!", arrow)))
+	} else {
+		fmt.Println()
+		fmt.Println(successStyle.Render(fmt.Sprintf("  %s Done! Installed %d agents.", arrow, installed)))
+	}
 	return nil
 }
 
