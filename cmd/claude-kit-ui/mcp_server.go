@@ -2,10 +2,12 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -114,6 +116,46 @@ func (s *MCPServerService) makeHandler(skillPath string) func(context.Context, *
 			},
 		}, nil, nil
 	}
+}
+
+// RegisterInClaudeDesktop adds the claude-kit MCP server entry to
+// ~/Library/Application Support/Claude/claude_desktop_config.json.
+func (s *MCPServerService) RegisterInClaudeDesktop() error {
+	endpoint := s.GetEndpoint()
+	if endpoint == "" {
+		return fmt.Errorf("MCP server not running")
+	}
+
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return err
+	}
+	configDir := filepath.Join(home, "Library", "Application Support", "Claude")
+	configPath := filepath.Join(configDir, "claude_desktop_config.json")
+
+	// Read existing config or start fresh
+	cfg := map[string]any{}
+	if data, err := os.ReadFile(configPath); err == nil {
+		_ = json.Unmarshal(data, &cfg)
+	}
+
+	// Ensure mcpServers map exists
+	servers, ok := cfg["mcpServers"].(map[string]any)
+	if !ok {
+		servers = map[string]any{}
+	}
+	servers["claude-kit"] = map[string]any{"url": endpoint}
+	cfg["mcpServers"] = servers
+
+	// Write back
+	if err := os.MkdirAll(configDir, 0o755); err != nil {
+		return err
+	}
+	out, err := json.MarshalIndent(cfg, "", "  ")
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(configPath, append(out, '\n'), 0o644)
 }
 
 // Shutdown stops the HTTP server.

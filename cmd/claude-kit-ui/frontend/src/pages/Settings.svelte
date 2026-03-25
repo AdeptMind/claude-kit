@@ -28,11 +28,29 @@
     loadMCPEndpoint()
   })
 
+  let registering = $state(false)
+  let registered = $state(false)
+
   async function loadMCPEndpoint() {
     try {
       const svc = await import('../../wailsjs/go/main/MCPServerService.js')
       mcpEndpoint = await svc.GetEndpoint()
     } catch {}
+  }
+
+  async function registerInClaudeDesktop() {
+    registering = true
+    error = ''
+    try {
+      const svc = await import('../../wailsjs/go/main/MCPServerService.js')
+      await svc.RegisterInClaudeDesktop()
+      registered = true
+      setTimeout(() => registered = false, 3000)
+    } catch (e) {
+      error = 'Failed to register: ' + (e?.message || e)
+    } finally {
+      registering = false
+    }
   }
 
   async function loadMCPConfig() {
@@ -192,8 +210,12 @@
     {#if mcpEndpoint}
       <section class="space-y-3">
         <h3 class="text-sm font-semibold text-ck-gold uppercase tracking-wide">MCP Skills Server</h3>
-        <p class="text-xs text-ck-dim">Add this to your <code class="text-ck-rose">claude_desktop_config.json</code> to expose skills to Claude Desktop:</p>
+        <p class="text-xs text-ck-dim">Expose skills to Claude Desktop via MCP.</p>
         <pre class="px-3 py-2 bg-ck-dark border border-gray-700 rounded-md text-xs text-green-400 font-mono overflow-x-auto">{`"claude-kit": { "url": "${mcpEndpoint}" }`}</pre>
+        <button onclick={registerInClaudeDesktop} disabled={registering}
+          class="w-full py-2 bg-ck-dark border border-ck-rose text-ck-rose text-sm font-semibold rounded-md hover:bg-ck-rose hover:text-white transition-colors disabled:opacity-50">
+          {#if registered}Registered!{:else if registering}Registering...{:else}Register in Claude Desktop{/if}
+        </button>
       </section>
     {/if}
 
