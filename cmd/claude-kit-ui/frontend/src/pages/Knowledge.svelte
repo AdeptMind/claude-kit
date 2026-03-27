@@ -12,6 +12,8 @@
   let selectedEdges = $state([])
   let breadcrumb = $state([])
   let stats = $state(null)
+  let dimensions = $state([])
+  let activeDimensions = $state(new Set())
   let focusedIndex = $state(-1)
   let debounceTimer = null
 
@@ -27,6 +29,7 @@
 
   $effect(() => {
     loadNodes()
+    loadDimensions()
     checkEmbedder()
   })
 
@@ -40,6 +43,22 @@
       nodes = []
     }
     loading = false
+  }
+
+  async function loadDimensions() {
+    try {
+      const svc = await import('../../wailsjs/go/main/KnowledgeService.js')
+      dimensions = (await svc.ListDimensions()) || []
+    } catch { dimensions = [] }
+  }
+
+  function toggleDimension(dimId) {
+    const next = new Set(activeDimensions)
+    if (next.has(dimId)) next.delete(dimId)
+    else next.add(dimId)
+    activeDimensions = next
+    // Re-filter — for now just reload
+    loadNodes()
   }
 
   async function checkEmbedder() {
@@ -191,6 +210,25 @@
     <div class="flex items-center gap-2 px-4 py-2 mb-4 bg-ck-gold/10 border border-ck-gold/30 rounded-lg text-sm text-ck-gold">
       <span>Semantic search unavailable — install Ollama for AI-powered search</span>
       <button onclick={dismissBanner} class="ml-auto text-ck-dim hover:text-white">✕</button>
+    </div>
+  {/if}
+
+  <!-- Dimension pills -->
+  {#if dimensions.length > 0}
+    <div class="flex items-center gap-2 mb-4 overflow-x-auto pb-1" style="mask-image: linear-gradient(to right, black 90%, transparent);">
+      {#each dimensions as dim}
+        <button
+          onclick={() => toggleDimension(dim.id)}
+          role="checkbox"
+          aria-checked={activeDimensions.has(dim.id)}
+          class="flex-shrink-0 px-3 py-1 rounded-full text-xs font-medium transition-colors border
+            {activeDimensions.has(dim.id)
+              ? 'bg-ck-pink/20 text-ck-pink border-ck-pink/40'
+              : 'bg-ck-dark text-ck-dim border-gray-700 hover:border-gray-600'}"
+        >
+          {dim.name} <span class="opacity-60">({dim.nodeCount})</span>
+        </button>
+      {/each}
     </div>
   {/if}
 

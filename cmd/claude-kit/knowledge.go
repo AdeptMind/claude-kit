@@ -31,6 +31,7 @@ func openKnowledgeStore() (*knowledge.Store, error) {
 
 var searchSemantic bool
 var searchLimit int
+var searchDimension string
 
 var searchCmd = &cobra.Command{
 	Use:   "search <query>",
@@ -331,15 +332,49 @@ var reindexCmd = &cobra.Command{
 	},
 }
 
+// --- dimensions ---
+
+var dimensionsCmd = &cobra.Command{
+	Use:   "dimensions",
+	Short: "List all dimensions",
+	Aliases: []string{"dims"},
+	RunE: func(cmd *cobra.Command, args []string) error {
+		store, err := openKnowledgeStore()
+		if err != nil {
+			return err
+		}
+		defer store.Close()
+
+		ctx := context.Background()
+		dims, err := store.ListDimensions(ctx)
+		if err != nil {
+			return err
+		}
+
+		if len(dims) == 0 {
+			fmt.Println("No dimensions defined.")
+			return nil
+		}
+
+		bold := lipgloss.NewStyle().Bold(true)
+		fmt.Println(bold.Render("Dimensions"))
+		for _, d := range dims {
+			fmt.Printf("  %-20s  %d nodes  %s\n", d.Name, d.NodeCount, d.ID)
+		}
+		return nil
+	},
+}
+
 func init() {
 	searchCmd.Flags().BoolVar(&searchSemantic, "semantic", false, "Use AI-powered semantic search")
 	searchCmd.Flags().IntVar(&searchLimit, "limit", 10, "Maximum number of results")
+	searchCmd.Flags().StringVar(&searchDimension, "dimension", "", "Filter by dimension name")
 
 	kgAddCmd.Flags().StringVar(&kgAddType, "type", "note", "Node type (note, decision, pattern, concept, bug, reference)")
 
 	linkCmd.Flags().StringVar(&linkType, "type", "related", "Edge type (related, motivated_by, depends_on, supersedes, implements, contradicts)")
 	linkCmd.Flags().StringVar(&linkExplain, "explain", "", "Explanation for the relationship")
 
-	knowledgeCmd.AddCommand(searchCmd, kgAddCmd, showCmd, linkCmd, statsCmd, reindexCmd)
+	knowledgeCmd.AddCommand(searchCmd, kgAddCmd, showCmd, linkCmd, statsCmd, reindexCmd, dimensionsCmd)
 	rootCmd.AddCommand(knowledgeCmd)
 }

@@ -196,6 +196,47 @@ func RegisterKnowledgeTools(server *mcp.Server, store *knowledge.Store, emb embe
 		}
 		return jsonResult(result), nil, nil
 	})
+
+	// --- Dimension tools ---
+
+	type CreateDimensionArgs struct {
+		Name        string `json:"name"`
+		Description string `json:"description,omitempty"`
+	}
+	mcp.AddTool(server, &mcp.Tool{
+		Name:        "kg_createDimension",
+		Description: "Create a new dimension (tag/category) for organizing knowledge nodes.",
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, args CreateDimensionArgs) (*mcp.CallToolResult, any, error) {
+		dim := &knowledge.Dimension{Name: args.Name, Description: args.Description}
+		if err := store.CreateDimension(ctx, dim); err != nil {
+			return nil, nil, err
+		}
+		return textResult(fmt.Sprintf("Created dimension %s (%s)", dim.ID, dim.Name)), nil, nil
+	})
+
+	mcp.AddTool(server, &mcp.Tool{
+		Name:        "kg_queryDimensions",
+		Description: "List all dimensions with their node counts.",
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, _ EmptyArgs) (*mcp.CallToolResult, any, error) {
+		dims, err := store.ListDimensions(ctx)
+		if err != nil {
+			return nil, nil, err
+		}
+		return jsonResult(dims), nil, nil
+	})
+
+	type DeleteDimensionArgs struct {
+		ID string `json:"id"`
+	}
+	mcp.AddTool(server, &mcp.Tool{
+		Name:        "kg_deleteDimension",
+		Description: "Delete a dimension and remove it from all nodes.",
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, args DeleteDimensionArgs) (*mcp.CallToolResult, any, error) {
+		if err := store.DeleteDimension(ctx, args.ID); err != nil {
+			return nil, nil, err
+		}
+		return textResult(fmt.Sprintf("Deleted dimension %s", args.ID)), nil, nil
+	})
 }
 
 func textResult(text string) *mcp.CallToolResult {
