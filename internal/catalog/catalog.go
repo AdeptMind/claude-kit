@@ -597,6 +597,58 @@ func PatchSettingsTeammateMode(targetDir, mode string) error {
 	return os.WriteFile(path, out, 0o644)
 }
 
+// ReadSettingsPermissionMode reads settings.json and returns the current
+// permissions.defaultMode value (defaults to "default" if absent).
+func ReadSettingsPermissionMode(targetDir string) (string, error) {
+	path := filepath.Join(targetDir, "settings.json")
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return "", fmt.Errorf("reading settings.json: %w", err)
+	}
+
+	var settings map[string]interface{}
+	if err := json.Unmarshal(data, &settings); err != nil {
+		return "", fmt.Errorf("parsing settings.json: %w", err)
+	}
+
+	if perms, ok := settings["permissions"].(map[string]interface{}); ok {
+		if mode, ok := perms["defaultMode"].(string); ok && mode != "" {
+			return mode, nil
+		}
+	}
+	return "default", nil
+}
+
+// PatchSettingsPermissionMode reads the installed settings.json and sets the
+// permissions.defaultMode field to the given value.
+func PatchSettingsPermissionMode(targetDir, mode string) error {
+	path := filepath.Join(targetDir, "settings.json")
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return fmt.Errorf("reading settings.json: %w", err)
+	}
+
+	var settings map[string]interface{}
+	if err := json.Unmarshal(data, &settings); err != nil {
+		return fmt.Errorf("parsing settings.json: %w", err)
+	}
+
+	perms, ok := settings["permissions"].(map[string]interface{})
+	if !ok {
+		perms = make(map[string]interface{})
+		settings["permissions"] = perms
+	}
+	perms["defaultMode"] = mode
+
+	out, err := json.MarshalIndent(settings, "", "  ")
+	if err != nil {
+		return fmt.Errorf("marshalling settings.json: %w", err)
+	}
+	out = append(out, '\n')
+
+	return os.WriteFile(path, out, 0o644)
+}
+
 // PatchRalphWorktrees modifies the installed ralph.md to enable git worktree
 // isolation for teammate spawning. It updates Phase C to spawn with worktrees,
 // inserts a new Phase D (Merge) between Implement and Validate, and renames

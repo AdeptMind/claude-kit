@@ -216,6 +216,26 @@ func runInteractiveInit() error {
 		return err
 	}
 
+	// Step 2e: Permission mode
+	permissionMode := "default"
+	permModeForm := huh.NewForm(
+		huh.NewGroup(
+			huh.NewSelect[string]().
+				Title("Permission mode").
+				Options(
+					huh.NewOption("default -- ask before every action", "default"),
+					huh.NewOption("acceptEdits -- auto-edit files, ask for bash commands", "acceptEdits"),
+					huh.NewOption("plan -- read-only exploration, propose plans without editing", "plan"),
+					huh.NewOption("auto -- execute with AI safety checks, minimal prompts", "auto"),
+					huh.NewOption("bypassPermissions -- no checks (isolated environments only)", "bypassPermissions"),
+				).
+				Value(&permissionMode),
+		),
+	).WithTheme(ckTheme())
+	if err := permModeForm.Run(); err != nil {
+		return err
+	}
+
 	// Step 3: Auto-compute all defaults from selected agents
 	selectedSet := make(map[string]bool)
 	for _, name := range selectedAgents {
@@ -325,6 +345,13 @@ func runInteractiveInit() error {
 			dimStyle.Render(policyProfile),
 		))
 	}
+	if permissionMode != "default" {
+		fmt.Println(fmt.Sprintf("    %s %s: %s",
+			bullet,
+			accentStyle.Render("permission mode"),
+			dimStyle.Render(permissionMode),
+		))
+	}
 
 	fmt.Println()
 
@@ -351,6 +378,11 @@ func runInteractiveInit() error {
 	}
 	if err := catalog.PatchSettingsTeammateMode(targetDir, teammateMode); err != nil {
 		return fmt.Errorf("patching teammate mode: %w", err)
+	}
+	if permissionMode != "default" {
+		if err := catalog.PatchSettingsPermissionMode(targetDir, permissionMode); err != nil {
+			return fmt.Errorf("patching permission mode: %w", err)
+		}
 	}
 	if !isExisting {
 		fmt.Println(fmt.Sprintf("  %s %s", checkMark, accentStyle.Render("Installed CLAUDE.md + settings.json")))
