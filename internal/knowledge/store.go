@@ -7,13 +7,15 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/AdeptMind/infra-tool/claude-cli/internal/embedder"
 	_ "modernc.org/sqlite"
 )
 
 // Store provides access to the knowledge graph SQLite database.
 type Store struct {
-	db      *sql.DB
+	db       *sql.DB
 	vecAvail bool // true if sqlite-vec extension loaded
+	embedder embedder.Embedder
 }
 
 // Open opens (or creates) the knowledge database at dbPath.
