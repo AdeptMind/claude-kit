@@ -94,6 +94,15 @@ func (s *Store) DeleteNode(ctx context.Context, id string) error {
 	return nil
 }
 
+// UpdateNodeEmbedding updates only the embedding column for a node.
+func (s *Store) UpdateNodeEmbedding(ctx context.Context, id string, vec []float32) error {
+	_, err := s.db.ExecContext(ctx,
+		`UPDATE nodes SET embedding = ? WHERE id = ?`,
+		EncodeEmbedding(vec), id,
+	)
+	return err
+}
+
 // ListNodes returns a paginated list of node summaries, sorted by most recent.
 func (s *Store) ListNodes(ctx context.Context, opts ListOpts) ([]NodeSummary, error) {
 	if opts.Limit <= 0 {

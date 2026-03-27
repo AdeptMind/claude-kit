@@ -15,6 +15,9 @@ import (
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
 	"github.com/AdeptMind/infra-tool/claude-cli/internal/catalog"
+	"github.com/AdeptMind/infra-tool/claude-cli/internal/config"
+	"github.com/AdeptMind/infra-tool/claude-cli/internal/embedder"
+	"github.com/AdeptMind/infra-tool/claude-cli/internal/knowledge"
 )
 
 // SkillArgs is the input schema for every skill tool.
@@ -24,11 +27,12 @@ type SkillArgs struct {
 
 // MCPServerService runs a local MCP SSE server exposing installed skills as tools.
 type MCPServerService struct {
-	mu         sync.Mutex
-	server     *mcp.Server
-	listener   net.Listener
-	httpServer *http.Server
-	toolNames  []string
+	mu             sync.Mutex
+	server         *mcp.Server
+	listener       net.Listener
+	httpServer     *http.Server
+	toolNames      []string
+	knowledgeStore *knowledge.Store
 }
 
 func (s *MCPServerService) startup(_ context.Context) {
@@ -207,8 +211,38 @@ func writeProfileFiles(dir string, form ProfileForm) {
 	}
 }
 
+// LoadKnowledge initializes the knowledge store and registers knowledge tools.
+func (s *MCPServerService) LoadKnowledge() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	if s.knowledgeStore != nil {
+		s.knowledgeStore.Close()
+	}
+
+	dbPath := filepath.Join(config.DataDir(), "knowledge.sqlite")
+	store, err := knowledge.Open(dbPath)
+	if err != nil {
+		return fmt.Errorf("opening knowledge store: %w", err)
+	}
+	s.knowledgeStore = store
+
+	ctx := context.Background()
+	emb := embedder.AutoDetect(ctx)
+	if emb != nil {
+		store.SetEmbedder(emb)
+	}
+
+	RegisterKnowledgeTools(s.server, store, emb)
+	log.Printf("mcp-server: knowledge tools loaded (db=%s)", dbPath)
+	return nil
+}
+
 // Shutdown stops the HTTP server.
 func (s *MCPServerService) Shutdown() {
+	if s.knowledgeStore != nil {
+		s.knowledgeStore.Close()
+	}
 	if s.httpServer != nil {
 		s.httpServer.Close()
 	}
