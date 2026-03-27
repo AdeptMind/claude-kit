@@ -308,7 +308,9 @@ var reindexCmd = &cobra.Command{
 		var nodes []nodeInfo
 		for rows.Next() {
 			var n nodeInfo
-			rows.Scan(&n.id, &n.title, &n.content)
+			if err := rows.Scan(&n.id, &n.title, &n.content); err != nil {
+				continue
+			}
 			nodes = append(nodes, n)
 		}
 

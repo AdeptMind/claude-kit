@@ -2,18 +2,32 @@ package knowledge
 
 import (
 	"context"
+	"crypto/rand"
 	"database/sql"
 	"encoding/binary"
 	"fmt"
 	"math"
-	"math/rand"
+	"sync"
 	"time"
 
 	"github.com/oklog/ulid/v2"
 )
 
+var (
+	entropyMu sync.Mutex
+	entropy   = ulid.Monotonic(rand.Reader, 0)
+)
+
 func newID() string {
-	return ulid.MustNew(ulid.Timestamp(time.Now()), ulid.Monotonic(rand.New(rand.NewSource(time.Now().UnixNano())), 0)).String()
+	entropyMu.Lock()
+	defer entropyMu.Unlock()
+	id, err := ulid.New(ulid.Timestamp(time.Now()), entropy)
+	if err != nil {
+		// Reset entropy on overflow and retry
+		entropy = ulid.Monotonic(rand.Reader, 0)
+		id, _ = ulid.New(ulid.Timestamp(time.Now()), entropy)
+	}
+	return id.String()
 }
 
 func now() string {

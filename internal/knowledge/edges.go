@@ -9,18 +9,6 @@ import (
 // CreateEdge creates a relationship between two nodes.
 // Both nodes must exist. The combination (from, to, type) must be unique.
 func (s *Store) CreateEdge(ctx context.Context, edge *Edge) error {
-	// Validate both nodes exist
-	var count int
-	err := s.db.QueryRowContext(ctx,
-		`SELECT COUNT(*) FROM nodes WHERE id IN (?, ?)`, edge.FromNodeID, edge.ToNodeID,
-	).Scan(&count)
-	if err != nil {
-		return err
-	}
-	if count < 2 {
-		return fmt.Errorf("one or both nodes not found (from=%q, to=%q)", edge.FromNodeID, edge.ToNodeID)
-	}
-
 	edge.ID = newID()
 	ts := now()
 	edge.CreatedAt, _ = time.Parse(time.RFC3339Nano, ts)
@@ -29,7 +17,7 @@ func (s *Store) CreateEdge(ctx context.Context, edge *Edge) error {
 		edge.Type = "related"
 	}
 
-	_, err = s.db.ExecContext(ctx,
+	_, err := s.db.ExecContext(ctx,
 		`INSERT INTO edges (id, from_node_id, to_node_id, type, explanation, created_at)
 		 VALUES (?, ?, ?, ?, ?, ?)`,
 		edge.ID, edge.FromNodeID, edge.ToNodeID, edge.Type, edge.Explanation, ts,

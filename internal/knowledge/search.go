@@ -159,7 +159,14 @@ func (s *Store) SearchHybrid(ctx context.Context, query string, vector []float32
 		return kwResults, nil
 	}
 
-	semResults, _ := s.searchSemanticBruteForce(ctx, vector, limit*2)
+	semResults, err := s.searchSemanticBruteForce(ctx, vector, limit*2)
+	if err != nil {
+		// Semantic failed — fall back to keyword-only
+		if len(kwResults) > limit {
+			kwResults = kwResults[:limit]
+		}
+		return kwResults, nil
+	}
 
 	// RRF merge: score = sum(1 / (k + rank)) where k=60
 	const k = 60.0
@@ -230,9 +237,17 @@ func cosineSimilarity(a, b []float32) float64 {
 // GetStats returns aggregate statistics about the knowledge graph.
 func (s *Store) GetStats(ctx context.Context) (*Stats, error) {
 	var st Stats
-	s.db.QueryRowContext(ctx, `SELECT COUNT(*) FROM nodes`).Scan(&st.Nodes)
-	s.db.QueryRowContext(ctx, `SELECT COUNT(*) FROM edges`).Scan(&st.Edges)
-	s.db.QueryRowContext(ctx, `SELECT COUNT(*) FROM dimensions`).Scan(&st.Dimensions)
-	s.db.QueryRowContext(ctx, `SELECT COUNT(*) FROM nodes WHERE embedding IS NOT NULL`).Scan(&st.NodesWithEmbedding)
+	if err := s.db.QueryRowContext(ctx, `SELECT COUNT(*) FROM nodes`).Scan(&st.Nodes); err != nil {
+		return nil, fmt.Errorf("counting nodes: %w", err)
+	}
+	if err := s.db.QueryRowContext(ctx, `SELECT COUNT(*) FROM edges`).Scan(&st.Edges); err != nil {
+		return nil, fmt.Errorf("counting edges: %w", err)
+	}
+	if err := s.db.QueryRowContext(ctx, `SELECT COUNT(*) FROM dimensions`).Scan(&st.Dimensions); err != nil {
+		return nil, fmt.Errorf("counting dimensions: %w", err)
+	}
+	if err := s.db.QueryRowContext(ctx, `SELECT COUNT(*) FROM nodes WHERE embedding IS NOT NULL`).Scan(&st.NodesWithEmbedding); err != nil {
+		return nil, fmt.Errorf("counting embeddings: %w", err)
+	}
 	return &st, nil
 }
