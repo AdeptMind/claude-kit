@@ -160,6 +160,32 @@ func (s *Store) getNodeDimensionNames(ctx context.Context, nodeID string) []stri
 	return names
 }
 
+// ListDimensions returns all dimensions with their node counts.
+func (s *Store) ListDimensions(ctx context.Context) ([]DimensionWithCount, error) {
+	rows, err := s.db.QueryContext(ctx, `
+		SELECT d.id, d.name, d.description, d.created_at, COUNT(nd.node_id) as cnt
+		FROM dimensions d
+		LEFT JOIN node_dimensions nd ON nd.dimension_id = d.id
+		GROUP BY d.id
+		ORDER BY d.name`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var dims []DimensionWithCount
+	for rows.Next() {
+		var d DimensionWithCount
+		var createdAt string
+		if err := rows.Scan(&d.ID, &d.Name, &d.Description, &createdAt, &d.NodeCount); err != nil {
+			return nil, err
+		}
+		d.CreatedAt, _ = time.Parse(time.RFC3339Nano, createdAt)
+		dims = append(dims, d)
+	}
+	return dims, rows.Err()
+}
+
 // EncodeEmbedding serializes a float32 slice to little-endian bytes.
 func EncodeEmbedding(v []float32) []byte {
 	if len(v) == 0 {

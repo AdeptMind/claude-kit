@@ -11,6 +11,7 @@
   import Stories from './pages/Stories.svelte'
   import Settings from './pages/Settings.svelte'
   import Chat from './pages/Chat.svelte'
+  import Knowledge from './pages/Knowledge.svelte'
 
   const pages = {
     dashboard: Dashboard,
@@ -18,6 +19,7 @@
     files: FileManager,
     profile: ProfileEditor,
     workflow: WorkflowLauncher,
+    knowledge: Knowledge,
     chat: Chat,
     settings: Settings,
   }
@@ -92,6 +94,9 @@
       e.preventDefault()
       navigateTo('files')
       window.dispatchEvent(new CustomEvent('ck:file-search'))
+    } else if ((e.key === 'g' || e.key === 'G') && !isEditing()) {
+      e.preventDefault()
+      navigateTo('knowledge')
     } else if (e.key === 'e' || e.key === 'E') {
       e.preventDefault()
       window.dispatchEvent(new CustomEvent('ck:edit-story'))
