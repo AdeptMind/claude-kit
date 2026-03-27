@@ -1,6 +1,7 @@
 <script>
   import { currentPage, navigateTo } from './stores/navigation.js'
   import { currentProject, switchProjectPrev, switchProjectNext, projectFinderOpen } from './stores/project.js'
+  import { zoomLevel, zoomIn, zoomOut, zoomReset } from './stores/zoom.js'
   import TopBar from './components/TopBar.svelte'
   import Sidebar from './Sidebar.svelte'
   import Dashboard from './pages/Dashboard.svelte'
@@ -23,6 +24,9 @@
 
   let activePage = $state('dashboard')
   currentPage.subscribe(v => activePage = v)
+
+  let zoom = $state(1)
+  zoomLevel.subscribe(v => zoom = v)
 
   // Load skills into MCP server when project changes
   currentProject.subscribe(async (p) => {
@@ -51,6 +55,20 @@
     }
 
     if (!cmd) return
+
+    if (e.key === '=' || e.key === '+') {
+      e.preventDefault()
+      zoomIn()
+      return
+    } else if (e.key === '-') {
+      e.preventDefault()
+      zoomOut()
+      return
+    } else if (e.key === '0') {
+      e.preventDefault()
+      zoomReset()
+      return
+    }
 
     if (e.key === 'ArrowLeft') {
       e.preventDefault()
@@ -83,7 +101,10 @@
 
 <svelte:window on:keydown={handleGlobalKeydown} />
 
-<div class="flex flex-col h-screen bg-ck-bg text-white font-sans">
+<div
+  class="flex flex-col h-screen bg-ck-bg text-white font-sans origin-top-left"
+  style="transform: scale({zoom}); width: {100 / zoom}%; height: {100 / zoom}%"
+>
   <TopBar />
   <div class="flex flex-1 overflow-hidden">
     <Sidebar />
