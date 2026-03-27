@@ -70,3 +70,26 @@ func InstalledTemplatesDir() string {
 func IsWindows() bool {
 	return runtime.GOOS == "windows"
 }
+
+// DataDir returns the platform-appropriate user data directory for claude-kit.
+//
+//	macOS:   ~/Library/Application Support/claude-kit
+//	Linux:   ~/.local/share/claude-kit
+//	Windows: %APPDATA%/claude-kit
+func DataDir() string {
+	home, _ := os.UserHomeDir()
+	switch runtime.GOOS {
+	case "darwin":
+		return filepath.Join(home, "Library", "Application Support", "claude-kit")
+	case "windows":
+		if appData := os.Getenv("APPDATA"); appData != "" {
+			return filepath.Join(appData, "claude-kit")
+		}
+		return filepath.Join(home, "AppData", "Roaming", "claude-kit")
+	default: // linux and others
+		if xdg := os.Getenv("XDG_DATA_HOME"); xdg != "" {
+			return filepath.Join(xdg, "claude-kit")
+		}
+		return filepath.Join(home, ".local", "share", "claude-kit")
+	}
+}
