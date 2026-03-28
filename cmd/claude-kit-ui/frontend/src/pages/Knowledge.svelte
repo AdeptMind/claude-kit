@@ -321,8 +321,7 @@
           <div>
             <h2 class="text-lg font-bold text-white">{selectedNode.title}</h2>
             <div class="flex items-center gap-2 mt-1 text-xs text-ck-dim">
-              {@const style = getTypeStyle(selectedNode.type)}
-              <span class="{style.bg} {style.text} px-2 py-0.5 rounded">{selectedNode.type}</span>
+              <span class="{getTypeStyle(selectedNode.type).bg} {getTypeStyle(selectedNode.type).text} px-2 py-0.5 rounded">{selectedNode.type}</span>
               <span>{selectedNode.id}</span>
               <span>{relativeDate(selectedNode.createdAt)}</span>
             </div>
