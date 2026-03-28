@@ -148,7 +148,10 @@ func (s *MCPServerService) RegisterInClaudeDesktop() error {
 	if !ok {
 		servers = map[string]any{}
 	}
-	servers["claude-kit"] = map[string]any{"url": endpoint}
+	servers["claude-kit"] = map[string]any{
+		"url":       endpoint,
+		"transport": "sse",
+	}
 	cfg["mcpServers"] = servers
 
 	// Write back
