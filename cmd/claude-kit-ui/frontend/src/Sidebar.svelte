@@ -14,6 +14,7 @@
     { id: 'files', icon: '\u{1F4C1}', label: 'Files' },
     { id: 'profile', icon: '\u{1F464}', label: 'Profile' },
     { id: 'workflow', icon: '\u{1F504}', label: 'Workflow' },
+    { id: 'knowledge', icon: '\u{1F9E0}', label: 'Knowledge' },
     { id: 'chat', icon: '\u{1F4AC}', label: 'Chat' },
     { id: 'settings', icon: '\u2699\uFE0F', label: 'Settings' },
   ]

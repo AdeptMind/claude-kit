@@ -24,6 +24,7 @@ func main() {
 	initService := &InitService{}
 	mcpService := &MCPService{}
 	mcpServerService := &MCPServerService{}
+	knowledgeService := &KnowledgeService{}
 	settingsService := &SettingsService{}
 
 	err := wails.Run(&options.App{
@@ -41,9 +42,11 @@ func main() {
 			terminalService.startup(ctx)
 			mcpService.startup(ctx)
 			mcpServerService.startup(ctx)
+			knowledgeService.startup(ctx)
 		},
 		OnShutdown: func(ctx context.Context) {
 			terminalService.StopAll()
+			knowledgeService.shutdown()
 			mcpServerService.Shutdown()
 		},
 		Bind: []interface{}{
@@ -58,6 +61,7 @@ func main() {
 			initService,
 			mcpService,
 			mcpServerService,
+			knowledgeService,
 			settingsService,
 		},
 	})
