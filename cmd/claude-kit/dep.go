@@ -25,12 +25,15 @@ type Dependency struct {
 	Name                 string
 	Description          string
 	Type                 DepType
-	Source               string // repo or package identifier
-	PluginMarketplaceCmd string // for plugin type
-	PluginInstallCmd     string // for plugin type
-	InstallCmd           string // for auto-installable types
-	PostInstallCmd       string // command to run after installation
-	PostInstallMsg       string // message to display after installation
+	Source               string  // repo or package identifier
+	VersionCmd           string  // command to get installed version (e.g., "rtk --version")
+	MinVersion           string  // minimum required version (semver)
+	PluginKey            string  // key in installed_plugins.json (e.g., "claude-mem@thedotmack")
+	PluginMarketplaceCmd string  // for plugin type
+	PluginInstallCmd     string  // for plugin type
+	InstallCmd           string  // for auto-installable types
+	PostInstallCmd       string  // command to run after installation
+	PostInstallMsg       string  // message to display after installation
 }
 
 var depRegistry = []Dependency{
@@ -39,6 +42,8 @@ var depRegistry = []Dependency{
 		Description:    "Token optimizer — compresses command outputs for 60-90% savings",
 		Type:           DepTypeBrew,
 		Source:         "rtk",
+		VersionCmd:     "rtk --version",
+		MinVersion:     "0.37.0",
 		PostInstallCmd: "rtk init --global --auto-patch",
 		PostInstallMsg: "Run 'rtk gain' to verify installation and track savings.",
 	},
@@ -47,6 +52,7 @@ var depRegistry = []Dependency{
 		Description:          "Persistent memory compression system for Claude Code",
 		Type:                 DepTypePlugin,
 		Source:               "thedotmack/claude-mem",
+		PluginKey:            "claude-mem@thedotmack",
 		PluginMarketplaceCmd: "/plugin marketplace add thedotmack/claude-mem",
 		PluginInstallCmd:     "/plugin install claude-mem",
 	},
@@ -185,7 +191,11 @@ func autoInstallDep(dep Dependency) error {
 	switch dep.Type {
 	case DepTypeBrew:
 		cmd = "brew"
-		args = []string{"install", dep.Source}
+		if isBrewInstalled(dep.Source) {
+			args = []string{"upgrade", dep.Source}
+		} else {
+			args = []string{"install", dep.Source}
+		}
 	case DepTypeNpm:
 		cmd = "npm"
 		args = []string{"install", "-g", dep.Source}

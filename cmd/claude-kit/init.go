@@ -448,6 +448,9 @@ func runInteractiveInit() error {
 		}
 	}
 
+	// Check recommended dependencies (rtk, claude-mem, etc.)
+	CheckDependencies()
+
 	fmt.Println()
 	fmt.Println(successStyle.Render(fmt.Sprintf("  %s Setup complete!", arrow)))
 	fmt.Println(dimStyle.Render("  Run 'ck add' for more agents, 'ck remove' to remove components."))

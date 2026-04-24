@@ -118,6 +118,9 @@ func runSync(cmd *cobra.Command, args []string) error {
 		}
 	}
 
+	// Check recommended dependencies (rtk, claude-mem, etc.)
+	CheckDependencies()
+
 	return nil
 }
 
