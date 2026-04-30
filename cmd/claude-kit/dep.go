@@ -18,6 +18,7 @@ const (
 	DepTypeNpm    DepType = "npm"
 	DepTypeGo     DepType = "go"
 	DepTypeShell  DepType = "shell"
+	DepTypePip    DepType = "pip"
 )
 
 // Dependency represents an installable tool or plugin.
@@ -169,8 +170,34 @@ func runDepInstall() error {
 		fmt.Println()
 	}
 
+	// Optional: Graphify knowledge graph
+	graphifyInstalled := false
+	if ok, err := promptGraphifyInstall(); err == nil && ok {
+		fmt.Println(sectionHeader("Installing Graphify"))
+		if err := autoInstallDep(graphifyDep); err != nil {
+			fmt.Println(errorStyle.Render(fmt.Sprintf("  Failed to install graphify: %v", err)))
+		} else {
+			fmt.Println(fmt.Sprintf("  %s %s", checkMark, accentStyle.Render("graphify")))
+			if graphifyDep.PostInstallCmd != "" {
+				fmt.Println(dimStyle.Render(fmt.Sprintf("  Running post-install: %s", graphifyDep.PostInstallCmd)))
+				if err := runPostInstall(graphifyDep.PostInstallCmd); err != nil {
+					fmt.Println(warnStyle.Render(fmt.Sprintf("  Post-install warning: %v", err)))
+				} else {
+					fmt.Println(fmt.Sprintf("  %s Post-install complete", checkMark))
+				}
+			}
+			if graphifyDep.PostInstallMsg != "" {
+				fmt.Println(dimStyle.Render(fmt.Sprintf("  %s", graphifyDep.PostInstallMsg)))
+			}
+			graphifyInstalled = true
+		}
+	}
+
 	// Summary
 	installed := len(autoDeps)
+	if graphifyInstalled {
+		installed++
+	}
 	manual := len(pluginDeps)
 	parts := make([]string, 0, 2)
 	if installed > 0 {
@@ -205,6 +232,9 @@ func autoInstallDep(dep Dependency) error {
 	case DepTypeShell:
 		cmd = "sh"
 		args = []string{"-c", dep.InstallCmd}
+	case DepTypePip:
+		cmd = "pip3"
+		args = []string{"install", dep.Source}
 	default:
 		return fmt.Errorf("unsupported dep type: %s", dep.Type)
 	}
