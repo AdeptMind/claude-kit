@@ -80,9 +80,6 @@ func runMCPServer() error {
 }
 
 // registerKnowledgeToolsStdio registers all kg_* tools on a stdio MCP server.
-// This duplicates the tool registration from knowledge_tools.go in cmd/claude-kit-ui/
-// because that file is in a different main package. The handlers delegate to the
-// same knowledge.Store methods.
 func registerKnowledgeToolsStdio(server *mcp.Server, store *knowledge.Store, emb embedder.Embedder) {
 	type CreateNodeArgs struct {
 		Title   string `json:"title"`
