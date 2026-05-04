@@ -109,7 +109,7 @@ When the user sends a message **without a slash command**, default to `/ralph`. 
 | `ck list` | Available vs installed components | `--available`, `--installed` |
 | `ck sync` | Update installed components + refresh docs-index | — |
 | `ck docs` | Generate docs-index.md via stack detection | `--refresh` |
-| `ck dep install` | Install recommended dependencies interactively | — |
+| `ck dep install` | Install all dependencies (incl. plugins via `claude` CLI) | — |
 | `ck model download` | Download Model2Vec embedding model (potion-code-16M) | — |
 | `ck knowledge index [source]` | Index sources into KG via CocoIndex (incremental) | `--full` |
 | `ck knowledge search <query>` | Search the knowledge graph | `--semantic`, `--limit` |

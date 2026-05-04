@@ -21,8 +21,7 @@ func CheckDependencies() {
 			if !isPluginInstalled(dep.PluginKey) {
 				allOk = false
 				fmt.Println(warnStyle.Render(fmt.Sprintf("  ⚠ %s is not installed", dep.Name)))
-				fmt.Println(dimStyle.Render(fmt.Sprintf("    Run in Claude Code: %s", dep.PluginMarketplaceCmd)))
-				fmt.Println(dimStyle.Render(fmt.Sprintf("    Then:               %s", dep.PluginInstallCmd)))
+				fmt.Println(dimStyle.Render("    Run 'ck dep install' to install it."))
 			}
 		default:
 			installed, version := getInstalledVersion(dep)

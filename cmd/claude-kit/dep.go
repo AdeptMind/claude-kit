@@ -71,7 +71,7 @@ var depRegistry = []Dependency{
 		Type:           DepTypeShell,
 		Source:         "cocoindex[sqlite]",
 		VersionCmd:     "cocoindex --version",
-		InstallCmd:     "pip3 install -U 'cocoindex[sqlite]'",
+		InstallCmd:     "pipx install 'cocoindex[sqlite]'",
 		PostInstallMsg: "Run 'ck knowledge index .' to index your first project.",
 	},
 	{
@@ -105,9 +105,7 @@ var depInstallCmd = &cobra.Command{
 	Use:   "install",
 	Short: "Install recommended dependencies interactively",
 	Long: `Interactively select and install recommended dependencies.
-
-Plugins require manual steps (slash commands in Claude Code).
-Other dependency types (brew, npm, go, shell) are installed automatically.`,
+All dependency types (brew, npm, go, shell, plugins) are installed automatically.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return runDepInstall()
 	},
@@ -125,7 +123,7 @@ func runDepInstall() error {
 	// Build multi-select options from registry
 	options := make([]huh.Option[int], 0, len(depRegistry))
 	for i, dep := range depRegistry {
-		label := fmt.Sprintf("%s -- %s", dep.Name, dep.Description)
+		label := fmt.Sprintf("%s\n    %s", accentStyle.Render(dep.Name), dimStyle.Render(dep.Description))
 		options = append(options, huh.NewOption(label, i))
 	}
 
@@ -148,25 +146,16 @@ func runDepInstall() error {
 		return nil
 	}
 
-	// Separate plugin deps (manual) from auto-installable ones
-	var pluginDeps []Dependency
-	var autoDeps []Dependency
+	// Install all selected dependencies
+	installed := 0
 	for _, idx := range selected {
 		dep := depRegistry[idx]
-		if dep.Type == DepTypePlugin {
-			pluginDeps = append(pluginDeps, dep)
-		} else {
-			autoDeps = append(autoDeps, dep)
-		}
-	}
-
-	// Auto-install non-plugin deps
-	for _, dep := range autoDeps {
 		fmt.Println(sectionHeader(fmt.Sprintf("Installing %s", dep.Name)))
 		if err := autoInstallDep(dep); err != nil {
 			fmt.Println(errorStyle.Render(fmt.Sprintf("  Failed to install %s: %v", dep.Name, err)))
 			continue
 		}
+		installed++
 		fmt.Println(fmt.Sprintf("  %s %s", checkMark, accentStyle.Render(dep.Name)))
 
 		if dep.PostInstallCmd != "" {
@@ -180,28 +169,6 @@ func runDepInstall() error {
 		if dep.PostInstallMsg != "" {
 			fmt.Println(dimStyle.Render(fmt.Sprintf("  %s", dep.PostInstallMsg)))
 		}
-	}
-
-	// Print manual plugin instructions
-	if len(pluginDeps) > 0 {
-		fmt.Println(sectionHeader("Plugin Setup (manual steps in Claude Code)"))
-		fmt.Println(dimStyle.Render("  Run these slash commands inside a Claude Code session:"))
-		fmt.Println()
-
-		step := 1
-		for _, dep := range pluginDeps {
-			fmt.Println(fmt.Sprintf("  %s %s",
-				accentStyle.Render(fmt.Sprintf("%d.", step)),
-				infoStyle.Render(dep.PluginMarketplaceCmd),
-			))
-			step++
-			fmt.Println(fmt.Sprintf("  %s %s",
-				accentStyle.Render(fmt.Sprintf("%d.", step)),
-				infoStyle.Render(dep.PluginInstallCmd),
-			))
-			step++
-		}
-		fmt.Println()
 	}
 
 	// Optional: Graphify knowledge graph
@@ -228,19 +195,10 @@ func runDepInstall() error {
 	}
 
 	// Summary
-	installed := len(autoDeps)
 	if graphifyInstalled {
 		installed++
 	}
-	manual := len(pluginDeps)
-	parts := make([]string, 0, 2)
-	if installed > 0 {
-		parts = append(parts, fmt.Sprintf("%d installed", installed))
-	}
-	if manual > 0 {
-		parts = append(parts, fmt.Sprintf("%d require manual setup", manual))
-	}
-	fmt.Println(successStyle.Render(fmt.Sprintf("  %s Done! %s", arrow, strings.Join(parts, ", "))))
+	fmt.Println(successStyle.Render(fmt.Sprintf("  %s Done! %d installed", arrow, installed)))
 
 	return nil
 }
@@ -250,6 +208,8 @@ func autoInstallDep(dep Dependency) error {
 	var args []string
 
 	switch dep.Type {
+	case DepTypePlugin:
+		return autoInstallPlugin(dep)
 	case DepTypeBrew:
 		cmd = "brew"
 		if isBrewInstalled(dep.Source) {
@@ -279,6 +239,25 @@ func autoInstallDep(dep Dependency) error {
 	}
 
 	out, err := exec.Command(cmd, args...).CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("%s: %s", err, strings.TrimSpace(string(out)))
+	}
+	return nil
+}
+
+func autoInstallPlugin(dep Dependency) error {
+	if _, err := exec.LookPath("claude"); err != nil {
+		return fmt.Errorf("claude CLI not found in PATH")
+	}
+
+	// Add marketplace (non-fatal — may already be registered)
+	exec.Command("claude", "plugin", "marketplace", "add", dep.Source).CombinedOutput()
+
+	// Extract plugin ID from PluginInstallCmd (last token after "/plugin install")
+	parts := strings.Fields(dep.PluginInstallCmd)
+	pluginID := parts[len(parts)-1]
+
+	out, err := exec.Command("claude", "plugin", "install", pluginID).CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("%s: %s", err, strings.TrimSpace(string(out)))
 	}

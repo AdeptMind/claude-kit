@@ -422,7 +422,7 @@ make uninstall          # Remove everything
 ### Optional dependencies
 
 ```bash
-ck dep install          # Interactive picker — rtk, tree-sitter, cocoindex, claude-mem
+ck dep install          # Interactive picker — all deps including plugins (auto-installed via claude CLI)
 ck model download       # Model2Vec embeddings for semantic search
 ```
 
