@@ -9,10 +9,11 @@ import (
 var graphifyDep = Dependency{
 	Name:           "graphify",
 	Description:    "Knowledge graph builder — queryable graph from your entire codebase",
-	Type:           DepTypePip,
+	Type:           DepTypeShell,
 	Source:         "graphifyy",
 	VersionCmd:     "graphify --version",
-	PostInstallCmd: "graphify install",
+	InstallCmd:     "pipx install graphifyy",
+	PostInstallCmd: "$HOME/.local/bin/graphify install",
 	PostInstallMsg: "Run '/graphify' in Claude Code to build your first knowledge graph.",
 }
 

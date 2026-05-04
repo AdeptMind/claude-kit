@@ -57,6 +57,40 @@ var depRegistry = []Dependency{
 		PluginMarketplaceCmd: "/plugin marketplace add thedotmack/claude-mem",
 		PluginInstallCmd:     "/plugin install claude-mem",
 	},
+	{
+		Name:        "tree-sitter",
+		Description: "Code parser — AST-based chunking for semantic code search",
+		Type:        DepTypeBrew,
+		Source:      "tree-sitter",
+		VersionCmd:  "tree-sitter --version",
+		MinVersion:  "0.24.0",
+	},
+	{
+		Name:           "cocoindex",
+		Description:    "Incremental indexer — keeps knowledge graph fresh from code, S3, Drive",
+		Type:           DepTypeShell,
+		Source:         "cocoindex[sqlite]",
+		VersionCmd:     "cocoindex --version",
+		InstallCmd:     "pip3 install -U 'cocoindex[sqlite]'",
+		PostInstallMsg: "Run 'ck knowledge index .' to index your first project.",
+	},
+	{
+		Name:           "context-mode",
+		Description:    "Context compressor — sandboxes tool outputs in SQLite, -98% on logs",
+		Type:           DepTypeNpm,
+		Source:         "context-mode",
+		VersionCmd:     "context-mode --version",
+		PostInstallMsg: "Hooks auto-registered. Tool outputs are now compressed before entering context.",
+	},
+	{
+		Name:                 "token-optimizer",
+		Description:          "Token savings tracker — structure maps, delta mode, loop detection",
+		Type:                 DepTypePlugin,
+		Source:               "alexgreensh/token-optimizer",
+		PluginKey:            "token-optimizer@alexgreensh-token-optimizer",
+		PluginMarketplaceCmd: "/plugin marketplace add alexgreensh/token-optimizer",
+		PluginInstallCmd:     "/plugin install token-optimizer@alexgreensh-token-optimizer",
+	},
 }
 
 var depCmd = &cobra.Command{
