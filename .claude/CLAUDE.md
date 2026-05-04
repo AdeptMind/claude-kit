@@ -19,6 +19,8 @@ When the user sends a message **without a slash command**, default to `/ralph`. 
 | "split this doc", "shard", "break up this file" | Run `/shard` |
 | "UX", "wireframe", "user flow", "screens", "user experience" | Run `/ux-spec` |
 | "create agent", "new command", "new skill", "new rule" | Run `/create-component` |
+| "index", "reindex", "index this repo", "index S3" | Run `/index` |
+| "search knowledge", "find in KG", "semantic search" | Run `/search` |
 | Asks for code review, test gen, security check | Run `/review`, `/test-gen`, or `/security-check`. |
 
 **When the user uses a slash command** (`/bmad-break`, `/ralph`, etc.): follow that command exactly. The default-to-Ralph rule only applies when there is NO slash command.
@@ -30,6 +32,7 @@ When the user sends a message **without a slash command**, default to `/ralph`. 
 - Spec & quality: `/principles`, `/clarify`, `/analyze`, `/checklist`, `/ux-spec`
 - Implementation: `/ralph`, `/ralph-loop`, `/gsd-prep`, `/quick-spec`, `/quick-dev`
 - Ideation: `/brainstorm`, `/party`
+- Knowledge: `/index`, `/search`
 - Utilities: `/shard`, `/create-component`, `/bmad-help`
 
 ## Command Reference
@@ -49,6 +52,8 @@ When the user sends a message **without a slash command**, default to `/ralph`. 
 | `/shard` | Split large documents into indexed sections | File path |
 | `/create-component` | Create a new agent, command, skill, or rule | `<type> <name> [description]` |
 | `/bmad-help` | Project state dashboard and next steps | Optional natural language question |
+| `/index` | Index sources into knowledge graph (incremental) | Local path or `s3://` URI |
+| `/search` | Semantic search in the knowledge graph | Natural language query |
 
 ### Pipeline commands (require prior BMAD artifacts)
 
@@ -105,6 +110,9 @@ When the user sends a message **without a slash command**, default to `/ralph`. 
 | `ck sync` | Update installed components + refresh docs-index | — |
 | `ck docs` | Generate docs-index.md via stack detection | `--refresh` |
 | `ck dep install` | Install recommended dependencies interactively | — |
+| `ck model download` | Download Model2Vec embedding model (potion-code-16M) | — |
+| `ck knowledge index [source]` | Index sources into KG via CocoIndex (incremental) | `--full` |
+| `ck knowledge search <query>` | Search the knowledge graph | `--semantic`, `--limit` |
 | `ck profile list\|use\|add\|remove` | Manage Claude account profiles | — |
 | `ck teammate-mode` | View or change teammate display mode | — |
 
@@ -150,10 +158,9 @@ All code produced by any agent or skill MUST follow these principles:
 
 ## Build & Test
 
-- Adapt commands below to your stack (Node.js, Python, Go, etc.)
-- Build: `npm run build` (or equivalent)
-- Test: `npm test` (or equivalent)
-- Lint: `npm run lint` (or equivalent)
+- Build: `make build` (produces `ck` binary)
+- Test: `make test` (runs `go test ./internal/... ./cmd/claude-kit/...`)
+- Install: `make install` (copies `ck` to PATH + syncs templates)
 - After modifying functions, run `/test-check` to verify test coverage and honesty
 
 ## Code Style
@@ -187,6 +194,11 @@ All code produced by any agent or skill MUST follow these principles:
 
 ## Architecture
 
+- **CLI only** — no desktop app, no daemon. Pure Go binary (`ck`).
+- **Embeddings**: Model2Vec (`potion-code-16M`, 256 dims) — CPU-only, no Ollama required. Run `ck model download` to install.
+- **Indexing**: CocoIndex (Python, installed via `ck dep install`) handles incremental source processing (local FS, S3). `ck knowledge index` wraps it and imports chunks into the KG with Model2Vec embeddings.
+- **Knowledge graph**: SQLite with FTS5 (keyword) + cosine similarity (semantic) + RRF hybrid search.
+- **MCP server**: `ck mcp-server` exposes the KG as tools for Claude Desktop/Code.
 - See `.claude/agents/` for available agent roles
 - See `.claude/skills/` for available skills
 - Output artifacts are written to `.claude/output/`

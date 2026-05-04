@@ -22,7 +22,7 @@ That's it. Your project now has agents, workflows, guardrails, and a team lead t
 > **BMAD** = Break → Model → Act → Deliver — the phased workflow from idea to production.
 > **Ralph** = The autonomous team lead that orchestrates parallel agent teams.
 > **Roles** = Working methods (dev, po, qa...) that adapt how the workflow behaves.
-> **Cowork** = Claude Desktop's agentic mode — Claude Kit configures it, Cowork executes.
+> **Knowledge Graph** = SQLite-backed semantic search — Model2Vec embeddings + CocoIndex incremental indexing.
 
 ---
 
@@ -166,52 +166,28 @@ ck sandbox create    # Run Claude Code in an isolated container
 
 Profiles are policy-as-code (`.claude/policy.yaml`) — committed, shareable, inheritable.
 
-### Desktop App (macOS)
+### Knowledge Graph & Semantic Search
 
-A native `.app` for non-technical users — POs, PMs, HR, and stakeholders.
-
-**Dashboard** — project status, BMAD phase progress, recent files with click-to-read and edit
-
-**Stories** — 3-column board (Todo / In Progress / Done) with filters, story detail modal, inline editing as markdown, Ralph status tracking, story locking during edits
-
-**File Manager** — tree view with type icons, file preview, drag-and-drop
-
-**Profile Editor** — form-based Cowork profile configuration, agent selector (management-first)
-
-**Workflow Launcher** — visual BMAD phase diagram, artifact monitor, "Open in Cowork"
-
-**Claude Chat** — embedded terminal (xterm.js + PTY) running `claude` directly in the app. Multi-session: one session per project, sessions persist when switching projects. Auto-starts when you open Chat.
-
-**WYSIWYG Editor** — Tiptap-based markdown editor. Edit the rendered preview directly — no raw markdown. Toolbar for headings, bold, italic, lists, code, links.
-
-**Project Selector** — top bar with fuzzy search, folder picker (native macOS dialog), recent projects list with remove button
-
-**Role Selector** — sidebar dropdown with search, favorites (star system), grouped by Management/Dev/Special
-
-#### Keyboard Shortcuts
-
-| Shortcut | Action |
-|----------|--------|
-| `⌘K` | Fuzzy find and switch project |
-| `⌘←` `⌘→` | Previous / next project |
-| `⌘J` | Open Claude Chat |
-| `⌘S` | Open Stories board |
-| `⌘F` | Open File Manager |
-| `⌘D` | Open Dashboard |
-| `⌘E` | Edit selected story |
-| `Escape` | Close any modal |
+Index your codebase and external sources into a searchable knowledge graph with AI-powered semantic search.
 
 ```bash
-# Build from source
-make app
-
-# Install to /Applications
-make app-install
-
-# Or download from GitHub releases, unzip, then:
-xattr -cr "Claude Kit.app"    # Required — app is not signed
-open "Claude Kit.app"
+ck model download                          # Download Model2Vec embeddings (once, 64 MB)
+ck knowledge index .                       # Index current repo (incremental via CocoIndex)
+ck knowledge index s3://my-bucket/configs/ # Index S3 bucket
+ck knowledge search --semantic "auth flow" # Semantic search
 ```
+
+**How it works:**
+- **CocoIndex** (Python) handles incremental source processing — only changed files are re-indexed
+- **Model2Vec** (Go native, CPU-only) generates embeddings — no Ollama, no GPU, no external service
+- **SQLite** stores the knowledge graph with FTS5 (keyword) + cosine similarity (semantic) + RRF hybrid search
+- **MCP server** (`ck mcp-server`) exposes the KG as tools for Claude Desktop/Code
+
+**Slash commands:**
+- `/index` — index sources (auto-downloads model + installs CocoIndex if needed)
+- `/search <query>` — semantic search in the knowledge graph
+
+**Supported sources:** local directories, S3 buckets (more connectors via CocoIndex: Google Drive, Kafka, Postgres...)
 
 ### Guardrails
 
@@ -236,6 +212,8 @@ open "Claude Kit.app"
 | `/quick-dev` | Quick implementation from spec |
 | `/brainstorm` | Creative ideation |
 | `/party` | Multi-agent debate |
+| `/index [source]` | Index sources into knowledge graph |
+| `/search <query>` | Semantic search in knowledge graph |
 
 ---
 
@@ -272,6 +250,11 @@ open "Claude Kit.app"
 | `ck sandbox run` | Launch sandboxed Claude Code |
 | `ck sandbox stop` | Stop container |
 | `ck dep install` | Install recommended dependencies |
+| `ck model download` | Download Model2Vec embedding model |
+| `ck knowledge index [source]` | Index sources into KG (incremental) |
+| `ck knowledge search <query>` | Search the knowledge graph |
+| `ck knowledge stats` | KG statistics |
+| `ck knowledge reindex` | Re-embed nodes missing embeddings |
 | `ck profile list\|use\|add\|remove` | Manage Claude profiles |
 | `ck version` | Print version |
 
@@ -322,6 +305,9 @@ open "Claude Kit.app"
 
 **Ideation:**
 `/brainstorm`, `/party`
+
+**Knowledge:**
+`/index`, `/search`
 
 **Utilities:**
 `/ck-sync`, `/shard`, `/create-component`, `/bmad-help` (`/h`)
@@ -422,22 +408,22 @@ A hook fires before `git commit`, printing staged files to catch scope leaks.
 ### Prerequisites
 - Go 1.21+
 - Make
-- Wails v2 (for desktop app only)
 
 ### Commands
 
 ```bash
-make build              # Compile CLI binary
+make build              # Compile CLI binary (produces ./ck)
 make install            # Build + install to /usr/local/bin + templates
+make test               # Run test suite
 make clean              # Remove build artifacts
 make uninstall          # Remove everything
 ```
 
-### Desktop app
+### Optional dependencies
 
 ```bash
-cd cmd/claude-kit-ui
-wails build             # Produces .app bundle
+ck dep install          # Interactive picker — rtk, tree-sitter, cocoindex, claude-mem
+ck model download       # Model2Vec embeddings for semantic search
 ```
 
 ### Template resolution order
@@ -471,8 +457,8 @@ Both enhance Claude Code with structured workflows. Here's how they differ:
 | **Workflow** | 11-phase BMAD (Brainstorm → Principles → Break → Clarify → UX Spec → Model → Analyze → Checklist → GSD Prep → Act → Deliver) with quality gates between each | 7-phase (Brainstorm → Spec → Plan → TDD → Subagent → Review → Finalize) |
 | **Agents** | 40+ persistent agents with defined roles, skills, and interfaces — survive across sessions | Fresh disposable subagents per task — no memory between tasks |
 | **Roles** | Role-based working methods — `ck user po/qa/dev/all` adapts the entire workflow | Single workflow, same for everyone |
-| **Non-dev users** | PO, PM, HR, QA get their own agents, profiles, and desktop app | Developer-only |
-| **Desktop app** | macOS .app with dashboard, file manager, profile editor | No GUI |
+| **Non-dev users** | PO, PM, HR, QA get their own agents and profiles | Developer-only |
+| **Knowledge graph** | Incremental indexing (CocoIndex) + semantic search (Model2Vec) + MCP server | None |
 | **TDD** | Enforced via skill + rule + Ralph integration | Enforced — deletes code written before tests |
 | **Review** | Double review (spec + quality) as parallel subagents | Single review phase |
 | **Architecture** | Full architecture design phase (ADRs, data model, API surface) | No architecture phase |
@@ -480,12 +466,11 @@ Both enhance Claude Code with structured workflows. Here's how they differ:
 | **FinOps** | Dedicated agent + 4 skills (cost optimization, tagging, waste, budget) | None |
 | **Quality gates** | DoR (readiness) + DoD (business value proof) + traceability matrix | Spec validation |
 | **Client engagement** | Challenge loops at every milestone, visual round reviews | None |
-| **Cowork integration** | Profile editor + push to Cowork + launch from app | None |
-| **Distribution** | CLI (`ck`) + desktop app + Homebrew | CLAUDE.md configuration |
+| **Distribution** | CLI (`ck`) + Homebrew | CLAUDE.md configuration |
 | **Packaging** | `.skill`, `.agent`, `.claude-kit` archives | None |
 | **Eval framework** | `ck skill eval/grade/benchmark/optimize` | None |
 
-**Bottom line:** Claude Kit covers everything Superpowers does (TDD enforcement, subagent development, structured review) and extends it with architecture design, role-based workflows, security policies, quality gates (DoR/DoD), management agents, a desktop app, and team orchestration. A solo dev using `ck init` + `ck user dev` gets the same TDD-first experience as Superpowers — plus 40+ agents, policy-as-code, and the option to scale to multi-role workflows when the project grows.
+**Bottom line:** Claude Kit covers everything Superpowers does (TDD enforcement, subagent development, structured review) and extends it with architecture design, role-based workflows, security policies, quality gates (DoR/DoD), management agents, knowledge graph with semantic search, and team orchestration. A solo dev using `ck init` + `ck user dev` gets the same TDD-first experience as Superpowers — plus 40+ agents, policy-as-code, and the option to scale to multi-role workflows when the project grows.
 
 Claude Kit's TDD enforcement was inspired by Superpowers. Both can coexist in the same project.
 
