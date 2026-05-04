@@ -3,6 +3,8 @@ package embedder
 import (
 	"context"
 	"log"
+	"os"
+	"path/filepath"
 )
 
 // Embedder generates vector embeddings from text.
@@ -15,17 +17,41 @@ type Embedder interface {
 	Name() string
 }
 
-// AutoDetect tries embedding backends in order: Ollama → ONNX → nil.
-// Returns the first available backend, or nil if none are available.
+// DefaultModelDir returns the default path for the potion-code-16M model.
+func DefaultModelDir() string {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return ""
+	}
+	return filepath.Join(home, ".claude-kit", "models", "potion-code-16M")
+}
+
+// AutoDetect tries to load the local Model2Vec model.
+// Returns nil if the model is not installed.
 func AutoDetect(ctx context.Context) Embedder {
-	if e := DetectOllama(ctx); e != nil {
-		log.Printf("embedder: using Ollama backend (model=%s, dims=%d)", e.model, e.dims)
-		return e
+	modelDir := DefaultModelDir()
+	if modelDir == "" {
+		log.Printf("embedder: cannot determine home directory")
+		return nil
 	}
-	if e := DetectOnnx(ctx); e != nil {
-		log.Printf("embedder: using ONNX Runtime backend")
-		return e
+
+	e, err := DetectModel2Vec(modelDir)
+	if err != nil {
+		log.Printf("embedder: Model2Vec not available — run: ck model download (%v)", err)
+		return nil
 	}
-	log.Printf("embedder: no embedding backend available — semantic search disabled")
-	return nil
+
+	log.Printf("embedder: using Model2Vec backend (dims=%d)", e.Dimensions())
+	return e
+}
+
+// DetectModel2Vec tries to load a Model2Vec model from the given directory.
+func DetectModel2Vec(modelDir string) (*Model2VecEmbedder, error) {
+	// Check that required files exist
+	for _, f := range []string{"model.safetensors", "tokenizer.json"} {
+		if _, err := os.Stat(filepath.Join(modelDir, f)); err != nil {
+			return nil, err
+		}
+	}
+	return NewModel2Vec(modelDir)
 }

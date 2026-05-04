@@ -2,58 +2,31 @@ package embedder
 
 import (
 	"context"
-	"encoding/json"
-	"net/http"
-	"net/http/httptest"
 	"testing"
 )
 
-func TestAutoDetect_NoBackends(t *testing.T) {
-	// With no Ollama running and no ONNX (stub), should return nil
+func TestAutoDetect_NoModel(t *testing.T) {
+	// Without model files installed, should return nil (not panic)
 	e := AutoDetect(context.Background())
-	// Can't guarantee Ollama isn't running, so just check it doesn't panic
+	// Can't guarantee model isn't installed, so just check it doesn't panic
 	_ = e
 }
 
-func TestDetectOllama_WithMockServer(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		switch r.URL.Path {
-		case "/api/tags":
-			w.WriteHeader(http.StatusOK)
-		case "/api/embeddings":
-			resp := ollamaEmbedResponse{Embedding: make([]float64, 384)}
-			json.NewEncoder(w).Encode(resp)
-		default:
-			w.WriteHeader(http.StatusNotFound)
-		}
-	}))
-	defer server.Close()
-
-	// Manually create embedder pointing at mock
-	e := &OllamaEmbedder{
-		url:    server.URL,
-		model:  "all-minilm",
-		client: server.Client(),
-	}
-
-	vec, err := e.Embed(context.Background(), "test")
-	if err != nil {
-		t.Fatalf("Embed error: %v", err)
-	}
-	if len(vec) != 384 {
-		t.Errorf("dimensions = %d, want 384", len(vec))
-	}
-
-	e.dims = len(vec)
-	if e.Dimensions() != 384 {
-		t.Errorf("Dimensions() = %d, want 384", e.Dimensions())
+func TestDetectModel2Vec_MissingDir(t *testing.T) {
+	_, err := DetectModel2Vec("/nonexistent/model/dir")
+	if err == nil {
+		t.Error("expected error for missing directory")
 	}
 }
 
-func TestDetectOnnx_Stub(t *testing.T) {
-	// Without onnx build tag, should return nil
-	e := DetectOnnx(context.Background())
-	if e != nil {
-		t.Error("DetectOnnx should return nil without onnx build tag")
+func TestDetectModel2Vec_ValidModel(t *testing.T) {
+	dir := buildTestModel(t, 5, 8)
+
+	e, err := DetectModel2Vec(dir)
+	if err != nil {
+		t.Fatalf("DetectModel2Vec: %v", err)
+	}
+	if e.Dimensions() != 8 {
+		t.Fatalf("dims: got %d, want 8", e.Dimensions())
 	}
 }

@@ -52,7 +52,7 @@ var searchCmd = &cobra.Command{
 		if searchSemantic {
 			emb := embedder.AutoDetect(ctx)
 			if emb == nil {
-				return fmt.Errorf("no embedding backend available — install Ollama and run: ollama pull all-minilm")
+				return fmt.Errorf("no embedding backend available — run: ck model download")
 			}
 			vec, err := emb.Embed(ctx, query)
 			if err != nil {
@@ -293,7 +293,7 @@ var reindexCmd = &cobra.Command{
 		ctx := context.Background()
 		emb := embedder.AutoDetect(ctx)
 		if emb == nil {
-			return fmt.Errorf("no embedding backend available — install Ollama and run: ollama pull all-minilm")
+			return fmt.Errorf("no embedding backend available — run: ck model download")
 		}
 
 		// Get nodes without embeddings
