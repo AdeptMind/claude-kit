@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Kit — Visual Brainstorm</title>
+<style>
+  :root {
+    --bg: #1a1a2e;
+    --surface: #16213e;
+    --card: #0f3460;
+    --accent: #e94560;
+    --text: #eee;
+    --dim: #888;
+    --success: #4ade80;
+    --border: #333;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  header {
+    padding: 1rem 2rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  header h1 { font-size: 1.2rem; font-weight: 600; }
+  header .status {
+    margin-left: auto;
+    font-size: 0.8rem;
+    color: var(--dim);
+  }
+  header .status.connected { color: var(--success); }
+  #content {
+    flex: 1;
+    padding: 2rem;
+    overflow-y: auto;
+  }
+  .empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--dim);
+    font-size: 1.1rem;
+  }
+
+  /* Component styles for agent-pushed content */
+  .mockup {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .mockup h2 { font-size: 1.1rem; margin-bottom: 1rem; color: var(--accent); }
+
+  .options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .option {
+    background: var(--card);
+    border: 2px solid transparent;
+    border-radius: 10px;
+    padding: 1.2rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .option:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .option.selected { border-color: var(--success); background: #0f3460cc; }
+  .option h3 { font-size: 1rem; margin-bottom: 0.5rem; }
+  .option p { font-size: 0.85rem; color: var(--dim); line-height: 1.4; }
+
+  .pros-cons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .pros h3 { color: var(--success); }
+  .cons h3 { color: var(--accent); }
+  .pros li, .cons li { font-size: 0.9rem; margin: 0.3rem 0; padding-left: 0.5rem; }
+
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .card {
+    background: var(--card);
+    border-radius: 10px;
+    padding: 1rem;
+  }
+  .card h3 { font-size: 0.95rem; margin-bottom: 0.5rem; }
+  .card p { font-size: 0.85rem; color: var(--dim); }
+
+  .split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-bottom: 1.5rem;
+  }
+
+  button.submit {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 0.8rem 2rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-top: 1rem;
+  }
+  button.submit:hover { opacity: 0.9; }
+</style>
+</head>
+<body>
+  <header>
+    <h1>Visual Brainstorm</h1>
+    <div class="status" id="status">connecting...</div>
+  </header>
+  <div id="content">
+    <div class="empty">Waiting for content from Claude agent...</div>
+  </div>
+
+  <script>
+    const content = document.getElementById('content');
+    const status = document.getElementById('status');
+
+    function connectSSE() {
+      const es = new EventSource('/sse');
+
+      es.onopen = () => {
+        status.textContent = 'connected';
+        status.className = 'status connected';
+      };
+
+      es.onerror = () => {
+        status.textContent = 'reconnecting...';
+        status.className = 'status';
+      };
+
+      es.onmessage = (e) => {
+        const msg = JSON.parse(e.data);
+
+        if (msg.type === 'html') {
+          content.innerHTML = msg.content;
+          bindOptions();
+        } else if (msg.type === 'append') {
+          content.insertAdjacentHTML('beforeend', msg.content);
+          bindOptions();
+        } else if (msg.type === 'clear') {
+          content.innerHTML = '<div class="empty">Waiting for content...</div>';
+        }
+      };
+    }
+
+    function sendChoice(data) {
+      fetch('/choice', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+    }
+
+    function bindOptions() {
+      document.querySelectorAll('.option').forEach(opt => {
+        opt.addEventListener('click', () => {
+          opt.classList.toggle('selected');
+          sendChoice({
+            type: 'choice',
+            id: opt.dataset.id || opt.querySelector('h3')?.textContent || 'unknown',
+            selected: opt.classList.contains('selected'),
+            text: opt.querySelector('h3')?.textContent || opt.textContent.trim()
+          });
+        });
+      });
+
+      document.querySelectorAll('button.submit').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const selected = [...document.querySelectorAll('.option.selected')].map(o => ({
+            id: o.dataset.id || o.querySelector('h3')?.textContent,
+            text: o.querySelector('h3')?.textContent || o.textContent.trim()
+          }));
+          sendChoice({ type: 'submit', selections: selected });
+        });
+      });
+    }
+
+    connectSSE();
+  </script>
+</body>
+</html>
