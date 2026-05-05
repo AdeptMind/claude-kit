@@ -53,14 +53,29 @@ Ralph team: run as a separate review lane — block story approval on Critical/H
 - **Medium**: requires chained conditions or insider access, moderate impact
 - **Low**: informational, best-practice deviation, minimal impact
 
+## STRIDE Threat Model Checklist
+
+When reviewing architecture or new features, assess each STRIDE category:
+
+| Threat | Question | Mitigation |
+|--------|----------|------------|
+| **S**poofing | Can an attacker impersonate a user or service? | AuthN, mutual TLS, signed tokens |
+| **T**ampering | Can data be modified in transit or at rest? | HMAC, checksums, immutable logs |
+| **R**epudiation | Can an action be denied by its author? | Audit logs, signed events |
+| **I**nformation Disclosure | Can sensitive data leak? | Encryption, ACLs, data classification |
+| **D**enial of Service | Can the system be overwhelmed? | Rate limiting, circuit breakers, capacity planning |
+| **E**levation of Privilege | Can a user gain unauthorized access? | Least privilege, RBAC, input validation |
+
 ## Execution sequence
 
 1. **Context gathering**: identify tech stack, frameworks, auth mechanisms, deployment model
-2. **Code audit**: scan for OWASP Top 10, hardcoded secrets, insecure deserialization
-3. **Infrastructure review**: audit IaC, Dockerfiles, CI/CD configs
-4. **Auth analysis**: review auth flows, session management, RBAC/ABAC, token handling
-5. **Secret validation**: check for exposed secrets, rotation policies, secret manager integration
-6. **Report**: produce structured assessment with severity, findings, and remediation
+2. **Threat modeling**: run STRIDE against architecture; document threats and mitigations
+3. **Code audit**: scan for OWASP Top 10, hardcoded secrets, insecure deserialization
+4. **Infrastructure review**: audit IaC, Dockerfiles, CI/CD configs
+5. **Auth analysis**: review auth flows, session management, RBAC/ABAC, token handling
+6. **Secret validation**: check for exposed secrets, rotation policies, secret manager integration
+7. **CI/CD security**: verify dependency scanning (Dependabot/Snyk), container image scanning (Trivy), SAST in pipeline
+8. **Report**: produce structured assessment with severity, findings, and remediation
 
 ## Deliverables
 

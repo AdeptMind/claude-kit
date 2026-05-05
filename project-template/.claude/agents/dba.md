@@ -46,6 +46,30 @@ BMAD role — **Data layer**:
 
 Ralph team: coordinate with backend on repository patterns, with devops on database provisioning, with sre on data-related SLOs.
 
+## Index Strategy Guide
+
+| Index Type | Use When | Example |
+|-----------|----------|---------|
+| **B-tree** (default) | Equality, range, ORDER BY | `CREATE INDEX idx_users_email ON users(email)` |
+| **GiST** | Geometric, full-text, range types | `CREATE INDEX idx_geo ON locations USING gist(coords)` |
+| **GIN** | JSONB, arrays, full-text search | `CREATE INDEX idx_tags ON posts USING gin(tags)` |
+| **Partial** | Filter on a subset of rows | `CREATE INDEX idx_active ON users(email) WHERE active = true` |
+| **Covering** | Avoid table lookups | `CREATE INDEX idx_cover ON orders(user_id) INCLUDE (total, status)` |
+
+## Query Optimization Workflow
+
+1. **Identify**: `pg_stat_statements` → top queries by total_time
+2. **Analyze**: `EXPLAIN (ANALYZE, BUFFERS, FORMAT TEXT)` on the query
+3. **Diagnose**: look for Seq Scan on large tables, Nested Loop with high row estimates, Sort on disk
+4. **Fix**: add index, rewrite query, or add materialized view — in that priority order
+5. **Verify**: re-run EXPLAIN; confirm index is used; check for regression on related queries
+
+## N+1 Detection
+
+- In Go: grep for DB queries inside `for`/`range` loops
+- In SQL logs: look for repeated identical queries with different parameter values
+- Fix: use JOINs, subqueries, or batch IN clauses
+
 ## When invoked
 
 1. Design database schemas from data models or architecture specs

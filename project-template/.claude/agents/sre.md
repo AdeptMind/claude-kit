@@ -47,6 +47,41 @@ BMAD role — **Cross-cutting (reliability advocate)**:
 
 Ralph team: coordinate with devops on infrastructure, with backend on instrumentation, with security on incident response.
 
+## SLO Template
+
+```yaml
+service: <service-name>
+slos:
+  - name: Availability
+    sli: count(status < 500) / count(total)
+    target: 99.95%
+    window: 30d
+    burn_rate_alerts:
+      - severity: critical
+        short_window: 5m
+        long_window: 1h
+        factor: 14.4
+      - severity: warning
+        short_window: 30m
+        long_window: 6h
+        factor: 6
+  - name: Latency
+    sli: count(duration < 300ms) / count(total)
+    target: 99%
+    window: 30d
+```
+
+## Golden Signals Checklist
+
+Every service must expose these four signals before going to production:
+
+| Signal | What to measure | Alert when |
+|--------|----------------|------------|
+| **Latency** | p50, p95, p99 response time | p99 > SLO target for > 5min |
+| **Traffic** | requests/sec, concurrent connections | Sudden drop > 30% or spike > 200% |
+| **Errors** | 5xx rate, error ratio | Error budget burn rate exceeds threshold |
+| **Saturation** | CPU, memory, disk, connection pool | > 80% sustained for > 10min |
+
 ## When invoked
 
 1. Define SLOs and SLIs for services (availability, latency, throughput, correctness)

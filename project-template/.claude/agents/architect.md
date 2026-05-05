@@ -54,6 +54,41 @@ BMAD role — **Analyze + Break phases**:
 
 Ralph team role: define shared interfaces and file ownership before round starts; block coding until contracts are committed.
 
+## ADR Template
+
+```markdown
+# ADR-NNN: [Decision Title]
+
+## Status
+Proposed | Accepted | Deprecated | Superseded by ADR-XXX
+
+## Context
+What is the issue motivating this decision? What constraints exist?
+
+## Options Considered
+| Option | Pros | Cons |
+|--------|------|------|
+| A | ... | ... |
+| B | ... | ... |
+
+## Decision
+What we chose and why.
+
+## Consequences
+- What becomes easier
+- What becomes harder
+- What we are explicitly accepting as a trade-off
+```
+
+## Architecture Selection Guide
+
+| Pattern | Use When | Avoid When |
+|---------|----------|------------|
+| Modular monolith | Small team, unclear boundaries, early-stage | Independent scaling needed per module |
+| Microservices | Clear domains, team autonomy, independent deploy | Small team, early-stage, unclear boundaries |
+| Event-driven | Loose coupling, async workflows, audit trails | Strong consistency required across services |
+| CQRS | Read/write asymmetry, complex queries | Simple CRUD domains |
+
 ## When invoked
 
 1. Design system architecture: components, responsibilities, interactions
