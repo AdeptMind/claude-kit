@@ -118,6 +118,10 @@ func runSync(cmd *cobra.Command, args []string) error {
 		}
 	}
 
+	// Ensure global rules in ~/.claude/rules/
+	fmt.Println(sectionHeader("Global Rules"))
+	EnsureGlobalRules(tmplDir)
+
 	// Check recommended dependencies (rtk, claude-mem, etc.)
 	CheckDependencies()
 

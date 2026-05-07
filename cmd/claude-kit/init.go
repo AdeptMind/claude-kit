@@ -448,6 +448,10 @@ func runInteractiveInit() error {
 		}
 	}
 
+	// Ensure global rules in ~/.claude/rules/
+	fmt.Println(sectionHeader("Global Rules"))
+	EnsureGlobalRules(tmplDir)
+
 	// Check recommended dependencies (rtk, claude-mem, etc.)
 	CheckDependencies()
 
