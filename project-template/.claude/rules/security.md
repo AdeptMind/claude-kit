@@ -2,11 +2,27 @@
 description: Security rules applied across all code
 ---
 
+> **Why this matters**: a leaked secret in git history is leaked forever — even after rotation, attackers replay old commits. A missing input validation isn't a "bug to fix later", it's an active exploit surface. Security is preventative, not reactive.
+
 ## Secrets and Credentials
 
 - Never hardcode secrets, API keys, tokens, or passwords in source code or config files
 - Use environment variables or a secret manager (Vault, AWS Secrets Manager, GCP Secret Manager)
 - Set token expiration and implement refresh strategies; short-lived tokens reduce blast radius
+
+**Example — secret leak vs safe**:
+```python
+# BAD — secret in code, gets committed, never truly deleted
+STRIPE_KEY = "sk_live_51H..."
+
+# BAD — env var with no fallback handling, crashes opaque
+STRIPE_KEY = os.environ["STRIPE_KEY"]
+
+# GOOD — explicit failure, no default secret, no hardcoded value
+STRIPE_KEY = os.environ.get("STRIPE_KEY")
+if not STRIPE_KEY:
+    raise RuntimeError("STRIPE_KEY not set — refusing to start")
+```
 
 ## Input Validation and Injection Prevention
 

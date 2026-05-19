@@ -1,6 +1,6 @@
 ---
 name: waste-detection
-description: Detect cloud resource waste including idle instances, unattached volumes, orphaned snapshots, unused Elastic IPs, and over-provisioned dev/staging environments.
+description: Detect cloud resource waste including idle instances, unattached volumes, orphaned snapshots, unused Elastic IPs, and over-provisioned dev/staging environments. Use when chasing cost regressions or as part of a quarterly cleanup.
 allowed-tools: Read, Grep, Glob, Bash
 argument-hint: "[infrastructure directory or environment]"
 ---
@@ -25,10 +25,12 @@ This skill performs **static analysis** of infrastructure-as-code. It identifies
 
 ## Output Format
 
-| Severity | Resource | Waste Type | Confidence | Est. Monthly Cost | Remediation |
-|----------|----------|-----------|------------|-------------------|-------------|
-| High | aws_ebs_volume.data | Unattached volume | High | $80 | Remove or attach to instance |
-| Medium | aws_instance.staging | Over-provisioned | Medium | $200 | Downsize or add shutdown schedule |
+```
+| Severity | Resource             | Waste Type        | Confidence | Est. Monthly | Remediation                       |
+|----------|----------------------|-------------------|------------|--------------|-----------------------------------|
+| High     | aws_ebs_volume.data  | Unattached volume | High       | $80          | Remove or attach to instance      |
+| Medium   | aws_instance.staging | Over-provisioned  | Medium     | $200         | Downsize or add shutdown schedule |
+```
 
 Confidence levels:
 - **High**: pattern strongly indicates waste (e.g., unattached volume with no references).

@@ -1,6 +1,6 @@
 ---
 name: terraform-review
-description: Review Terraform code for module structure, state management, provider versioning, security, and operational best practices.
+description: Review Terraform code for module structure, state management, provider versioning, security, and operational best practices. Use before merging IaC PRs or auditing existing modules.
 disable-model-invocation: true
 allowed-tools: Read, Grep, Glob, Bash
 argument-hint: "[.tf file, module directory, or plan output]"
@@ -60,6 +60,16 @@ Instructions:
   - **Location**: file and resource
   - **Issue**: what's wrong
   - **Fix**: specific HCL change
+
+### Output Format
+
+```
+| Severity | Category | Resource                 | Issue                       | Fix                                        |
+|----------|----------|--------------------------|-----------------------------|--------------------------------------------|
+| Critical | security | aws_s3_bucket.logs       | Public access not blocked   | Add aws_s3_bucket_public_access_block      |
+| High     | state    | terraform { backend }    | No remote state lock        | Switch to S3 backend + DynamoDB locking    |
+| Medium   | provider | required_providers       | aws version unpinned        | Pin with `~> 5.0`                          |
+```
 
 Optional input:
 - .tf file, module directory, or plan output via $ARGUMENTS

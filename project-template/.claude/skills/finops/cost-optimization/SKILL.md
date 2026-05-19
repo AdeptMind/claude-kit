@@ -1,6 +1,6 @@
 ---
 name: cost-optimization
-description: Review infrastructure code for cloud cost optimization opportunities including rightsizing, auto-scaling, reserved instances, spot instances, and storage tiering.
+description: Review infrastructure code for cloud cost optimization opportunities including rightsizing, auto-scaling, reserved instances, spot instances, and storage tiering. Use when reviewing IaC PRs or auditing existing infrastructure spend.
 allowed-tools: Read, Grep, Glob
 argument-hint: "[infrastructure directory or specific module]"
 ---
@@ -32,9 +32,12 @@ You are a FinOps engineer specializing in cost optimization.
 
 ## Output Format
 
-| Severity | Finding | Resource | Est. Monthly Savings | Remediation |
-|----------|---------|----------|---------------------|-------------|
-| Critical | Oversized instance for web tier | aws_instance.web (r5.4xlarge) | $800 | Downsize to m5.xlarge; add ASG |
+```
+| Severity | Finding                         | Resource                      | Est. Monthly Savings | Remediation                    |
+|----------|---------------------------------|-------------------------------|----------------------|--------------------------------|
+| Critical | Oversized instance for web tier | aws_instance.web (r5.4xlarge) | $800                 | Downsize to m5.xlarge; add ASG |
+| High     | On-demand long-running workload | aws_instance.api (m5.xlarge)  | $250                 | Buy 1y reserved instance       |
+```
 
 End with a **Total estimated monthly savings**: $X,XXX.
 

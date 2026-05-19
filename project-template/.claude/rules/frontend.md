@@ -3,11 +3,25 @@ description: Frontend rules applied when working on UI components, pages, and st
 globs: ["src/components/**", "src/pages/**", "src/views/**", "src/styles/**", "**/*.css", "**/*.scss", "**/*.tsx", "**/*.jsx"]
 ---
 
+> **Why this matters**: frontend code runs on hardware you don't control, for users you can't see. Every kilobyte and every roundtrip costs them battery, data, and attention. Accessibility isn't a checkbox — it's the difference between a usable product and one that locks out 15% of users.
+
 ## Component Design
 
 - Keep components small and focused on a single responsibility; split if exceeding ~150 lines
 - Separate presentation (UI) from logic (hooks, services, stores)
 - Handle loading, error, and empty states in every data-fetching component
+
+**Example — three states are not optional**:
+```tsx
+function UserList() {
+  const { data, isLoading, error } = useUsers();
+  if (isLoading) return <Spinner aria-label="Loading users" />;
+  if (error) return <ErrorBanner error={error} onRetry={refetch} />;
+  if (!data?.length) return <EmptyState message="No users yet" />;
+  return <ul>{data.map(u => <UserRow key={u.id} user={u} />)}</ul>;
+}
+```
+Skipping any of the three branches will show users a broken or blank screen at some point.
 
 ## Accessibility (WCAG AA)
 

@@ -3,11 +3,22 @@ description: API design rules applied when building or modifying API endpoints
 globs: ["src/routes/**", "src/api/**", "src/controllers/**", "src/handlers/**", "api/**", "routes/**"]
 ---
 
+> **Why this matters**: APIs become contracts the moment a second client integrates. Sloppy verbs, inconsistent errors, and missing pagination compound into client-side workarounds that outlive the original mistake by years.
+
 ## RESTful Design
 
 - Use proper HTTP methods (`GET` read, `POST` create, `PUT` replace, `PATCH` update, `DELETE` remove) and meaningful status codes (`201` for creation, `204` for no content, `404` for not found, `409` for conflict)
 - Name resources as plural nouns (`/users`, `/orders`); nest sub-resources one level deep (`/users/{id}/orders`)
 - Version APIs in the URL path (`/v1/users`) when introducing breaking changes
+
+**Example — good vs bad**:
+
+| Bad                                    | Good                            | Why                              |
+|----------------------------------------|---------------------------------|----------------------------------|
+| `POST /getUser`                        | `GET /v1/users/{id}`            | Verb in method, not path         |
+| `GET /user`                            | `GET /v1/users`                 | Plural resource                  |
+| `200` for "user not found"             | `404` with error body           | Status code carries meaning      |
+| `/users/{id}/posts/{id}/comments/{id}` | `/v1/comments/{id}`             | Nest one level, then go flat     |
 
 ## Input and Output
 

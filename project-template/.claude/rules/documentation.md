@@ -3,11 +3,32 @@ description: Documentation rules applied when writing or updating docs and READM
 globs: ["docs/**", "**/*.md", "README*"]
 ---
 
+> **Why this matters**: stale or hidden docs are worse than missing docs — they actively mislead. Docs are read when something breaks at 3 AM; optimize for that reader, not the author.
+
 ## Structure and Placement
 
 - Keep documentation close to the code it describes — prefer co-located README files over a monolithic docs folder
 - Use clear headings, short paragraphs, and bullet points; documentation should be scannable
 - Document prerequisites, setup steps, and required environment variables in the project README
+
+**Example — good README opener**:
+```markdown
+# auth-service
+
+Issues and validates JWTs for the platform. Replaces the legacy session store.
+
+## Prerequisites
+- Go 1.22+
+- Postgres 15+ (connection string in `DATABASE_URL`)
+- A signing key in `JWT_SIGNING_KEY` (32 bytes, base64)
+```
+
+**Example — bad README opener** (what to avoid):
+```markdown
+# auth-service
+Welcome to the auth-service repository! This service handles authentication.
+```
+(no prerequisites, no setup, no purpose differentiation, marketing voice)
 
 ## Content Standards
 

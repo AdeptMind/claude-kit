@@ -1,6 +1,6 @@
 ---
 name: performance-audit
-description: Audit application code for performance issues including N+1 queries, bundle size, caching, lazy loading, and connection pooling.
+description: Audit application code for performance issues including N+1 queries, bundle size, caching, lazy loading, and connection pooling. Use before load testing or when investigating latency complaints.
 disable-model-invocation: true
 allowed-tools: Read, Grep, Glob, Bash
 argument-hint: "[file, directory, or area to audit]"
@@ -50,6 +50,15 @@ Instructions:
   - **Fix**: specific code change or approach
 
 - Output a prioritized summary table followed by detailed findings.
+
+### Output Format
+
+```
+| Severity | Category   | Issue                          | Location           | Fix                                     |
+|----------|------------|--------------------------------|--------------------|-----------------------------------------|
+| Critical | N+1 Query  | Posts fetched in loop          | views/feed.py:42   | Use prefetch_related('author')          |
+| High     | Caching    | Missing Cache-Control on /api  | routes/api.ts:18   | Add Cache-Control: public, max-age=300  |
+```
 
 Optional input:
 - File, directory, or area to audit via $ARGUMENTS

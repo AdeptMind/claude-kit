@@ -1,6 +1,6 @@
 ---
 name: tagging-audit
-description: Audit cloud resources for cost allocation tag compliance. Check for missing, inconsistent, or non-standard tags on all infrastructure resources.
+description: Audit cloud resources for cost allocation tag compliance. Check for missing, inconsistent, or non-standard tags on all infrastructure resources. Use before billing reviews or when onboarding a new service.
 allowed-tools: Read, Grep, Glob
 argument-hint: "[infrastructure directory or module path]"
 ---
@@ -28,9 +28,12 @@ The default required tags are: `environment`, `team`, `service`, `cost-center`. 
 
 ## Output Format
 
-| Severity | Resource | Missing Tags | File:Line |
-|----------|----------|-------------|-----------|
-| Critical | aws_instance.api_prod | cost-center | infra/main.tf:42 |
+```
+| Severity | Resource              | Missing Tags        | File:Line          |
+|----------|-----------------------|---------------------|--------------------|
+| Critical | aws_instance.api_prod | cost-center         | infra/main.tf:42   |
+| High     | aws_rds.users         | environment, team   | infra/db.tf:18     |
+```
 
 End with:
 - **Compliance rate**: X of Y resources fully tagged (Z%).

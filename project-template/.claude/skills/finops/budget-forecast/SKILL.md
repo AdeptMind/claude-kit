@@ -1,6 +1,6 @@
 ---
 name: budget-forecast
-description: Estimate monthly cloud costs from infrastructure-as-code definitions and provide budget forecasting with cost breakdown by service, environment, and team.
+description: Estimate monthly cloud costs from infrastructure-as-code definitions and provide budget forecasting with cost breakdown by service, environment, and team. Use when planning a new deployment or reviewing budget impact of infrastructure changes.
 allowed-tools: Read, Grep, Glob, Bash
 argument-hint: "[infrastructure directory or Terraform root module]"
 ---
@@ -28,9 +28,12 @@ This skill performs **static analysis** of infrastructure-as-code. Estimates are
 
 ### Cost Summary by Service
 
-| Service | Resource | Spec | Est. Monthly Cost | Notes |
-|---------|----------|------|-------------------|-------|
-| Compute | aws_instance.web | m5.xlarge x 3 | $420 | On-demand pricing |
+```
+| Service | Resource         | Spec          | Est. Monthly | Notes             |
+|---------|------------------|---------------|--------------|-------------------|
+| Compute | aws_instance.web | m5.xlarge x 3 | $420         | On-demand pricing |
+| Storage | aws_s3_bucket.x  | 500 GB Std    | $12          | No lifecycle rule |
+```
 
 ### Environment Breakdown
 

@@ -43,6 +43,19 @@ Generate a directory tree showing only significant directories and files:
 - Exclude: `node_modules/`, `.git/`, `__pycache__/`, `dist/`, `build/`, `.terraform/`, vendor directories.
 - Limit depth to 3 levels for readability.
 
+Example output structure:
+
+```
+my-project/
+├── cmd/                # CLI entry points
+├── internal/           # Private packages
+├── pkg/                # Public packages
+├── docs/               # Documentation
+├── tests/              # Integration tests
+├── Makefile
+└── README.md
+```
+
 ## Edge Cases
 
 - **No existing README**: create a new one from scratch using all sections above; fill in what can be detected, mark remaining sections with TODOs.

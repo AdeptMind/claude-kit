@@ -3,11 +3,27 @@ description: FinOps rules applied when writing or reviewing infrastructure and c
 globs: ["infra/**", "terraform/**", "*.tf", "*.tfvars", "cloudformation/**", "*.yaml", "k8s/**", "helm/**", "docker-compose*"]
 ---
 
+> **Why this matters**: cloud bills compound silently. A right-sized instance saves $X/month, but an untagged resource means nobody can find it next quarter when costs spike — visibility is the precondition for every other optimization.
+
 ## Resource Tagging and Allocation
 
 - Tag every cloud resource with at least: `environment`, `team`, `service`, `cost-center`
 - Use cost allocation reports to attribute spend to teams and services; review monthly
 - Set up budget alerts at 50%, 80%, and 100% thresholds; enable anomaly detection for unexpected spikes
+
+**Example — Terraform default_tags**:
+```hcl
+provider "aws" {
+  default_tags {
+    tags = {
+      environment  = var.environment
+      team         = "platform"
+      service      = "auth-api"
+      cost-center  = "CC-1042"
+    }
+  }
+}
+```
 
 ## Compute Optimization
 

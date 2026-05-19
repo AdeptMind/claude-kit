@@ -31,8 +31,12 @@ Open with a 3-5 sentence executive summary containing:
 
 ### Consolidated Findings Table
 
-| Priority | Category | Finding | Resource | Est. Monthly Impact | Remediation |
-|----------|----------|---------|----------|---------------------|-------------|
+```
+| Priority | Category         | Finding                  | Resource                | Est. Monthly | Remediation              |
+|----------|------------------|--------------------------|-------------------------|--------------|--------------------------|
+| P0       | Waste Detection  | Unattached EBS volume    | aws_ebs_volume.data     | $80          | Delete or attach         |
+| P1       | Cost Optimization| Oversized RDS in staging | aws_db_instance.staging | $420         | Downsize to db.t3.medium |
+```
 
 Sort by estimated monthly impact descending.
 
