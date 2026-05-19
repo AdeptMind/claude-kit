@@ -8,6 +8,11 @@ import (
 	"os"
 )
 
+// maxSafetensorsHeaderBytes caps the safetensors header JSON to prevent
+// adversarial or corrupt files from triggering huge allocations. 100 MB is
+// far above any legitimate header size (real models are well under 1 MB).
+const maxSafetensorsHeaderBytes = 100 << 20
+
 // Tensor holds a dense float32 matrix loaded from a safetensors file.
 type Tensor struct {
 	Data []float32
@@ -39,6 +44,9 @@ func LoadSafetensors(path string) (*SafetensorsFile, error) {
 	var headerSize uint64
 	if err := binary.Read(f, binary.LittleEndian, &headerSize); err != nil {
 		return nil, fmt.Errorf("read header size: %w", err)
+	}
+	if headerSize == 0 || headerSize > maxSafetensorsHeaderBytes {
+		return nil, fmt.Errorf("safetensors header size %d out of range (max %d) — file is corrupt or not safetensors format", headerSize, maxSafetensorsHeaderBytes)
 	}
 
 	// Read JSON header

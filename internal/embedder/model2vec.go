@@ -92,6 +92,12 @@ func (m *Model2VecEmbedder) Embed(_ context.Context, text string) ([]float32, er
 		}
 
 		offset := id * m.dims
+		// Guard against shape mismatch between Rows/Cols header and actual data slice.
+		// A corrupt model file can pass the Rows check but still over-read Data.
+		if offset+m.dims > len(m.embeddings.Data) {
+			continue
+		}
+
 		weight := float32(1.0)
 		if m.weights != nil && id < len(m.weights) {
 			weight = m.weights[id]

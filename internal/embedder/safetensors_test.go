@@ -54,6 +54,44 @@ func writeSafetensors(t *testing.T, dir string, tensors map[string][]float32) st
 	return path
 }
 
+func TestLoadSafetensors_HeaderSizeOverflowRejected(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "evil.safetensors")
+	f, err := os.Create(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Advertise a header that's larger than maxSafetensorsHeaderBytes (100 MB).
+	// Writing 8 bytes of size + a few bytes of garbage is enough — we must reject
+	// before attempting the allocation.
+	sizeBuf := make([]byte, 8)
+	binary.LittleEndian.PutUint64(sizeBuf, 1<<40) // 1 TB advertised header
+	f.Write(sizeBuf)
+	f.Write([]byte("garbage"))
+	f.Close()
+
+	_, err = LoadSafetensors(path)
+	if err == nil {
+		t.Fatal("expected error for oversized header, got nil — allocation would have OOMed the process")
+	}
+}
+
+func TestLoadSafetensors_ZeroHeaderRejected(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "empty.safetensors")
+	f, err := os.Create(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// 8 bytes of zeros = headerSize 0
+	f.Write(make([]byte, 8))
+	f.Close()
+
+	if _, err := LoadSafetensors(path); err == nil {
+		t.Fatal("expected error for zero header size, got nil")
+	}
+}
+
 func TestLoadSafetensors_SingleTensor(t *testing.T) {
 	dir := t.TempDir()
 

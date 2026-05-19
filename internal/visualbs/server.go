@@ -40,6 +40,7 @@ type Server struct {
 	srv         *http.Server
 	idleTimer   *time.Timer
 	idleTimeout time.Duration
+	stopOnce    sync.Once
 }
 
 // NewServer creates a visual brainstorming server.
@@ -120,7 +121,13 @@ func (s *Server) Start(ctx context.Context) (string, <-chan Event, error) {
 	}
 
 	s.port = listener.Addr().(*net.TCPAddr).Port
-	s.srv = &http.Server{Handler: mux}
+	s.srv = &http.Server{
+		Handler: mux,
+		// Bound header read so slow-loris clients can't tie up goroutines.
+		// Body read and response write are unbounded because /sse is intentionally
+		// long-lived; per-handler timeouts would be a larger refactor.
+		ReadHeaderTimeout: 5 * time.Second,
+	}
 
 	s.idleTimer = time.AfterFunc(s.idleTimeout, func() {
 		log.Printf("visualbs: idle timeout reached, shutting down")
@@ -142,16 +149,19 @@ func (s *Server) Start(ctx context.Context) (string, <-chan Event, error) {
 	return url, s.events, nil
 }
 
-// Stop shuts down the server.
+// Stop shuts down the server. Safe to call multiple times from multiple
+// goroutines (idle timer + ctx.Done watcher both race to call it).
 func (s *Server) Stop() {
-	if s.idleTimer != nil {
-		s.idleTimer.Stop()
-	}
-	if s.srv != nil {
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
-		s.srv.Shutdown(ctx)
-	}
+	s.stopOnce.Do(func() {
+		if s.idleTimer != nil {
+			s.idleTimer.Stop()
+		}
+		if s.srv != nil {
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+			s.srv.Shutdown(ctx)
+		}
+	})
 }
 
 func (s *Server) resetIdle() {

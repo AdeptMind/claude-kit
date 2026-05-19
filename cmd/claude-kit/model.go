@@ -6,11 +6,16 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/spf13/cobra"
 
 	"github.com/AdeptMind/infra-tool/claude-cli/internal/embedder"
 )
+
+// modelDownloadClient bounds the HuggingFace fetch so a stalled connection
+// cannot hang the CLI indefinitely. 64 MB at 100 KB/s = ~11 minutes worst case.
+var modelDownloadClient = &http.Client{Timeout: 15 * time.Minute}
 
 const (
 	hfBaseURL = "https://huggingface.co/minishlab/potion-code-16M/resolve/main"
@@ -102,7 +107,7 @@ func runModelDownload() error {
 }
 
 func downloadFile(url, dest string) error {
-	resp, err := http.Get(url)
+	resp, err := modelDownloadClient.Get(url)
 	if err != nil {
 		return err
 	}
