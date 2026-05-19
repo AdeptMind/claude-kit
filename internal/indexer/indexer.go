@@ -83,12 +83,24 @@ type chunk struct {
 
 // ImportToKG reads chunks from CocoIndex's SQLite and imports them as KG nodes.
 // Each chunk is embedded with Model2Vec and stored in the knowledge graph.
+//
+// Returns (imported, err). A non-nil err means at least one chunk failed to scan
+// or persist; the imported count reflects successful imports up to that point.
+// This is intentional: silent partial imports masked broken pipelines in the past.
 func ImportToKG(ctx context.Context, cfg Config, store *knowledge.Store, emb embedder.Embedder) (int, error) {
+	if _, err := os.Stat(cfg.IndexDBPath); err != nil {
+		return 0, fmt.Errorf("index db not found at %s — run `ck knowledge index` first: %w", cfg.IndexDBPath, err)
+	}
+
 	indexDB, err := sql.Open("sqlite", cfg.IndexDBPath+"?mode=ro")
 	if err != nil {
 		return 0, fmt.Errorf("open index db: %w", err)
 	}
 	defer indexDB.Close()
+
+	if err := indexDB.PingContext(ctx); err != nil {
+		return 0, fmt.Errorf("ping index db: %w", err)
+	}
 
 	rows, err := indexDB.QueryContext(ctx,
 		`SELECT filename, source_type, chunk_text, chunk_start, chunk_end FROM chunks`)
@@ -101,9 +113,12 @@ func ImportToKG(ctx context.Context, cfg Config, store *knowledge.Store, emb emb
 	for rows.Next() {
 		var c chunk
 		if err := rows.Scan(&c.filename, &c.sourceType, &c.chunkText, &c.chunkStart, &c.chunkEnd); err != nil {
-			continue
+			return 0, fmt.Errorf("scan chunk row (schema mismatch?): %w", err)
 		}
 		chunks = append(chunks, c)
+	}
+	if err := rows.Err(); err != nil {
+		return 0, fmt.Errorf("iterate chunk rows: %w", err)
 	}
 
 	imported := 0
@@ -116,13 +131,16 @@ func ImportToKG(ctx context.Context, cfg Config, store *knowledge.Store, emb emb
 			Type:    "chunk",
 		}
 		if err := store.CreateNode(ctx, node); err != nil {
-			continue
+			return imported, fmt.Errorf("create node for %s: %w", title, err)
 		}
 
-		// Embed and store vector
 		if emb != nil {
-			if vec, err := emb.Embed(ctx, c.chunkText); err == nil {
-				store.UpdateNodeEmbedding(ctx, node.ID, vec)
+			vec, err := emb.Embed(ctx, c.chunkText)
+			if err != nil {
+				return imported, fmt.Errorf("embed %s: %w", title, err)
+			}
+			if err := store.UpdateNodeEmbedding(ctx, node.ID, vec); err != nil {
+				return imported, fmt.Errorf("store embedding for %s: %w", title, err)
 			}
 		}
 
