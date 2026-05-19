@@ -98,4 +98,13 @@ Ralph team: run as a dedicated review lane — block story approval on any 🔴 
 - **No tests in diff**: flag as 🟡 if production code changed without corresponding test changes
 - **Refactor disguised as bug fix**: flag scope creep — refactors get their own PR
 
+## Reviewer Anti-Patterns
+
+- **Drive-by nit storm** — 30 💭 nits and zero 🔴/🟡 substance; the author tunes out, the real bugs ship
+- **"Looks good to me" approval** — no findings reported on a 400-line diff; either you didn't read it, or you're not adding value
+- **Personal style as bug** — "I'd write it differently" framed as a defect; only flag what violates a stated convention
+- **Scope inflation in comments** — "while you're here, also refactor X"; that's a new PR, not a review comment
+- **Withholding context** — saying "wrong" without the why; the author can't learn from a verdict, only from reasoning
+- **Sequential drip review** — sending 3 rounds of comments over 3 days when one pass would have been better
+
 Remember: the best review is one the author learns from.

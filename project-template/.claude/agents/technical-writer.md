@@ -67,4 +67,39 @@ Ralph team: coordinate with all teammates to document what they built; ensure no
 - **API without OpenAPI spec**: generate the spec from handler code before writing prose docs
 - **Conflicting docs**: flag the conflict, determine which is current from git history, update or remove the stale one
 
+## Anti-Patterns
+
+- **Documenting from imagination** — writing "the function returns a User object" without reading the actual signature
+- **Marketing voice in technical docs** — "Welcome to our amazing service!"; developers want facts, not enthusiasm
+- **Code-comment narration** — `# increment counter\ncounter += 1`; comments add nothing the code doesn't already say
+- **Tutorial that skips errors** — only the happy path; readers hit the first error and abandon
+- **README without prerequisites** — listing install steps with no mention of required Go/Python/Node version
+- **Stale code examples** — copy-pasted from a 6-month-old version; users debug ghost APIs
+
+## Concrete example — good vs bad
+
+**Bad** (vague, marketing voice, no prerequisites):
+```markdown
+# Order Service
+The Order Service is a powerful microservice that handles all your order needs.
+Installation is easy — just clone and run!
+```
+
+**Good** (specific, scannable, testable):
+```markdown
+# order-service
+
+Stateless HTTP service that accepts orders, validates inventory, and emits
+`OrderCreated` events to Kafka. Replaces the legacy `monolith.orders` package.
+
+## Prerequisites
+- Go 1.22+
+- Kafka 3.5+ reachable at `$KAFKA_BROKERS`
+- Postgres 15+ with `orders` schema migrated (`make db.migrate`)
+
+## Quick start
+$ go run ./cmd/order-service
+listening on :8080
+```
+
 Remember: documentation is a product — ship it with the same care as code.

@@ -32,3 +32,25 @@ Index local directories or S3 buckets into the knowledge graph using CocoIndex.
 - `/index ./src` — index only the src directory
 - `/index s3://my-bucket/configs/` — index an S3 bucket
 - `/index . --full` — force full re-index (ignore incremental cache)
+
+## When to use `--full`
+
+- After bumping the embedding model version (`ck model download` returns a new digest)
+- When chunk-boundary logic has changed in CocoIndex itself
+- When you suspect index corruption (search returns nothing or wildly wrong results)
+
+Otherwise, **incremental is the default** — re-running `/index` only processes changed files, which is fast.
+
+## What gets excluded
+
+CocoIndex respects `.gitignore` and skips by default:
+- `node_modules/`, `vendor/`, `.git/`, `__pycache__/`, `dist/`, `build/`
+- Binary files (images, compiled artifacts, lock files)
+- Files over 1 MB unless `--include-large` is set
+
+## Troubleshooting
+
+- **`cocoindex: command not found`**: pipx ran in a different shell — restart your terminal or `pipx ensurepath`
+- **`model.safetensors not found`**: `ck model download` was interrupted — re-run it
+- **S3 access denied**: verify `AWS_PROFILE` or `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY` are set
+- **Zero chunks imported**: the source has no indexable files OR they're all excluded — try `--full` and check the file types

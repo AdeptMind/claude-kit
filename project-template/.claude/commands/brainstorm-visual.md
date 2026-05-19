@@ -80,3 +80,18 @@ For $ARGUMENTS topic:
 5. Push wireframe mockup (HTML) if UI-related
 6. Read feedback, iterate
 7. Summarize final decisions
+
+## Troubleshooting
+
+- **Browser shows "Connection refused"**: the server died; restart with `ck brainstorm-serve &` and use the new URL
+- **`curl` returns 404 on `/push`**: the URL was copied without the port — re-check the URL printed by the server
+- **No events from `/events`**: the user hasn't clicked yet, or events have already been consumed (calls are draining)
+- **HTML renders as escaped text**: JSON wasn't valid — check that quotes inside `content` are escaped (`\"` inside the outer `"..."`)
+- **Server eats memory across sessions**: stop the background server when done — `pkill -f "ck brainstorm-serve"`
+
+## Best practices
+
+- Keep option cards to 3-4 max — more options paralyze decisions
+- Each `.option` needs a `data-id` so clicks are identifiable in `/events`
+- Use `type: "clear"` between distinct iterations; use `type: "append"` for incremental additions
+- Show pros/cons AFTER the user selects an option, not before — pre-loaded bias derails the brainstorm
