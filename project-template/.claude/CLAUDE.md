@@ -187,6 +187,18 @@ All code produced by any agent or skill MUST follow these principles:
 - Run `/pentest` for web application security validation
 - See @.claude/rules/security.md for security rules
 
+## Testing
+
+- TDD strict for all code stories (RED → GREEN → REFACTOR)
+- **E2E tests must simulate a real user** — real clicks in the real UI, real CLI subprocess invocations, real signals to the real daemon. Never "spin the stack with env vars and curl the backend" and call it E2E.
+- Each E2E test maps to a named user journey from the backlog / PRD
+- See @.claude/rules/testing.md for the full rules
+
+## Communication
+
+- After every batch of edits, produce a short summary table: file path, role in the system, this change. Helps the reader hold the mental map across many edits.
+- See @.claude/rules/post-edit-summary.md for the rule
+
 ## Context Management
 
 - When context usage reaches the threshold defined by `CONTEXT_COMPACT_THRESHOLD` (default: 75%), proactively run `/compact` to free up context space before continuing work.
