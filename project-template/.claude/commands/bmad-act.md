@@ -10,9 +10,13 @@ This is Phase 3 of the BMAD workflow — all prior phases (Break, Clarify, Model
 ## Prerequisites
 
 1. Read `.claude/output/backlog.md` and `.claude/output/architecture.md`. If either does not exist, tell the user to run `/bmad-model` first and stop.
-2. Read `.claude/output/principles.md` if it exists — pass project-specific standards to Ralph for teammate spawn prompts.
-3. Read `.claude/output/checklist.md` if it exists — confirm there are no unresolved FAIL items. If there are, warn the user before proceeding.
-4. Check if `.claude/output/gsd/prep-report.md` exists. If not, run `/gsd-prep` first to generate codebase mapping and context packs.
+2. **Hybrid SDD/BMAD gate** — if `.claude/rules/spec-driven.md` exists, the project is in hybrid mode:
+   - `.claude/output/spec.md` MUST exist. If absent, stop and tell the user: "Hybrid mode active but spec.md missing — run `/spec` first."
+   - `.claude/output/spec-questions.md` MUST have no unresolved open questions. If non-empty and not all resolved, list the open questions and stop.
+   - Pass `spec.md` to Ralph as the authoritative contract — story implementations must match the spec's public surface and file layout exactly. No invention. Any ambiguity goes back to `spec-questions.md`, not into code.
+3. Read `.claude/output/principles.md` if it exists — pass project-specific standards to Ralph for teammate spawn prompts.
+4. Read `.claude/output/checklist.md` if it exists — confirm there are no unresolved FAIL items. If there are, warn the user before proceeding.
+5. Check if `.claude/output/gsd/prep-report.md` exists. If not, run `/gsd-prep` first to generate codebase mapping and context packs.
 
 ## Execution
 
@@ -33,6 +37,7 @@ This phase is complete when:
 - The full test suite passes
 - Quality checks report no critical issues
 - `.claude/output/act-report.md` has been produced
+- **Hybrid mode only**: run `/drift-check` and confirm verdict is `CLEAN` or `MINOR` only. BLOCKERS must be resolved (spec update OR code fix) before Deliver.
 
 If $ARGUMENTS is provided, use it as additional context or task filter: $ARGUMENTS
 

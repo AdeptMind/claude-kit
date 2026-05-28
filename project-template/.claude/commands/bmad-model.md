@@ -190,4 +190,14 @@ The Architect MUST address ALL flagged challenges before proceeding to Stage 5 (
 
 Only proceed to Stage 5 when every challenge has a recorded outcome.
 
+## Hybrid SDD/BMAD addendum (conditional — pure BMAD is unaffected)
+
+**Read this section only if `.claude/rules/spec-driven.md` exists.** If absent → project is in pure BMAD mode → skip this section entirely, you are done.
+
+If the file exists, the project is in **Hybrid SDD/BMAD mode**. After `architecture.md` and `backlog.md` are produced and all challenges resolved, you MUST also produce `.claude/output/spec.md` by invoking the `/spec` command.
+
+Rationale: in hybrid mode, the Act phase consumes `spec.md` (executable contract) in addition to `backlog.md` (work units). The Model phase is the right place to crystallize the spec because the architectural decisions are fresh and the backlog already enumerates the public surface.
+
+Do not skip `/spec` in hybrid mode — the gate in `/bmad-act` will block execution if `spec.md` is missing.
+
 If $ARGUMENTS is provided, use it as additional context: $ARGUMENTS

@@ -85,22 +85,28 @@ func runInteractiveInit() error {
 	fmt.Println(dimStyle.Render(fmt.Sprintf("  Target:   %s", targetDir)))
 	fmt.Println()
 
-	// Step 1: Ask if user wants BMAD methodology (skip if already installed)
-	useBmad := false
+	// Step 1: Ask which methodology to install (skip if BMAD core agents already installed)
+	methodology := "skip" // "bmad" | "hybrid" | "skip"
 	bmadAlreadyInstalled := installedAgents["product-owner"] && installedAgents["architect"] && installedAgents["tech-lead"]
 	if !bmadAlreadyInstalled {
-		bmadForm := huh.NewForm(
+		methodForm := huh.NewForm(
 			huh.NewGroup(
-				huh.NewConfirm().
-					Title("Add BMAD methodology? (Break -> Model -> Act -> Deliver)").
+				huh.NewSelect[string]().
+					Title("Install methodology?").
 					Description("Pre-selects core agents (product-owner, architect, tech-lead) + workflow commands.").
-					Value(&useBmad),
+					Options(
+						huh.NewOption("BMAD+ (custom) -- Break/Model/Act/Deliver + Ralph teammates", "bmad"),
+						huh.NewOption("Hybrid SDD/BMAD -- BMAD+ phases as ramp to a declarative spec; drift check after Act", "hybrid"),
+						huh.NewOption("Skip -- pick agents manually, no workflow commands", "skip"),
+					).
+					Value(&methodology),
 			),
 		).WithTheme(ckTheme())
-		if err := bmadForm.Run(); err != nil {
+		if err := methodForm.Run(); err != nil {
 			return err
 		}
 	}
+	useBmad := methodology == "bmad" || methodology == "hybrid"
 
 	// Step 2: Agent-only picker — only show agents not yet installed
 	// BMAD agents that aren't installed yet get pre-selected
@@ -287,6 +293,10 @@ func runInteractiveInit() error {
 		for _, rule := range []string{"code-style", "testing", "security", "documentation"} {
 			ruleSet[rule] = true
 		}
+		// Hybrid mode adds the spec-driven discipline rule on top of BMAD
+		if methodology == "hybrid" {
+			ruleSet["spec-driven"] = true
+		}
 	}
 
 	// Always add ck-sync command
@@ -320,6 +330,17 @@ func runInteractiveInit() error {
 		accentStyle.Render(fmt.Sprintf("%d rules", len(rules))),
 		dimStyle.Render(strings.Join(rules, ", ")),
 	))
+	if useBmad {
+		methodLabel := "BMAD+"
+		if methodology == "hybrid" {
+			methodLabel = "Hybrid SDD/BMAD (+ spec-driven rule)"
+		}
+		fmt.Println(fmt.Sprintf("    %s %s: %s",
+			bullet,
+			accentStyle.Render("methodology"),
+			dimStyle.Render(methodLabel),
+		))
+	}
 	if len(selectedAgents) >= 2 {
 		fmt.Println(fmt.Sprintf("    %s %s: %s",
 			bullet,
