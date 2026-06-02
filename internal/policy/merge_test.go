@@ -175,9 +175,8 @@ func TestMergeSettings_PreservesPreToolUse(t *testing.T) {
 	path := writeSettings(t, dir, existing)
 
 	spec := &PolicySpec{
-		Audit: &AuditPolicy{
-			Enabled: true,
-			Path:    "/tmp/audit.jsonl",
+		Filesystem: &FilesystemPolicy{
+			Deny: []string{".env"},
 		},
 	}
 

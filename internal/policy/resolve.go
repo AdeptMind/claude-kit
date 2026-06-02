@@ -26,9 +26,22 @@ func Resolve(spec *PolicySpec, profilesDir string) (*PolicySpec, error) {
 	mergeNetwork(&merged, spec)
 	mergeHooks(&merged, spec)
 	mergeSandbox(&merged, spec)
-	mergeAudit(&merged, spec)
 
 	return &merged, nil
+}
+
+// mergeNetwork: custom overrides base entirely if specified.
+func mergeNetwork(base *PolicySpec, custom *PolicySpec) {
+	if custom.Network != nil {
+		base.Network = custom.Network
+	}
+}
+
+// mergeSandbox: custom overrides base entirely if specified.
+func mergeSandbox(base *PolicySpec, custom *PolicySpec) {
+	if custom.Sandbox != nil {
+		base.Sandbox = custom.Sandbox
+	}
 }
 
 // mergeFilesystem: deny is additive (union, deduplicated), allow is replaced if custom specifies it.
@@ -47,13 +60,6 @@ func mergeFilesystem(base *PolicySpec, custom *PolicySpec) {
 	}
 }
 
-// mergeNetwork: custom overrides base entirely if specified.
-func mergeNetwork(base *PolicySpec, custom *PolicySpec) {
-	if custom.Network != nil {
-		base.Network = custom.Network
-	}
-}
-
 // mergeHooks: hooks are appended (base + custom).
 func mergeHooks(base *PolicySpec, custom *PolicySpec) {
 	if custom.Hooks == nil {
@@ -64,20 +70,6 @@ func mergeHooks(base *PolicySpec, custom *PolicySpec) {
 	}
 	base.Hooks.PreToolUse = append(base.Hooks.PreToolUse, custom.Hooks.PreToolUse...)
 	base.Hooks.PostToolUse = append(base.Hooks.PostToolUse, custom.Hooks.PostToolUse...)
-}
-
-// mergeSandbox: custom overrides base entirely if specified.
-func mergeSandbox(base *PolicySpec, custom *PolicySpec) {
-	if custom.Sandbox != nil {
-		base.Sandbox = custom.Sandbox
-	}
-}
-
-// mergeAudit: custom overrides base entirely if specified.
-func mergeAudit(base *PolicySpec, custom *PolicySpec) {
-	if custom.Audit != nil {
-		base.Audit = custom.Audit
-	}
 }
 
 func dedup(items []string) []string {

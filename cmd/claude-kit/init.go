@@ -211,9 +211,9 @@ func runInteractiveInit() error {
 				Title("Security policy profile").
 				Options(
 					huh.NewOption("none -- skip policy (no restrictions)", "none"),
-					huh.NewOption("permissive -- minimal restrictions, open network, no sandbox", "permissive"),
-					huh.NewOption("moderate -- git hook guard, audit logging, broader file deny list", "moderate"),
-					huh.NewOption("strict -- network blocked, sandbox enabled, full audit", "strict"),
+					huh.NewOption("permissive -- basic secret deny list, no hooks, no sandbox", "permissive"),
+					huh.NewOption("moderate -- broader deny list + git commit/push hook, no sandbox", "moderate"),
+					huh.NewOption("strict -- strict deny list + git/network-block hooks + sandbox ready for 'ck sandbox'", "strict"),
 				).
 				Value(&policyProfile),
 		),
@@ -232,7 +232,6 @@ func runInteractiveInit() error {
 					huh.NewOption("default -- ask before every action", "default"),
 					huh.NewOption("acceptEdits -- auto-edit files, ask for bash commands", "acceptEdits"),
 					huh.NewOption("plan -- read-only exploration, propose plans without editing", "plan"),
-					huh.NewOption("auto -- execute with AI safety checks, minimal prompts", "auto"),
 					huh.NewOption("bypassPermissions -- no checks (isolated environments only)", "bypassPermissions"),
 				).
 				Value(&permissionMode),

@@ -112,10 +112,6 @@ func copySpec(spec *policy.PolicySpec) *policy.PolicySpec {
 		net := *spec.Network
 		out.Network = &net
 	}
-	if spec.Audit != nil {
-		a := *spec.Audit
-		out.Audit = &a
-	}
 	return &out
 }
 

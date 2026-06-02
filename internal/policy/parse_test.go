@@ -42,13 +42,6 @@ sandbox:
   env_passthrough:
     - "HOME"
   image_base: "ubuntu:22.04"
-audit:
-  enabled: true
-  path: "/var/log/audit.log"
-  max_size: "100MB"
-  include_tools:
-    - "Bash"
-    - "Write"
 `,
 			check: func(t *testing.T, spec *PolicySpec) {
 				if spec.Profile != "strict" {
@@ -83,12 +76,6 @@ audit:
 				}
 				if spec.Sandbox.ImageBase != "ubuntu:22.04" {
 					t.Errorf("sandbox.image_base = %q", spec.Sandbox.ImageBase)
-				}
-				if !spec.Audit.Enabled || spec.Audit.Path != "/var/log/audit.log" {
-					t.Errorf("audit = %+v", spec.Audit)
-				}
-				if len(spec.Audit.IncludeTools) != 2 {
-					t.Errorf("audit.include_tools = %v", spec.Audit.IncludeTools)
 				}
 			},
 		},

@@ -148,41 +148,6 @@ network:
 	}
 }
 
-func TestResolve_AuditOverride(t *testing.T) {
-	dir := t.TempDir()
-	writeProfile(t, dir, "strict", `
-profile: strict
-audit:
-  enabled: true
-  path: ".claude/audit.jsonl"
-  max_size: "50MB"
-network:
-  mode: block_all
-`)
-
-	customAudit := &AuditPolicy{
-		Enabled: false,
-		Path:    "/tmp/audit.log",
-		MaxSize: "10MB",
-	}
-	spec := &PolicySpec{
-		Extends: "strict",
-		Audit:   customAudit,
-	}
-
-	got, err := Resolve(spec, dir)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-
-	if got.Audit.Enabled {
-		t.Error("audit.enabled should be overridden to false")
-	}
-	if got.Audit.Path != "/tmp/audit.log" {
-		t.Errorf("audit.path should be custom, got %s", got.Audit.Path)
-	}
-}
-
 func TestResolve_InvalidProfile(t *testing.T) {
 	dir := t.TempDir()
 

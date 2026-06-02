@@ -8,8 +8,8 @@ import (
 )
 
 var (
-	validProfiles       = map[string]bool{"permissive": true, "moderate": true, "strict": true}
-	validNetworkModes   = map[string]bool{"block_all": true, "allowlist": true, "unrestricted": true}
+	validProfiles        = map[string]bool{"permissive": true, "moderate": true, "strict": true}
+	validNetworkModes    = map[string]bool{"block_all": true, "allowlist": true, "unrestricted": true}
 	validSandboxRuntimes = map[string]bool{"auto": true, "docker": true, "podman": true, "nerdctl": true}
 )
 
