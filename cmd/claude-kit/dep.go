@@ -91,6 +91,16 @@ var depRegistry = []Dependency{
 		PluginMarketplaceCmd: "/plugin marketplace add alexgreensh/token-optimizer",
 		PluginInstallCmd:     "/plugin install token-optimizer@alexgreensh-token-optimizer",
 	},
+	{
+		Name:           "graphify",
+		Description:    "Knowledge graph builder — queryable graph from codebase, docs, media (local AST, 23 langs)",
+		Type:           DepTypeShell,
+		Source:         "graphifyy",
+		VersionCmd:     "graphify --version",
+		InstallCmd:     "pipx install graphifyy",
+		PostInstallCmd: "$HOME/.local/bin/graphify install",
+		PostInstallMsg: "Run '/graphify' in Claude Code to build your first knowledge graph.",
+	},
 }
 
 var depCmd = &cobra.Command{
@@ -171,33 +181,6 @@ func runDepInstall() error {
 		}
 	}
 
-	// Optional: Graphify knowledge graph
-	graphifyInstalled := false
-	if ok, err := promptGraphifyInstall(); err == nil && ok {
-		fmt.Println(sectionHeader("Installing Graphify"))
-		if err := autoInstallDep(graphifyDep); err != nil {
-			fmt.Println(errorStyle.Render(fmt.Sprintf("  Failed to install graphify: %v", err)))
-		} else {
-			fmt.Println(fmt.Sprintf("  %s %s", checkMark, accentStyle.Render("graphify")))
-			if graphifyDep.PostInstallCmd != "" {
-				fmt.Println(dimStyle.Render(fmt.Sprintf("  Running post-install: %s", graphifyDep.PostInstallCmd)))
-				if err := runPostInstall(graphifyDep.PostInstallCmd); err != nil {
-					fmt.Println(warnStyle.Render(fmt.Sprintf("  Post-install warning: %v", err)))
-				} else {
-					fmt.Println(fmt.Sprintf("  %s Post-install complete", checkMark))
-				}
-			}
-			if graphifyDep.PostInstallMsg != "" {
-				fmt.Println(dimStyle.Render(fmt.Sprintf("  %s", graphifyDep.PostInstallMsg)))
-			}
-			graphifyInstalled = true
-		}
-	}
-
-	// Summary
-	if graphifyInstalled {
-		installed++
-	}
 	fmt.Println(successStyle.Render(fmt.Sprintf("  %s Done! %d installed", arrow, installed)))
 
 	return nil
