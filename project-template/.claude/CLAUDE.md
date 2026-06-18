@@ -140,6 +140,7 @@ For any non-trivial implementation (new feature, infra change, refactor):
 
 All code produced by any agent or skill MUST follow these principles:
 
+- **Lazy senior discipline**: take the highest rung first (stdlib → platform → installed dep → one line) before writing new code; never cut validation, security, or accessibility — see @.claude/rules/lazy-senior.md
 - **DRY** (Don't Repeat Yourself): never duplicate logic; extract shared code into reusable functions, modules, or classes
 - **KISS** (Keep It Simple): prefer the simplest solution that works; avoid unnecessary abstractions and complexity
 - **SOLID**: Single responsibility, Open/closed, Liskov substitution, Interface segregation, Dependency inversion
