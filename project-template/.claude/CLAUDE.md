@@ -168,9 +168,14 @@ All code produced by any agent or skill MUST follow these principles:
 
 - Follow language/framework conventions of the project
 - Keep functions small and focused on a single responsibility
-- Name variables and functions descriptively
+- Name variables and functions descriptively — descriptive names replace explanatory comments
 - Prefer composition over inheritance when possible
 - See @.claude/rules/code-style.md for detailed rules
+
+## Documentation
+
+- **Inline comments**: default = none. Only allowed for framework hacks, hidden constraints, counter-intuitive behavior, or `SAFETY:` blocks. Descriptive names carry the meaning, not prose. See @.claude/rules/code-comments.md
+- **Global docs (README, architecture, ADRs, runbooks, onboarding)**: every project carries these as living artifacts. Update in the same PR as the code change. See @.claude/rules/documentation.md
 
 ## Git Workflow
 
