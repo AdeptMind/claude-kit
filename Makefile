@@ -8,11 +8,11 @@ build:
 	go build -ldflags "-s -w -X main.version=$(VERSION)" -o ck ./cmd/claude-kit/
 
 install: build
-	cp ck /usr/local/bin/ck 2>/dev/null || cp ck $(HOME)/bin/ck
-	cp ck /usr/local/bin/claude-kit 2>/dev/null || cp ck $(HOME)/bin/claude-kit
+	ln -sf $(CURDIR)/ck /usr/local/bin/ck 2>/dev/null || ln -sf $(CURDIR)/ck $(HOME)/bin/ck
+	ln -sf $(CURDIR)/ck /usr/local/bin/claude-kit 2>/dev/null || ln -sf $(CURDIR)/ck $(HOME)/bin/claude-kit
 	mkdir -p $(HOME)/.bmad/templates
 	rsync -a --delete project-template/.claude/ $(HOME)/.bmad/templates/
-	@echo "✓ CLI $(VERSION) installed"
+	@echo "✓ CLI $(VERSION) installed (symlinked from $(CURDIR)/ck)"
 
 clean:
 	rm -f ck
